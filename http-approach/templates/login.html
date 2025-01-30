@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - AnxArchives</title>
+    <!-- Favicon for all browsers -->
+    <link rel="icon" type="image/x-icon" href="https://pbs.twimg.com/media/GfbwIUvWEAMe7d6?format=jpg&name=900x900" />
+    <link rel="icon" type="image/png" href="https://pbs.twimg.com/media/GfbwIUvWEAMe7d6?format=jpg&name=900x900" />
+
+    <!-- For modern browsers (SVG support) -->
+    <link rel="icon" type="image/svg+xml" href="https://pbs.twimg.com/media/GfbwIUvWEAMe7d6?format=jpg&name=900x900" />
+
+    <!-- For Apple devices -->
+    <link rel="apple-touch-icon" href="https://pbs.twimg.com/media/GfbwIUvWEAMe7d6?format=jpg&name=900x900"
+        sizes="180x180" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .login-container,
+        .registration-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        .form-image img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container d-flex justify-content-center align-items-center" style="height: 100vh">
+        <!-- Login Form -->
+        <div class="login-container col-md-4">
+            <div class="form-image" style="display: flex; flex-direction: column">
+                <h2 class="header" style="font-weight: 600">Login</h2>
+                <img src="https://pbs.twimg.com/media/GfbwIUvWEAMe7d6?format=jpg&name=900x900" alt="" />
+            </div>
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" value="Anxiel" name="username" required />
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" value="Anxiel!Archives" name="password"
+                        required />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                <div class="text-center mt-3">
+                    <a href="/register" id="toRegistration-button">
+                        <p>Don't have an account?</p>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("toRegistration-button").onclick = function () {
+            const newUrl = "/register";
+            window.history.replaceState({}, "", newUrl);
+
+            document.getElementById("logging-in").onclick = function () {
+                const dashBoard = "/dashboard";
+                window.history.replaceState({}, "", dashBoard);
+            };
+        };
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
