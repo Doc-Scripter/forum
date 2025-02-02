@@ -9,8 +9,8 @@ import (
 
 var Db, err = sql.Open("sqlite3", "mydatabase.db")
 
-//==========createTable creates a users table in the SQLite database===========
-func CreateTable() {
+//==========This function creates a 'users' table in the SQLite database===========
+func CreateUserTable() {
 	query := `
 	CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,6 +27,25 @@ func CreateTable() {
 	}
 
 	fmt.Println("Table 'users' created successfully!")
+}
+
+//==========This function creates a 'sessions' table in the SQLite database===========
+func CreateSessionTable() {
+	query := `
+	CREATE TABLE IF NOT EXISTS sessions (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    session_token TEXT UNIQUE NOT NULL,
+    expires_at DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	);`
+
+	_, err := Db.Exec(query)
+	if err != nil {
+		log.Fatal("Error creating table:", err)
+	}
+	
+	fmt.Println("Table 'sessions' created successfully!")
 }
 
 
