@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile & Logout</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        /* Center content */
+        .container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Position the menu */
+        .dropdown {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Hamburger Menu with Profile Dropdown -->
+    <div class="dropdown">
+        <button class="btn btn-dark dropdown-toggle" type="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-list"></i>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="profileMenu">
+            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><a class="dropdown-item" href="#">Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item text-danger d-flex align-items-center gap-2" href="/" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+        <h3>Welcome to Your Dashboard</h3>
+    </div>
+
+    <script>
+        function logout() {
+            alert("Logging out..."); // Replace with actual logout logic
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

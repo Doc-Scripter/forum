@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum | Science & Math Hub</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        .hero {
+            background: linear-gradient(to right, #007bff, #6610f2);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .filter-buttons {
+            margin-bottom: 20px;
+        }
+        .new-post-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">🔬 Anxiel Realm</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <!-- <li class="nav-item"><a class="nav-link" href="#">Home</a></li> -->
+                    <li class="nav-item"><a class="nav-link" href="#">Categories</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/signing">Login</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-danger text-white px-3" href="/logout">Logout <i class="bi bi-box-arrow-right"></i></a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>Welcome to the Science & Math Forum</h1>
+        <p>A place for deep discussions on physics, mathematics, AI, and beyond.</p>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="container mt-4">
+        <div class="d-flex justify-content-center filter-buttons">
+            <button class="btn btn-outline-primary mx-2">All Posts</button>
+            <button class="btn btn-outline-secondary mx-2">Mathematics</button>
+            <button class="btn btn-outline-success mx-2">Physics</button>
+            <button class="btn btn-outline-warning mx-2">AI & Robotics</button>
+            <button class="btn btn-outline-info mx-2">Other Topics</button>
+        </div>
+    </div>
+
+    <!-- Posts Section -->
+    <div class="container mt-3">
+        <div class="row">
+            <!-- Sample Post -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Is the Riemann Hypothesis true?</h5>
+                        <p class="card-text text-muted">Posted by <strong>EulerFan42</strong> - 3 hours ago</p>
+                        <p class="card-text">The Riemann Hypothesis is one of the biggest unsolved problems in mathematics...</p>
+                        <a href="#" class="btn btn-primary btn-sm">Read More</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Another Sample Post -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Quantum Computing: The Future of AI?</h5>
+                        <p class="card-text text-muted">Posted by <strong>QubitMaster</strong> - 1 day ago</p>
+                        <p class="card-text">Quantum computing is poised to revolutionize artificial intelligence. But how far are we?</p>
+                        <a href="#" class="btn btn-primary btn-sm">Read More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating "New Post" Button -->
+    <button class="btn btn-success new-post-btn shadow-lg" onclick="newPost()">
+        <i class="bi bi-plus-circle"></i> New Post
+    </button>
+
+    <script>
+        function newPost() {
+            alert("Redirecting to create a new post...");
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
