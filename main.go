@@ -1,21 +1,26 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
-	"web-forum/web"
+	handler "forum/handlers"
 )
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-	http.HandleFunc("/", web.Home)
+	http.HandleFunc("/", handler.Home)
 
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
-	// Start a new web server
-	// 8080 TCP network address to listen on
-	log.Println("Starting server on: 8080")
+
+	fmt.Printf("Starting server on: %s", port)
 	err := http.ListenAndServe(":8080", nil)
 	log.Fatal(err)
 }
