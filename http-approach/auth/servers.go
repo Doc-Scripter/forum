@@ -8,7 +8,7 @@ import(
 
 //serve the Homepage
 func HomePage(rw http.ResponseWriter, req *http.Request) {
-	t, err := template.ParseFiles("templates/login.html")
+	t, err := template.ParseFiles("templates/index.html")
 	if err!= nil {
 		log.Fatal(err)
 	}
@@ -31,4 +31,12 @@ func Register(rw http.ResponseWriter, req *http.Request) {
 		log.Fatal(err)
 	}
 	t.Execute(rw, nil)
+}
+
+func Cover(rw http.ResponseWriter, req *http.Request) {
+	t, err := template.ParseFiles("templates/dashboard.html")
+    if err!= nil {
+        log.Fatal(err)
+    }
+    t.Execute(rw, nil)
 }
