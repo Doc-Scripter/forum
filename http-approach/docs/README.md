@@ -5,12 +5,14 @@
 
   ## **1. Core Authentication Features**
 
-  Your authentication system must include:
+  The authentication system includes:
 
 
   1. **User Registration** (with validation and secure password storage)
+     However this is considered a weak mode of security.
   2. **User Login** (with session handling using cookies)
   3. **Session Management** (using cookies with expiration)
+     A time lapse of, when user exits from the browser, is valid, when set to 0
   4. **Logout** (clearing session cookies)
   5. **Authorization Checks** (restricting actions for logged-in users)
   6. **Password Encryption** (hashing using bcrypt)
@@ -18,7 +20,7 @@
 
 ## **2. Database Schema for Authentication**
 
-You'll need a **users** table to store user credentials. Here’s a structured way to define it in SQLite:
+We need a **users** table to store user credentials. Here’s a structured way to define it in SQLite:
 
 <pre class="!overflow-visible"><div class="contain-inline-size rounded-md border-[0.5px] border-token-border-medium relative bg-token-sidebar-surface-primary dark:bg-gray-950"></div></pre>
 
@@ -32,7 +34,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 ```
 
-uuid: A unique user ID (generated via uuid.New().String())
+uuid: A unique user ID (generated via uuid.New().String()) the package is standard in Golang.
 username: Unique identifier for users
 email: Must be unique, used for login
 password: Must be hashed using bcrypt before storing
@@ -182,7 +184,6 @@ func LoginUser(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 - Logging out involves clearing the session cookie:
 
-
 ```go
 func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
@@ -238,17 +239,15 @@ CREATE TABLE IF NOT EXISTS sessions (
 ```
 
 - Each time a user logs in, their session should be saved, and during authentication, check if their session token is valid.
-🔹 Reset Password
-
+  🔹 Reset Password
 - You can implement password reset functionality by:
 
-    Generating a reset token (UUID)
-    Sending it to the user's email
-    Creating a form for resetting passwords
+  Generating a reset token (UUID)
+  Sending it to the user's email
+  Creating a form for resetting passwords
 
 🔹 Account Verification
 
 - To prevent fake accounts, send a verification email with a unique activation link.
-🔹 Role-Based Access Control (RBAC)
-
+  🔹 Role-Based Access Control (RBAC)
 - You can define user roles (admin, moderator, user) and restrict access based on roles.
