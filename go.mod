@@ -1,3 +1,3 @@
-module web-forum
+module forum
 
 go 1.23.4
