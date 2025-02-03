@@ -1,11 +1,11 @@
 package database
 
 import (
-	"database/sql"
+	"database/sql" // Imported for side effects
 	"fmt"
 	"log"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // SQLite driver
 )
 
 // DB is a global variable to hold the database connection.
