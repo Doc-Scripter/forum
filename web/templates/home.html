@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Homepage</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Forum</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/register">Register</a></li>
+                <li><a href="/newpost">New Post</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="posts">
+            <h2>Recent Posts</h2>
+            <article class="post">
+                <h3>Post Title 1</h3>
+                <p>Author: User1 | Category: Tech</p>
+                <p>Lorem ipsum dolor sit amet...</p>
+                <a href="/post/1">Read more</a>
+            </article>
+            <article class="post">
+                <h3>Post Title 2</h3>
+                <p>Author: User2 | Category: Gaming</p>
+                <p>Lorem ipsum dolor sit amet...</p>
+                <a href="/post/2">Read more</a>
+            </article>
+        </section>
+
+        <aside>
+            <h2>Categories</h2>
+            <ul>
+                <li><a href="/category/tech">Tech</a></li>
+                <li><a href="/category/gaming">Gaming</a></li>
+                <li><a href="/category/music">Music</a></li>
+            </ul>
+        </aside>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Forum. All rights reserved.</p>
+    </footer>
+</body>
+</html>

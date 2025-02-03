@@ -1,0 +1,23 @@
+[
+    {
+      "id": 1,
+      "category": "politics",
+      "title": "Post 1",
+      "date": "2022-01-01",
+      "likes": 10
+    },
+    {
+      "id": 2,
+      "category": "sports",
+      "title": "Post 2",
+      "date": "2022-01-15",
+      "likes": 5
+    },
+    {
+      "id": 3,
+      "category": "politics",
+      "title": "Post 3",
+      "date": "2022-02-01",
+      "likes": 20
+    }
+  ]
