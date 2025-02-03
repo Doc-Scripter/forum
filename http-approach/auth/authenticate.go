@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"log"
 	"time"
 	"regexp"
@@ -40,21 +41,29 @@ func (u *User) HashPassword() error {
 
 // ==================ValidateSession checks if a session token is valid=========
 func ValidateSession(r *http.Request) (bool, string) {
+
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
+		fmt.Println("No session cookie found")
 		return false, ""
 	}
 
-	var userID string
-	var expiresAt time.Time
+	var(
+		userID string
+		expiresAt time.Time
+	)
+
 	err = Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID, &expiresAt)
 	if err != nil {
+		fmt.Println("Session not found in DB:", err)
 		return false, ""
 	}
 
 	if time.Now().After(expiresAt) {
+		fmt.Println("Session expired")
 		return false, ""
 	}
 
+	fmt.Println("Session valid for user:", userID)
 	return true, userID
 }
