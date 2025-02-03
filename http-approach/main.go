@@ -4,11 +4,10 @@ import(
 	"os"
 	"net/http"
 	"log"
-	"database/sql"
 	auth "forum/auth"
 )
 
-var Db *sql.DB
+
 
 
 func init() {
@@ -27,12 +26,21 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", auth.Login)
-	mux.HandleFunc("/signing", auth.Login)
+	mux.HandleFunc("/register", auth.Register)
 
-	mux.HandleFunc("/signup", auth.Register)
+	mux.HandleFunc("/login", auth.Login)
+
 	mux.HandleFunc("/registration", auth.RegisterUser)
-	mux.Handle("/login", auth.AuthMiddleware(http.HandlerFunc(auth.AuthenticateUserCredentialsLogin)))
-	mux.Handle("/logout", auth.AuthMiddleware(http.HandlerFunc(auth.LogoutUser)))
+
+	// mux.Handle("/", auth.AuthMiddleware(http.HandlerFunc(auth.Login)))
+
+	// mux.Handle("/login", auth.AuthMiddleware(http.HandlerFunc(auth.Login)))
+
+	// mux.Handle("/register", auth.AuthMiddleware(http.HandlerFunc(auth.Register)))
+	
+	mux.Handle("/logging", auth.AuthMiddleware(http.HandlerFunc(auth.AuthenticateUserCredentialsLogin)))
+
+	mux.HandleFunc("/logout", auth.LogoutUser)
 
 	port :=  os.Getenv("PORT")
 	if port == "" {
@@ -43,5 +51,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer Db.Close()
+	defer auth.Db.Close()
 }
