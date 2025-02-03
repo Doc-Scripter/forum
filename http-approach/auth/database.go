@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-var Db, err = sql.Open("sqlite3", "mydatabase.db")
+var Db *sql.DB
 
 //==========This function creates a 'users' table in the SQLite database===========
 func CreateUserTable() {
@@ -34,10 +34,10 @@ func CreateSessionTable() {
 	query := `
 	CREATE TABLE IF NOT EXISTS sessions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    session_token TEXT UNIQUE NOT NULL,
-    expires_at DATETIME NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    	user_id INTEGER NOT NULL,
+    	session_token TEXT UNIQUE NOT NULL,
+    	expires_at DATETIME NOT NULL,
+    	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
 
 	_, err := Db.Exec(query)
@@ -52,10 +52,14 @@ func CreateSessionTable() {
 //============Starting the connection to the database=============
 func StartDBConnection() error {
 
+	var err error
+
+	Db, err = sql.Open("sqlite3", "mydatabase.db")
+
 	if err != nil {
 		return err
 	}
-
+	
 	err = Db.Ping()
 	if err != nil {
 		return err
@@ -63,4 +67,5 @@ func StartDBConnection() error {
 
 	fmt.Println("Connected to SQLite database successfully!")
 	return nil
+
 }
