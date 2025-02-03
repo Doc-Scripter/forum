@@ -116,7 +116,7 @@
             Register
           </button>
           <div class="text-center mt-3">
-            <a href="/signin" id="to-register"><p>Already have an account?</p></a>
+            <a href="/login" id="to-register"><p>Already have an account?</p></a>
           </div>
         </form>
       </div>
@@ -124,7 +124,7 @@
 
     <script>
       document.getElementById("to-register").onclick = function () {
-        const newUrl = "/signin";
+        const newUrl = "/regiter";
         window.history.replaceState({}, "", newUrl);
       };
 
