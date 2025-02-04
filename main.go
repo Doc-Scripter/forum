@@ -32,12 +32,10 @@ func main() {
 
 	mux.HandleFunc("/registration", auth.RegisterUser)
 
-	// mux.Handle("/", auth.AuthMiddleware(http.HandlerFunc(auth.Login)))
+	 // Serve static files
+	fileServer := http.FileServer(http.Dir("./web/static"))
+	mux.Handle("/web/static/", http.StripPrefix("/web/static/", fileServer))
 
-	// mux.Handle("/login", auth.AuthMiddleware(http.HandlerFunc(auth.Login)))
-
-	// mux.Handle("/register", auth.AuthMiddleware(http.HandlerFunc(auth.Register)))
-	
 	mux.Handle("/logging", auth.AuthMiddleware(http.HandlerFunc(auth.AuthenticateUserCredentialsLogin)))
 
 	mux.HandleFunc("/logout", auth.LogoutUser)

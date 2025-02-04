@@ -8,7 +8,7 @@ import(
 
 //serve the Homepage
 func HomePage(rw http.ResponseWriter, req *http.Request) {
-	tmpl, err := template.ParseFiles("templates/index.html")
+	tmpl, err := template.ParseFiles("web/templates/home.html")
 	if err!= nil {
 		log.Fatal(err)
 	}
@@ -23,7 +23,7 @@ func Login(rw http.ResponseWriter, req *http.Request) {
 	}else if !bl {
 
 		
-		tmpl, err := template.ParseFiles("templates/login.html")
+		tmpl, err := template.ParseFiles("web/templates/login.html")
 		if err!= nil {
 			log.Fatal(err)
 		}
@@ -33,7 +33,7 @@ func Login(rw http.ResponseWriter, req *http.Request) {
 
 //serve the registration form
 func Register(rw http.ResponseWriter, req *http.Request) {
-	tmpl, err := template.ParseFiles("templates/register.html")
+	tmpl, err := template.ParseFiles("web/templates/register.html")
 	if err!= nil {
 		log.Fatal(err)
 	}
