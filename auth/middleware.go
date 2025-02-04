@@ -1,6 +1,6 @@
 package auth
 
-import(
+import (
 	"net/http"
 )
 
@@ -8,7 +8,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Validate session and retrieve user ID
 		valid, userID := ValidateSession(r)
-		
+
 		if !valid {
 			// If session is invalid, redirect to login page
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -22,7 +22,6 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		next.ServeHTTP(w, r)
 	}
 }
-
 
 // func AuthMiddleware(next http.Handler) http.Handler {
 // 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

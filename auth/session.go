@@ -1,18 +1,16 @@
 package auth
 
-import(
-	"time"
+import (
 	"net/http"
+	"time"
 )
-
-
 
 func SetSessionCookie(w http.ResponseWriter, sessionToken string, expiresAt time.Time) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    sessionToken,
 		Expires:  expiresAt,
-		HttpOnly: true,  
+		HttpOnly: true,
 		Secure:   false,
 		Path:     "/",
 	})

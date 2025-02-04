@@ -1,14 +1,11 @@
 package main
 
-import(
-	"os"
-	"net/http"
-	"log"
+import (
 	auth "forum/auth"
+	"log"
+	"net/http"
+	"os"
 )
-
-
-
 
 func init() {
 
@@ -32,7 +29,7 @@ func main() {
 
 	mux.HandleFunc("/registration", auth.RegisterUser)
 
-	 // Serve static files
+	// Serve static files
 	fileServer := http.FileServer(http.Dir("./web/static"))
 	mux.Handle("/web/static/", http.StripPrefix("/web/static/", fileServer))
 
@@ -40,7 +37,7 @@ func main() {
 
 	mux.HandleFunc("/logout", auth.LogoutUser)
 
-	port :=  os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "41532"
 	}

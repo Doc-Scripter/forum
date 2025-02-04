@@ -9,7 +9,7 @@ import (
 
 var Db *sql.DB
 
-//==========This function creates a 'users' table in the SQLite database===========
+// ==========This function creates a 'users' table in the SQLite database===========
 func CreateUserTable() {
 	query := `
 	CREATE TABLE IF NOT EXISTS users (
@@ -29,7 +29,7 @@ func CreateUserTable() {
 	fmt.Println("Table 'users' created successfully!")
 }
 
-//==========This function creates a 'sessions' table in the SQLite database===========
+// ==========This function creates a 'sessions' table in the SQLite database===========
 func CreateSessionTable() {
 	query := `
 	CREATE TABLE IF NOT EXISTS sessions (
@@ -44,12 +44,11 @@ func CreateSessionTable() {
 	if err != nil {
 		log.Fatal("Error creating table:", err)
 	}
-	
+
 	fmt.Println("Table 'sessions' created successfully!")
 }
 
-
-//============Starting the connection to the database=============
+// ============Starting the connection to the database=============
 func StartDBConnection() error {
 
 	var err error
@@ -59,7 +58,7 @@ func StartDBConnection() error {
 	if err != nil {
 		return err
 	}
-	
+
 	err = Db.Ping()
 	if err != nil {
 		return err

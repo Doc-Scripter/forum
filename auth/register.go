@@ -1,11 +1,11 @@
 package auth
 
 import (
-	"fmt"
-	"time"
-	"net/http"
 	"database/sql"
+	"fmt"
 	"github.com/google/uuid"
+	"net/http"
+	"time"
 )
 
 // User struct to store user details
@@ -16,7 +16,6 @@ type User struct {
 	Email    string
 	Password string
 }
-
 
 // =========Handle user registration========================
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
@@ -59,16 +58,15 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err =  user.HashPassword(); err != nil {
+	if err = user.HashPassword(); err != nil {
 		fmt.Fprint(w, "Failed to hash password", http.StatusInternalServerError)
-        return
+		return
 	}
-	
+
 	//generate a UUID for the user
-	UUID:= uuid.New().String()
+	UUID := uuid.New().String()
 	expiresAt := time.Now().Add(24 * time.Hour)
 
-	
 	// Insert new user into the database
 	query := `INSERT INTO users (uuid, username, email, password) VALUES (?, ?, ?, ?)`
 	_, err = Db.Exec(query, UUID, user.Username, user.Email, user.Password)
@@ -76,7 +74,6 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to register user", http.StatusInternalServerError)
 		return
 	}
-	
 
 	var userID string
 	err = Db.QueryRow("SELECT id FROM users WHERE email = ?", user.Email).Scan(&userID)
