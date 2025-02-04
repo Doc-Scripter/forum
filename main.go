@@ -1,26 +1,55 @@
 package main
 
-import (
-	"fmt"
-	"log"
-	"net/http"
+import(
 	"os"
-
-	handler "forum/handlers"
+	"net/http"
+	"log"
+	auth "forum/auth"
 )
 
-func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+
+
+
+func init() {
+
+	if len(os.Args) != 1 {
+		log.Fatal("\nUsage: go run main.go")
 	}
 
-	http.HandleFunc("/", handler.Home)
+	auth.StartDBConnection()
+	auth.CreateUserTable()
+	auth.CreateSessionTable()
+}
 
-	fileServer := http.FileServer(http.Dir("./ui/static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
+func main() {
 
-	fmt.Printf("Starting server on: %s", port)
-	err := http.ListenAndServe(":8080", nil)
-	log.Fatal(err)
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", auth.Login)
+	mux.HandleFunc("/register", auth.Register)
+
+	mux.HandleFunc("/login", auth.Login)
+
+	mux.HandleFunc("/registration", auth.RegisterUser)
+
+	// mux.Handle("/", auth.AuthMiddleware(http.HandlerFunc(auth.Login)))
+
+	// mux.Handle("/login", auth.AuthMiddleware(http.HandlerFunc(auth.Login)))
+
+	// mux.Handle("/register", auth.AuthMiddleware(http.HandlerFunc(auth.Register)))
+	
+	mux.Handle("/logging", auth.AuthMiddleware(http.HandlerFunc(auth.AuthenticateUserCredentialsLogin)))
+
+	mux.HandleFunc("/logout", auth.LogoutUser)
+
+	port :=  os.Getenv("PORT")
+	if port == "" {
+		port = "41532"
+	}
+
+	err := http.ListenAndServe(":"+port, mux)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer auth.Db.Close()
 }
