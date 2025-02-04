@@ -1,12 +1,13 @@
 package auth
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
-	"time"
-	"regexp"
 	"net/http"
-	"database/sql"
+	"regexp"
+	"time"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -41,15 +42,14 @@ func (u *User) HashPassword() error {
 
 // ==================ValidateSession checks if a session token is valid=========
 func ValidateSession(r *http.Request) (bool, string) {
-
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		fmt.Println("No session cookie found")
 		return false, ""
 	}
 
-	var(
-		userID string
+	var (
+		userID    string
 		expiresAt time.Time
 	)
 
