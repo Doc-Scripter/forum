@@ -10,26 +10,26 @@
 <body>
     <section>
     <div class="login-box">
-        <form action="">
+        <form action="/logging">
             <h2>Login</h2>
             <div class="input-box">
-                <input type="email" required>
-                <label>Email</label> 
+                <input type="email" name="email" required>
+                <label><i>Email</i></label> 
             </div>
             <div class="input-box">
-                <input type="password" required>
-                <label>Password</label> 
+                <input type="password" name="password" required>
+                <label><i>Password</i></label> 
             </div>
-            <div class="remember-forget">
+            <!-- <div class="remember-forget">
                 <label>
                     <input type="checkbox"> Remember me
                 </label>
                 <a href="#">Forgot Password?</a>
-            </div>
+            </div> -->
             <button type="submit">Login</button>
             <div class="register-link">
-                <p>Don't have an account?<a
-                     href="#">Register</a></p>
+                <p><i>Don't have an account?</i></p>
+                <a href="/register"><i>Register</i></a>
             </div>
         </form>
     </div>

@@ -1,8 +1,9 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Community Forum</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Forum</title>
+    <link rel="stylesheet" href="/web/static/home.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -27,7 +28,7 @@
         </nav>
 
         <!-- Category Filter -->
-        <div class="category-filter">
+        <!-- <div class="category-filter">
             <label>Filter by Category:</label>
             <select v-model="selectedCategory">
                 <option value="">All Categories</option>
@@ -37,7 +38,7 @@
             </select>
         </div>
 
-        <!-- Sidebar Profile -->
+        Sidebar Profile
         <div class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
             <div class="sidebar-content">
                 <div class="profile-header">
@@ -50,7 +51,7 @@
                 </nav>
             </div>
             <button class="sidebar-close" @click="toggleSidebar">×</button>
-        </div>
+        </div> -->
 
         <main>
             <section v-if="currentView === 'posts'">
