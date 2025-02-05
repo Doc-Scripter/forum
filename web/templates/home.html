@@ -1,107 +1,106 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Community Forum</title>
+    <link rel="stylesheet" href="styles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forum Homepage</title>
-    <link rel="stylesheet" href="/static/home.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
-    <header>
-        <h1>Forum</h1>
-        <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/login">Login</a></li>
-                <li><a href="/register">Register</a></li>
-                <li><a href="/newpost">New Post</a></li>
-            </ul>
+    <div id="app">
+        <!-- Navbar -->
+        <nav class="main-navbar">
+            <div class="nav-container">
+                <div class="logo">Community Forum</div>
+                <ul class="nav-links">
+                    <li><a href="#" @click="currentView = 'posts'" :class="{ active: currentView === 'posts' }">All Posts</a></li>
+                    <li><a href="#" @click="currentView = 'myPosts'" :class="{ active: currentView === 'myPosts' }">My Posts</a></li>
+                    <li><a href="#" @click="currentView = 'likedPosts'" :class="{ active: currentView === 'likedPosts' }">Liked Posts</a></li>
+                </ul>
+                
+                <!-- Hamburger Menu for Mobile/Sidebar -->
+                <button class="hamburger-menu" @click="toggleSidebar">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
         </nav>
-    </header>
 
-    <main>
-        <section class="posts">
-            <h2>Recent Posts</h2>
-            <article class="post">
-                <h3>Post Title 1</h3>
-                <p>Author: User1 | Category: Tech</p>
-                <p>Lorem ipsum dolor sit amet...</p>
-                <a href="/post/1">Read more</a>
-            </article>
-            <article class="post">
-                <h3>Post Title 2</h3>
-                <p>Author: User2 | Category: Gaming</p>
-                <p>Lorem ipsum dolor sit amet...</p>
-                <a href="/post/2">Read more</a>
-            </article>
-        </section>
+        <!-- Category Filter -->
+        <div class="category-filter">
+            <label>Filter by Category:</label>
+            <select v-model="selectedCategory">
+                <option value="">All Categories</option>
+                <option v-for="category in categories" :value="category">
+                    {{ category }}
+                </option>
+            </select>
+        </div>
 
-        <aside>
-            <h2>Categories</h2>
-            <ul>
-                <li><a href="/category/tech">Tech</a></li>
-                <li><a href="/category/gaming">Gaming</a></li>
-                <li><a href="/category/music">Music</a></li>
-            </ul>
-        </aside>
-    </main>
+        <!-- Sidebar Profile -->
+        <div class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
+            <div class="sidebar-content">
+                <div class="profile-header">
+                    <img :src="currentUser.avatar" alt="Profile Picture" class="profile-avatar">
+                    <h3>{{ currentUser.name }}</h3>
+                    <p>{{ currentUser.email }}</p>
+                </div>
+                <nav class="sidebar-nav">
+                    <button @click="handleSidebarAction('logout')">Logout</button>
+                </nav>
+            </div>
+            <button class="sidebar-close" @click="toggleSidebar">×</button>
+        </div>
 
-    <button type="button" class="btn btn-primary" style="position: fixed; bottom: 20px; right: 20px;" data-toggle="modal" data-target="#createPostModal">
-        Create Post
-    </button>
+        <main>
+            <section v-if="currentView === 'posts'">
+                <post-list 
+                    :posts="filteredPosts"
+                    @like-post="likePost"
+                    @add-comment="addComment"
+                ></post-list>
+            </section>
 
-    <div class="modal fade" id="createPostModal" tabindex="-1" role="dialog" aria-labelledby="createPostModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+            <section v-else-if="currentView === 'myPosts'">
+                <post-list 
+                    :posts="userPosts"
+                    @like-post="likePost"
+                    @add-comment="addComment"
+                ></post-list>
+            </section>
+
+            <section v-else-if="currentView === 'likedPosts'">
+                <post-list 
+                    :posts="likedPosts"
+                    @like-post="likePost"
+                    @add-comment="addComment"
+                ></post-list>
+            </section>
+        </main>
+
+        <button @click="showCreatePostModal = true" class="create-post-btn">
+            Create New Post
+        </button>
+
+        <!-- Create Post Modal -->
+        <div v-if="showCreatePostModal" class="modal">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createPostModalLabel">New Post</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="form-group">
-                            <label for="post-title">Title</label>
-                            <input type="text" class="form-control" id="post-title" placeholder="Post Title" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="post-category">Category</label>
-                            <select class="form-control" id="post-category" required>
-                                <option value="">Select Category</option>
-                                <option value="tech">Tech</option>
-                                <option value="gaming">Gaming</option>
-                                <option value="music">Music</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="file-upload">Upload File</label>
-                            <input type="file" class="form-control-file" id="file-upload">
-                        </div>
-                        <div class="form-group">
-                            <label for="topic-name">Topic Name</label>
-                            <input type="text" class="form-control" id="topic-name" placeholder="Topic Name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="post-content">Content</label>
-                            <textarea class="form-control" id="post-content" rows="4" placeholder="Write your content here..." required></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Submit Post</button>
+                <h2>Create New Post</h2>
+                <select v-model="newPost.category">
+                    <option v-for="category in categories" :value="category">
+                        {{ category }}
+                    </option>
+                </select>
+                <textarea v-model="newPost.content" placeholder="Write your post..."></textarea>
+                <div class="modal-actions">
+                    <button @click="createPost">Submit</button>
+                    <button @click="showCreatePostModal = false">Cancel</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2025 &copy; Forum. All rights reserved.</p>
-    </footer>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
