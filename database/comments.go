@@ -6,16 +6,46 @@ import (
 )
 
 func CreateCommentsTable(db *sql.DB) error {
+
     query := `
     CREATE TABLE IF NOT EXISTS comments (
-        comment_id TEXT PRIMARY KEY,
-        post_id TEXT,
-        user_id INTEGER,
+        comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         content TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (post_id) REFERENCES posts(post_id),
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (post_id) REFERENCES posts(post_id)
     );`
-    _, err := db.Exec(query)
-    return err
+
+    if _, err := db.Exec(query); err != nil {
+		return err
+	}
+	return  nil
+}
+
+func CreateCommentsReactionLike(db *sql.DB) error {
+    query := `
+    CREATE TABLE IF NOT EXISTS comments_reaction (
+        comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reaction TEXT NOT NULL,
+        FOREIGN KEY (comment_id) REFERENCES comments(comment_id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );`
+    if _, err := db.Exec(query); err != nil {
+        return err
+    }
+    return nil
+}
+
+func CreateCommentsReactionDisLike(db *sql.DB) error {
+    query := `
+    CREATE TABLE IF NOT EXISTS comments_reaction (
+        comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reaction TEXT NOT NULL,
+        FOREIGN KEY (comment_id) REFERENCES comments(comment_id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );`
+    if _, err := db.Exec(query); err != nil {
+        return err
+    }
+    return nil
 }
