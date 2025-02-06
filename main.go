@@ -1,12 +1,13 @@
 package main
 
 import (
-	"os"
 	"fmt"
+	"forum/auth"
+	"forum/database"
+	handler "forum/handlers"
 	"log"
 	"net/http"
-	r "forum/routers"
-	datab "forum/database"
+	"os"
 )
 
 func init() {
@@ -17,20 +18,42 @@ func init() {
 	}
 
 	//start the database connection
-	datab.StartDbConn()
-	
-}
+	database.StartDbConn()
 
+}
 
 func main() {
 
-	
-	mux, err := r.Routers()
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", auth.Login)
+	mux.HandleFunc("/posts", handler.PostsHandler)
+
+	mux.HandleFunc("/register", auth.Register)
+
+	mux.HandleFunc("/login", auth.Login)
+
+	mux.HandleFunc("/registration", auth.RegisterUser)
+
+	// Serve static files
+	fileServer := http.FileServer(http.Dir("./web/static"))
+	mux.Handle("/web/static/", http.StripPrefix("/web/static/", fileServer))
+
+	mux.Handle("/logging", auth.AuthMiddleware(http.HandlerFunc(auth.AuthenticateUserCredentialsLogin)))
+
+	mux.HandleFunc("/logout", auth.LogoutUser)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "41532"
+	}
+
+	err := http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	port := os.Getenv("PORT")
+	port = os.Getenv("PORT")
 	if port == "" {
 		port = "33333"
 	}
@@ -39,6 +62,6 @@ func main() {
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatal(err)
 	}
-	
-	defer datab.Db.Close()
+
+	defer database.Db.Close()
 }
