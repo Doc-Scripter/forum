@@ -17,9 +17,9 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
 
-	t, err := template.ParseFiles("web/templates/html/home.html")
+	t, err := template.ParseFiles("web/templates/home.html")
 	if err != nil {
-		log.Fatal("error parsing html")
+		log.Fatalf("\nError parsing html\n")
 	}
 	t.Execute(w, nil)
 }
