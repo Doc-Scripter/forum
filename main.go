@@ -1,13 +1,12 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-
+	r "forum/routers"
 	datab "forum/database"
-	handler "forum/handlers"
 )
 
 func init() {
@@ -20,32 +19,22 @@ func init() {
 	//start the database connection
 	datab.StartDbConn()
 	
-	//create the tables in the db
-	datab.CreateUsersTable(datab.Db)
-	datab.CreateSessionsTable(datab.Db)
-	datab.CreateCategoriesTable(datab.Db)
-	datab.CreatePostsTable(datab.Db)
-	datab.CreateCommentsTable(datab.Db)
-	datab.CreateLikesTable(datab.Db)
-	datab.CreateDislikesTable(datab.Db)
-	datab.CreatePostCategoriesTable(datab.Db)
 }
 
 
 func main() {
 
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", handler.HomePage)
-
-	fileServer := http.FileServer(http.Dir("./ui/static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
+	
+	mux, err := r.Routers()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "33333"
 	}
-	
+
 	fmt.Printf("Starting server on: %s\n", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatal(err)
