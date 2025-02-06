@@ -23,3 +23,12 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 	t.Execute(w, nil)
 }
+
+func PostsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method!=http.MethodGet{
+		http.Error(w, "method not allowed", 404)
+	}
+
+	
+	// t.Execute(w, nil)
+}
