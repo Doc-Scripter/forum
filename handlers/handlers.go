@@ -7,13 +7,19 @@ import (
 )
 
 // Define home handler function which writes a byte slice
-func Home(w http.ResponseWriter, r *http.Request) {
+func HomePage(w http.ResponseWriter, r *http.Request) {
+
 	if r.URL.Path != "/" {
 		http.Error(w, "page not found", 404)
 	}
-	t, err := template.ParseFiles("ui/html/home.html")
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+
+	t, err := template.ParseFiles("web/templates/home.html")
 	if err != nil {
-		log.Fatal("error parsing html")
+		log.Fatalf("\nError parsing html\n")
 	}
 	t.Execute(w, nil)
 }
