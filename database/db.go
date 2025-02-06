@@ -11,7 +11,7 @@ func StartDbConn() {
 
 	var err error
 
-	Db, err = sql.Open("sqlite3", "forum_database.db")
+	Db, err = sql.Open("sqlite3", "mydatabase.db")
 	if err != nil {
 		log.Fatal(err)
 	}
