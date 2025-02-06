@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forum Homepage</title>
-    <link rel="stylesheet" href="/web/static/home.css">
+    <link rel="stylesheet" href="/static/home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
     <header>
@@ -46,8 +50,58 @@
         </aside>
     </main>
 
+    <button type="button" class="btn btn-primary" style="position: fixed; bottom: 20px; right: 20px;" data-toggle="modal" data-target="#createPostModal">
+        Create Post
+    </button>
+
+    <div class="modal fade" id="createPostModal" tabindex="-1" role="dialog" aria-labelledby="createPostModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createPostModalLabel">New Post</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="post-title">Title</label>
+                            <input type="text" class="form-control" id="post-title" placeholder="Post Title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="post-category">Category</label>
+                            <select class="form-control" id="post-category" required>
+                                <option value="">Select Category</option>
+                                <option value="tech">Tech</option>
+                                <option value="gaming">Gaming</option>
+                                <option value="music">Music</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="file-upload">Upload File</label>
+                            <input type="file" class="form-control-file" id="file-upload">
+                        </div>
+                        <div class="form-group">
+                            <label for="topic-name">Topic Name</label>
+                            <input type="text" class="form-control" id="topic-name" placeholder="Topic Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="post-content">Content</label>
+                            <textarea class="form-control" id="post-content" rows="4" placeholder="Write your content here..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Submit Post</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer>
-        <p>&copy; 2024 Forum. All rights reserved.</p>
+        <p>&copy; 2025 &copy; Forum. All rights reserved.</p>
     </footer>
 </body>
 </html>
