@@ -3,9 +3,10 @@ package auth
 import (
 	"database/sql"
 	"fmt"
-	"github.com/google/uuid"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // User struct to store user details
@@ -19,12 +20,15 @@ type User struct {
 
 // =========Handle user registration========================
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
+	}
+
+	if r.URL.Path != "/registration" {
+		fmt.Fprint(w, "Error: Bad request!")
 	}
 
 	// Parse form data
@@ -63,7 +67,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//generate a UUID for the user
+	// generate a UUID for the user
 	UUID := uuid.New().String()
 	expiresAt := time.Now().Add(24 * time.Hour)
 
@@ -78,7 +82,6 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var userID string
 	err = Db.QueryRow("SELECT id FROM users WHERE email = ?", user.Email).Scan(&userID)
 	if err == sql.ErrNoRows {
-
 		fmt.Println(err)
 	} else if err != nil {
 
@@ -99,5 +102,4 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	HomePage(w, r)
-
 }

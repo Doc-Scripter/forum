@@ -8,7 +8,7 @@ import (
 
 // serve the Homepage
 func HomePage(rw http.ResponseWriter, req *http.Request) {
-	tmpl, err := template.ParseFiles("web/templates/home.html")
+	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
 		log.Fatal(err)
 	}
