@@ -1,109 +1,63 @@
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Community Forum</title>
-    <link rel="stylesheet" href="styles.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forum Homepage</title>
-    <link rel="stylesheet" href="/static/home.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forum</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
-        <!-- Navbar -->
-        <nav class="main-navbar">
-            <div class="nav-container">
-                <div class="logo">Community Forum</div>
-                <ul class="nav-links">
-                    <li><a href="#" @click="currentView = 'posts'" :class="{ active: currentView === 'posts' }">All Posts</a></li>
-                    <li><a href="#" @click="currentView = 'myPosts'" :class="{ active: currentView === 'myPosts' }">My Posts</a></li>
-                    <li><a href="#" @click="currentView = 'likedPosts'" :class="{ active: currentView === 'likedPosts' }">Liked Posts</a></li>
-                </ul>
-                
-                <!-- Hamburger Menu for Mobile/Sidebar -->
-                <button class="hamburger-menu" @click="toggleSidebar">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Category Filter -->
-        <div class="category-filter">
-            <label>Filter by Category:</label>
-            <select v-model="selectedCategory">
-                <option value="">All Categories</option>
-                <option v-for="category in categories" :value="category">
-                    {{ category }}
-                </option>
-            </select>
-        </div>
-
-        <!-- Sidebar Profile -->
-        <div class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
-            <div class="sidebar-content">
-                <div class="profile-header">
-                    <img :src="currentUser.avatar" alt="Profile Picture" class="profile-avatar">
-                    <h3>{{ currentUser.name }}</h3>
-                    <p>{{ currentUser.email }}</p>
-                </div>
-                <nav class="sidebar-nav">
-                    <button @click="handleSidebarAction('logout')">Logout</button>
-                </nav>
-            </div>
-            <button class="sidebar-close" @click="toggleSidebar">×</button>
-        </div>
-
-    <main>
-        <section class="posts">
-            <h2>Recent Posts</h2>
-            <article class="post">
-                <h3>Post Title 1</h3>
-                <p>handlersor: User1 | Category: Tech</p>
-                <p>Lorem ipsum dolor sit amet...</p>
-                <a href="/post/1">Read more</a>
-            </article>
-            <article class="post">
-                <h3>Post Title 2</h3>
-                <p>handlersor: User2 | Category: Gaming</p>
-                <p>Lorem ipsum dolor sit amet...</p>
-                <a href="/post/2">Read more</a>
-            </article>
-        </section>
-
-            <section v-else-if="currentView === 'likedPosts'">
-                <post-list 
-                    :posts="likedPosts"
-                    @like-post="likePost"
-                    @add-comment="addComment"
-                ></post-list>
-            </section>
-        </main>
-
-        <button @click="showCreatePostModal = true" class="create-post-btn">
-            Create New Post
-        </button>
-
-        <!-- Create Post Modal -->
-        <div v-if="showCreatePostModal" class="modal">
-            <div class="modal-content">
-                <h2>Create New Post</h2>
-                <select v-model="newPost.category">
-                    <option v-for="category in categories" :value="category">
-                        {{ category }}
-                    </option>
-                </select>
-                <textarea v-model="newPost.content" placeholder="Write your post..."></textarea>
-                <div class="modal-actions">
-                    <button @click="createPost">Submit</button>
-                    <button @click="showCreatePostModal = false">Cancel</button>
-                </div>
-            </div>
-        </div>
+  <header>
+    <div class="logo">Forum</div>
+    <div class="hamburger-menu">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="menu-content">
+        <span class="user-name">John Smith</span>
+        <button class="logout-btn">Logout</button>
+      </div>
     </div>
+  </header>
 
-    <footer>
-        <p>&copy; 2025 Forum. All rights reserved.</p>
-    </footer>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All Posts</button>
+    <button class="filter-btn" data-filter="created">My Posts</button>
+    <button class="filter-btn" data-filter="liked">Liked Posts</button>
+    <select id="category-filter">
+      <option value="all">All Categories</option>
+      <option value="tech">Technology</option>
+      <option value="health">Health</option>
+      <option value="sports">Sports</option>
+    </select>
+  </div>
+
+  <main class="posts-container">
+    <!-- Posts will be dynamically inserted here -->
+  </main>
+
+  <button class="create-post-btn">+</button>
+
+  <div class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create New Post</h2>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form class="post-form">
+        <textarea name="content" placeholder="Post Content" required rows="5"></textarea>
+        <select name="category" required>
+          <option value="tech">Technology</option>
+          <option value="health">Health</option>
+          <option value="sports">Sports</option>
+        </select>
+        <button type="submit">Create Post</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- <script src="data.js"></script> -->
+  <script src="script.js"></script>
 </body>
 </html>
