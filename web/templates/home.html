@@ -3,21 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration</title>
-    <link rel="stylesheet" href="/web/static/register.css">
+    <title>Forum Homepage</title>
+    <link rel="stylesheet" href="/static/home.css">
 </head>
 <body>
-    <div class="Registration-form">
-        <h1>Registration</h1>
-        <form action="#" method="post">
-            <p>User Name:</p>
-            <input type="text" name="username" placeholder="User Name">
-            <p>Email:</p>
-            <input type="email" name="email" placeholder="Email">
-            <p>Password:</p>
-            <input type="password" name="password" placeholder="Password">
-            <button type="submit">Registration</button>
-        </form>
-    </div>
+    <header>
+        <h1>Forum</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/login">Login</a></li>
+                <li><a href="/register">Register</a></li>
+                <li><a href="/newpost">New Post</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="posts">
+            <h2>Recent Posts</h2>
+            <article class="post">
+                <h3>Post Title 1</h3>
+                <p>handlersor: User1 | Category: Tech</p>
+                <p>Lorem ipsum dolor sit amet...</p>
+                <a href="/post/1">Read more</a>
+            </article>
+            <article class="post">
+                <h3>Post Title 2</h3>
+                <p>handlersor: User2 | Category: Gaming</p>
+                <p>Lorem ipsum dolor sit amet...</p>
+                <a href="/post/2">Read more</a>
+            </article>
+        </section>
+
+        <aside>
+            <h2>Categories</h2>
+            <ul>
+                <li><a href="/category/tech">Tech</a></li>
+                <li><a href="/category/gaming">Gaming</a></li>
+                <li><a href="/category/music">Music</a></li>
+            </ul>
+        </aside>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Forum. All rights reserved.</p>
+    </footer>
 </body>
-</html> 
+</html>
