@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	r "forum/routers"
-	datab "forum/database"
+	han "forum/handlers"
 )
 
 func init() {
@@ -17,7 +17,7 @@ func init() {
 	}
 
 	//start the database connection
-	datab.StartDbConn()
+	han.StartDbConnection()
 
 }
 
@@ -40,5 +40,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	defer datab.Db.Close()
+	defer han.Db.Close()
 }
