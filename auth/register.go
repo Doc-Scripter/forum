@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"forum/handlers"
+
 	"github.com/google/uuid"
 )
 
@@ -101,5 +103,5 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	SetSessionCookie(w, UUID, expiresAt)
 
 	w.WriteHeader(http.StatusCreated)
-	HomePage(w, r)
+	handlers.HomePage(w, r)
 }

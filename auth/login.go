@@ -2,23 +2,25 @@ package auth
 
 import (
 	"database/sql"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"time"
+
+	"forum/handlers"
+
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		HomePage(w, r)
+		handlers.HomePage(w, r)
 	}
 
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
-		HomePage(w, r)
+		handlers.HomePage(w, r)
 
 	}
 
@@ -29,7 +31,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	// Validate input
 	if email == "" || password == "" {
 		http.Error(w, "Email and password are required", http.StatusBadRequest)
-		HomePage(w, r)
+		handlers.HomePage(w, r)
 	}
 
 	// Retrieve user from DB using their email
@@ -37,16 +39,16 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	err = Db.QueryRow("SELECT password, uuid FROM users WHERE email = ?", email).Scan(&dbPassword, &userID)
 	if err == sql.ErrNoRows {
 		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
-		HomePage(w, r)
+		handlers.HomePage(w, r)
 	} else if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
-		HomePage(w, r)
+		handlers.HomePage(w, r)
 	}
 
 	// Compare passwords
 	if err = bcrypt.CompareHashAndPassword([]byte(dbPassword), []byte(password)); err != nil {
 		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
-		HomePage(w, r)
+		handlers.HomePage(w, r)
 	}
 
 	// Generate a session token
@@ -63,5 +65,5 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	SetSessionCookie(w, sessionToken, expiresAt)
 
 	w.WriteHeader(http.StatusCreated)
-	HomePage(w, r)
+	handlers.HomePage(w, r)
 }
