@@ -1,12 +1,10 @@
-package auth
+package handlers
 
 import (
 	"database/sql"
 	"fmt"
 	"net/http"
 	"time"
-
-	"forum/handlers"
 
 	"github.com/google/uuid"
 )
@@ -33,13 +31,11 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Error: Bad request!")
 	}
 
-	// Parse form data
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
 		return
 	}
 
-	// Get user input
 	user := User{
 		Username: r.FormValue("username"),
 		Email:    r.FormValue("email"),
@@ -99,9 +95,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Success response
 	SetSessionCookie(w, UUID, expiresAt)
 
-	w.WriteHeader(http.StatusCreated)
-	handlers.HomePage(w, r)
+	HomePage(w, r)
 }

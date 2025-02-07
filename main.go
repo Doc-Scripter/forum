@@ -2,59 +2,34 @@ package main
 
 import (
 	"fmt"
-	"forum/auth"
-	"forum/database"
-	handler "forum/handlers"
 	"log"
 	"net/http"
 	"os"
+
+	han "forum/handlers"
+	r "forum/routers"
 )
 
 func init() {
-
-	//check the number of arguments
+	// check the number of arguments
+	// check the number of arguments
 	if len(os.Args) != 1 {
 		log.Fatal("\nUsage: go run main.go")
 	}
 
-	//start the database connection
-	database.StartDbConn()
-
+	// start the database connection
+	han.StartDbConnection()
 }
 
 func main() {
-
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", auth.Login)
-	mux.HandleFunc("/posts", handler.PostsHandler)
-
-	mux.HandleFunc("/register", auth.Register)
-
-	mux.HandleFunc("/login", auth.Login)
-
-	mux.HandleFunc("/registration", auth.RegisterUser)
-
-	// Serve static files
-	fileServer := http.FileServer(http.Dir("./web/static"))
-	mux.Handle("/web/static/", http.StripPrefix("/web/static/", fileServer))
-
-	mux.Handle("/logging", auth.AuthMiddleware(http.HandlerFunc(auth.AuthenticateUserCredentialsLogin)))
-
-	mux.HandleFunc("/logout", auth.LogoutUser)
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "41532"
-	}
-
-	err := http.ListenAndServe(":"+port, mux)
+	mux, err := r.Routers()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	port = os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
+		port = "33333"
 		port = "33333"
 	}
 
@@ -63,5 +38,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	defer database.Db.Close()
+	defer han.Db.Close()
 }
