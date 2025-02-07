@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 	"fmt"
+	"os"
+	"fmt"
 	"log"
 	"net/http"
 	r "forum/routers"
@@ -11,6 +13,7 @@ import (
 
 func init() {
 
+	//check the number of arguments
 	//check the number of arguments
 	if len(os.Args) != 1 {
 		log.Fatal("\nUsage: go run main.go")
@@ -33,8 +36,11 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "33333"
+		port = "33333"
 	}
 
+	fmt.Printf("Starting server on: %s\n", port)
+	if err := http.ListenAndServe(":"+port, mux); err != nil {
 	fmt.Printf("Starting server on: %s\n", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatal(err)
