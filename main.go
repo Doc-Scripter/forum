@@ -18,13 +18,13 @@ func init() {
 
 	//start the database connection
 	datab.StartDbConn()
-	
+
 }
 
 
 func main() {
 
-	
+
 	mux, err := r.Routers()
 	if err != nil {
 		log.Fatal(err)
@@ -39,6 +39,6 @@ func main() {
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatal(err)
 	}
-	
+
 	defer datab.Db.Close()
 }
