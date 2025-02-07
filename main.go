@@ -1,30 +1,27 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+
+	han "forum/handlers"
 	r "forum/routers"
-	datab "forum/database"
 )
 
 func init() {
-
-	//check the number of arguments
+	// check the number of arguments
+	// check the number of arguments
 	if len(os.Args) != 1 {
 		log.Fatal("\nUsage: go run main.go")
 	}
 
-	//start the database connection
-	datab.StartDbConn()
-	
+	// start the database connection
+	han.StartDbConnection()
 }
 
-
 func main() {
-
-	
 	mux, err := r.Routers()
 	if err != nil {
 		log.Fatal(err)
@@ -33,12 +30,13 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "33333"
+		port = "33333"
 	}
 
 	fmt.Printf("Starting server on: %s\n", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatal(err)
 	}
-	
-	defer datab.Db.Close()
+
+	defer han.Db.Close()
 }
