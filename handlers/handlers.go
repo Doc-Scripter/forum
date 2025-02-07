@@ -38,3 +38,12 @@ func Register(rw http.ResponseWriter, req *http.Request) {
 	}
 	tmpl.Execute(rw, nil)
 }
+
+func PostsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method!=http.MethodGet{
+		http.Error(w, "method not allowed", 404)
+	}
+
+	
+	// t.Execute(w, nil)
+}
