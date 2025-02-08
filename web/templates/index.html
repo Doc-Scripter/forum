@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Forum</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <header>
@@ -46,7 +46,7 @@
         <h2>Create New Post</h2>
         <button class="close-modal">&times;</button>
       </div>
-      <form class="post-form">
+      <form class="post-form" action="/create-post" method="post">
         <textarea name="content" placeholder="Post Content" required rows="5"></textarea>
         <select name="category" required>
           <option value="tech">Technology</option>
@@ -58,7 +58,6 @@
     </div>
   </div>
 
-  <!-- <script src="data.js"></script> -->
-  <script src="script.js"></script>
+  <script src="/web/scripts/script.js"></script>
 </body>
 </html>
