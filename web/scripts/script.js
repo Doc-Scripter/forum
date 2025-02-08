@@ -1,9 +1,9 @@
 // DOM Elements
 const postsContainer = document.querySelector('.posts-container');
-// const filterBtns = document.querySelectorAll('.filter-btn');
-// const categoryFilter = document.getElementById('category-filter');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const categoryFilter = document.getElementById('category-filter');
 // const userInitials = document.querySelector('.user-initials');
-// const menuContent = document.querySelector('.menu-content');
+const menuContent = document.querySelector('.menu-content');
 // const logoutBtn = document.querySelector('.logout-btn');
 const createPostBtn = document.querySelector('.create-post-btn');
 const modal = document.querySelector('.modal');
@@ -13,8 +13,8 @@ const postForm = document.querySelector('.post-form');
 
 
 // State
-// let currentFilter = 'all';
-// let currentCategory = 'all';
+let currentFilter = 'all';
+let currentCategory = 'all';
 // let posts = [];
 
 // filterbutton.addEventListener("click", () => {
@@ -89,12 +89,15 @@ document.addEventListener("DOMContentLoaded", fetchPosts);
 // /
 
 // Close menu when clicking outside
-// document.addEventListener('click', (e) => {
-//   if (!e.target.closest('.hamburger-menu')) {
-//     menuContent.classList.remove('active');
-//     hamburgerIcon.classList.remove('active');
-//   }
-// });
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.hamburger-menu')) {
+    menuContent.classList.remove('active');
+    hamburgerIcon.classList.remove('active');
+  }else{
+    menuContent.classList.add('active');
+    hamburgerIcon.classList.add('active');
+  }
+});
 
 // Logout functionality
 // logoutBtn.addEventListener('click', () => {
@@ -122,21 +125,21 @@ document.addEventListener("DOMContentLoaded", fetchPosts);
 // }
 
 // function filterPosts(posts, filter) {
-  // const filteredPosts = [];
+//   const filteredPosts = [];
 
-  // posts.forEach((post) => {
-  //   if (
-  //     (filter.category === undefined || post.category === filter.category) &&
-  //     (filter.dateRange === undefined ||
-  //       (post.date >= filter.dateRange.start &&post.date <= filter.dateRange.end)) &&
-  //     (filter.likesRange === undefined ||(post.likes >= filter.likesRange.min &&
-  //         post.likes <= filter.likesRange.max))
-  //   ) {
-  //     filteredPosts.push(post);
-  //   }
-  // });
+//   posts.forEach((post) => {
+//     if (
+//       (filter.category === undefined || post.category === filter.category) &&
+//       (filter.dateRange === undefined ||
+//         (post.date >= filter.dateRange.start &&post.date <= filter.dateRange.end)) &&
+//       (filter.likesRange === undefined ||(post.likes >= filter.likesRange.min &&
+//           post.likes <= filter.likesRange.max))
+//     ) {
+//       filteredPosts.push(post);
+//     }
+//   });
 
-  // return filteredPosts;
+//   return filteredPosts;
 // }
 //??
 
@@ -290,19 +293,19 @@ closeModal.addEventListener('click', () => {
 // }
 
 // Event listeners for filters
-// filterBtns.forEach(btn => {
-//   btn.addEventListener('click', () => {
-//     filterBtns.forEach(b => b.classList.remove('active'));
-//     btn.classList.add('active');
-//     currentFilter = btn.dataset.filter;
-//     filterPosts();
-//   });
-// });
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    filterPosts();
+  });
+});
 
-// categoryFilter.addEventListener('change', (e) => {
-//   currentCategory = e.target.value;
-//   filterPosts();
-// });
+categoryFilter.addEventListener('change', (e) => {
+  currentCategory = e.target.value;
+  filterPosts();
+});
 
 // Initial display
 // filterPosts();
