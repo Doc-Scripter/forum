@@ -8,6 +8,13 @@ import (
 	"text/template"
 )
 
+type Post struct {
+	CreatedAt string `json:"created_at"`
+	Category  string `json:"category"`
+	Likes     int    `json:"likes"`
+	Comments  int    `json:"comments"`
+	Content   string `json:"content"`
+}
 // serve the Homepage
 func HomePage(rw http.ResponseWriter, req *http.Request) {
 	tmpl, err := template.ParseFiles("./web/templates/index.html")
@@ -45,20 +52,22 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", 404)
 	}
-	rows, err := Db.Query("SELECT * FROM posts")
+	rows, err := Db.Query("SELECT category,content FROM posts")
 	if err != nil {
-		http.Error(w, "could not get posts", 500)
+		http.Error(w, "could not get posts", http.StatusInternalServerError)
 	}
-	var posts []map[string]interface{}
+	defer rows.Close()
+	// var posts []map[string]interface{}
 	// posts:=[]post
 
-	// var posts []post
+	var posts []Post
 	for rows.Next() {
-		var eachPost map[string]interface{}
-		err := rows.Scan(eachPost["created_at"], eachPost["category"], eachPost["likes"], eachPost["comments"])
+		var eachPost Post
+		err := rows.Scan(&eachPost.Category, &eachPost.Content)
 		fmt.Println(eachPost)
 		if err != nil {
 			http.Error(w, "could not get post", http.StatusInternalServerError)
+			return
 		}
 		posts = append(posts, eachPost)
 	}
@@ -67,7 +76,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "could not marshal posts", http.StatusInternalServerError)
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(postsJson)
 }
 
@@ -86,5 +95,6 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "could not insert post", http.StatusInternalServerError)
 		return
 	}
+	HomePage(w, r)
 	fmt.Println("post created")
 }

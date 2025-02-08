@@ -156,7 +156,7 @@ closeModal.addEventListener('click', () => {
 // });
 
 // Handle post creation
-postForm.addEventListener('submit', (e) => {
+// postForm.addEventListener('submit', (e) => {
 //   e.preventDefault();
 //   const formData = new FormData(postForm);
 //   const newPost = {
@@ -172,8 +172,8 @@ postForm.addEventListener('submit', (e) => {
 //     disliked: false,
 //     date: new Date().toISOString().split('T')[0],
 //     comments: []
-displayPosts();
-});
+// displayPosts();
+// });
   
 //   posts.unshift(newPost);
 //   modal.classList.remove('active');
