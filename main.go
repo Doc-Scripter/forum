@@ -18,7 +18,10 @@ func init() {
 	}
 
 	// start the database connection
-	han.StartDbConnection()
+	err := han.StartDbConnection()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
