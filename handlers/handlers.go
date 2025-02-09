@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,7 +13,7 @@ type Post struct {
 	CreatedAt string `json:"created_at"`
 	Category  string `json:"category"`
 	Likes     int    `json:"likes"`
-	Comments  int    `json:"comments"`
+	Comments  *string    `json:"comments"`
 	Content   string `json:"content"`
 }
 // serve the Homepage
@@ -52,8 +53,9 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", 404)
 	}
-	rows, err := Db.Query("SELECT category,content FROM posts")
+	rows, err := Db.Query("SELECT category,content,comments,created_at,likes FROM posts")
 	if err != nil {
+		fmt.Println(err)
 		http.Error(w, "could not get posts", http.StatusInternalServerError)
 	}
 	defer rows.Close()
@@ -63,15 +65,20 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	var posts []Post
 	for rows.Next() {
 		var eachPost Post
-		err := rows.Scan(&eachPost.Category, &eachPost.Content)
-		fmt.Println(eachPost)
+		var comments sql.NullString
+		err := rows.Scan(&eachPost.Category, &eachPost.Content,&comments, &eachPost.CreatedAt, &eachPost.Likes)
 		if err != nil {
+			fmt.Println(err)
 			http.Error(w, "could not get post", http.StatusInternalServerError)
 			return
 		}
+		if comments.Valid {
+			eachPost.Comments = &comments.String
+		} else {
+			eachPost.Comments = nil
+		}
 		posts = append(posts, eachPost)
 	}
-	fmt.Println(posts)
 	postsJson, err := json.Marshal(posts)
 	if err != nil {
 		http.Error(w, "could not marshal posts", http.StatusInternalServerError)

@@ -61,6 +61,18 @@ function displayPosts(posts,category) {
     // <span class="post-date">${post.date}</span>
     // <h2 class="post-title">${post.title}</h2>
     // <span class="post-author">By ${post.author}</span>
+    // <div class="post-footer">
+    // <div class="post-actions">
+    //        <button class="action-btn like-btn ${post.liked ? 'active' : ''}" data-id="${post.id}">
+    //         👍 ${post.likes}
+    //       </button>
+    //        <button class="action-btn dislike-btn ${post.disliked ? 'active' : ''}" data-id="${post.id}">
+    //        👎 ${post.dislikes}
+    //        </button>
+    //        <button class="comments-toggle" data-post-id="${post.id}">
+    //     💬 Comments (${post.comments.length})
+    //   </button>
+    //   </div>
   postsContainer.innerHTML = filteredPosts.map(post=>`
     <article class="post">
     <div class="post-header">
@@ -68,8 +80,6 @@ function displayPosts(posts,category) {
     <h2 class="post-category">${post.category}</h2>
 
     <p class="post-content">${post.content}</p>
-     <div class="post-footer">
-      </div>
     </article>
     `).join('')
   }
@@ -188,9 +198,9 @@ closeModal.addEventListener('click', () => {
   //         </button>
   //       </div>
   //     </div>
-  //     <button class="comments-toggle" data-post-id="${post.id}">
-  //       💬 Comments (${post.comments.length})
-  //     </button>
+      // <button class="comments-toggle" data-post-id="${post.id}">
+      //   💬 Comments (${post.comments.length})
+      // </button>
   //     <div class="comments-section" id="comments-${post.id}">
   //       ${post.comments.map(comment => `
   //         <div class="comment">
