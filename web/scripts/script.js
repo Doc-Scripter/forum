@@ -11,11 +11,17 @@ const closeModal = document.querySelector('.close-modal');
 const postForm = document.querySelector('.post-form');
 // const hamburgerIcon = document.querySelector('.hamburger-icon');
 
+postForm.addEventListener('submit', (e) => {
+  alert('Post submitted successfully!');
+  // e.preventDefault();
+  // fetchPosts();
+  // postForm.reset()
+})
 
 // State
 let currentFilter = 'all';
 let currentCategory = 'all';
-// let posts = [];
+let posts = [];
 
 // filterbutton.addEventListener("click", () => {
   // const category = document.getElementById("category-filter").value;
@@ -28,23 +34,24 @@ let currentCategory = 'all';
   fetch("/posts")
     .then((response) => response.json())
     .then((data) => {
-      const posts = data;
-      displayPosts(posts);
-      return posts;
-      // const filteredPosts = filterPosts(posts, categoryFilter);
+       posts = data;
+      displayPosts(posts,currentCategory);
     })
     .catch(error => { console.error("Error fetching posts:",error)});
-  // postsContainer.innerHTML = "";
-  // filterPosts.forEach((post) => {
-  //   const postElement = document.createElement("div");
-  //   postElement.innerHTML = "<h2>${post.title}</h2><p>${post.content}</p>";
-  //   postsContainer.appendChild(postElement);
-  // });
+
 }
 
-function displayPosts(posts) {
-  console.log(posts);
-  if (posts===null||posts.length===0||posts==[]){
+function displayPosts(posts,category) {
+  let filteredPosts = [];
+  if (category==="all"){
+    filteredPosts=posts
+  }else{
+    filteredPosts=posts.filter(post=>post.category===category);
+
+  }
+  console.log(filteredPosts)
+  
+  if (filteredPosts.length===0||!posts){
     postsContainer.innerHTML = `<article class="post">
     <div class="post-header">
     <span class="post-date">NO Date</span>
@@ -61,7 +68,7 @@ function displayPosts(posts) {
     // <span class="post-date">${post.date}</span>
     // <h2 class="post-title">${post.title}</h2>
     // <span class="post-author">By ${post.author}</span>
-  postsContainer.innerHTML = posts.map(post=>`
+  postsContainer.innerHTML = filteredPosts.map(post=>`
     <article class="post">
     <div class="post-header">
     </div>
@@ -110,10 +117,12 @@ document.addEventListener('click', (e) => {
 //   let filteredPosts = posts;
 
 //   // Apply category filter
-//   if (currentCategory !== 'all') {
+//   // if (currentCategory !== 'all') {
+//   //   filteredPosts = filteredPosts.filter(post => post.category === currentCategory);
+//   // }
+//   if (currentFilter === 'all') {
 //     filteredPosts = filteredPosts.filter(post => post.category === currentCategory);
 //   }
-
 //   // Apply post type filter
 //   if (currentFilter === 'created') {
 //     filteredPosts = filteredPosts.filter(post => post.authorId === currentUser.id);
@@ -158,25 +167,7 @@ closeModal.addEventListener('click', () => {
 //   }
 // });
 
-// Handle post creation
-// postForm.addEventListener('submit', (e) => {
-//   e.preventDefault();
-//   const formData = new FormData(postForm);
-//   const newPost = {
-//     id: posts.length + 1,
-//     title: formData.get('title'),
-//     content: formData.get('content'),
-//     category: formData.get('category'),
-//     author: currentUser.name,
-//     authorId: currentUser.id,
-//     likes: 0,
-//     dislikes: 0,
-//     liked: false,
-//     disliked: false,
-//     date: new Date().toISOString().split('T')[0],
-//     comments: []
-// displayPosts();
-// });
+
   
 //   posts.unshift(newPost);
 //   modal.classList.remove('active');
@@ -304,7 +295,8 @@ filterBtns.forEach(btn => {
 
 categoryFilter.addEventListener('change', (e) => {
   currentCategory = e.target.value;
-  filterPosts();
+  displayPosts(posts,currentCategory);
+  // filterPosts();
 });
 
 // Initial display
