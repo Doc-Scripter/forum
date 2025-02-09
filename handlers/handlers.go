@@ -6,13 +6,29 @@ import (
 	"text/template"
 )
 
+// serve the login form
+func LandingPage(rw http.ResponseWriter, req *http.Request) {
+
+	if bl, _ := ValidateSession(req); bl {
+		HomePage(rw, req)
+	} else if !bl {
+
+		tmpl, err := template.ParseFiles("./web/templates/index.html")
+		if err != nil {
+			log.Fatal(err)
+		}
+		tmpl.Execute(rw, nil)
+	}
+}
+
 // serve the Homepage
 func HomePage(rw http.ResponseWriter, req *http.Request) {
+	var User *User
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	tmpl.Execute(rw, nil)
+	tmpl.Execute(rw, User)
 }
 
 // serve the login form
@@ -22,7 +38,7 @@ func Login(rw http.ResponseWriter, req *http.Request) {
 		HomePage(rw, req)
 	} else if !bl {
 
-		tmpl, err := template.ParseFiles("web/templates/login.html")
+		tmpl, err := template.ParseFiles("./web/templates/login.html")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -32,7 +48,7 @@ func Login(rw http.ResponseWriter, req *http.Request) {
 
 // serve the registration form
 func Register(rw http.ResponseWriter, req *http.Request) {
-	tmpl, err := template.ParseFiles("web/templates/register.html")
+	tmpl, err := template.ParseFiles("./web/templates/register.html")
 	if err != nil {
 		log.Fatal(err)
 	}

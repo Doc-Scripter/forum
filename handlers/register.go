@@ -36,11 +36,10 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := User{
-		Username: r.FormValue("username"),
-		Email:    r.FormValue("email"),
-		Password: r.FormValue("password"),
-	}
+	var user *User
+	user.Username =  r.FormValue("username")
+	user.Email = r.FormValue("email")
+	user.Password =  r.FormValue("password")
 
 	// Validate input fields
 	if user.Username == "" || user.Email == "" || user.Password == "" {
