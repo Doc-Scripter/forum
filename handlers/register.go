@@ -20,6 +20,7 @@ type User struct {
 
 // =========Handle user registration========================
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Registering")
 	var err error
 
 	if r.Method != http.MethodPost {
@@ -27,6 +28,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//redundancy....!
 	if r.URL.Path != "/registration" {
 		fmt.Fprint(w, "Error: Bad request!")
 	}
