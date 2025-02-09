@@ -8,18 +8,21 @@
     <body>
         <header>
             <div class="logo">Forum</div>
-            <div class="hamburger-menu">
-                <div class="hamburger-icon">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-                <div class="menu-content">
-                    <span class="user-name">John Smith</span>
-                    <button class="logout-btn">Logout</button>
-                </div>
-            </div>
+            <div id="username">{{.Username}}</div>
+            <!-- <div class="hamburger-menu"> -->
+                <div class="hamburger-icon" onclick="toggleSidebar()">☰</div>
+            <!-- </div> -->
         </header>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div id="profile-pic" class="profile-pic"></div>
+                <span class="user-name">John Smith</span>
+                <span class="user-email">johnsmith@example.com</span>
+            </div>
+            <button class="logout-btn" href="/logout">Logout</button>
+        </aside>
 
         <div class="filters">
             <button class="filter-btn active" data-filter="all">
@@ -39,13 +42,16 @@
             <!-- Posts will be dynamically inserted here -->
         </main>
 
-        <button class="create-post-btn">+</button>
+        <h3>Hello! Ray don't be worried</h3>
+        <button class="create-post-btn" onclick="toggleModal()">+</button>
 
         <div class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>Create New Post</h2>
-                    <button class="close-modal">&times;</button>
+                    <button class="close-modal" onclick="toggleModal()">
+                        &times;
+                    </button>
                 </div>
                 <form class="post-form">
                     <textarea
@@ -64,7 +70,6 @@
             </div>
         </div>
 
-        <!-- <script src="data.js"></script> -->
-        <script src="script.js"></script>
+        <script src="/static/script.js"></script>
     </body>
 </html>

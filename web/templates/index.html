@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -9,23 +9,13 @@
     <body>
         <header>
             <div class="logo">Forum</div>
-            <div class="hamburger-menu">
-                <div class="hamburger-icon">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-                <div class="menu-content">
-                    <span class="user-name">John Smith</span>
-                    <button class="logout-btn">Logout</button>
-                </div>
-            </div>
+            <button class="auth-btn" onclick="location.href='/login'">Login</button>
+            <button class="auth-btn register" onclick="location.href='/register'">Register</button>
         </header>
 
+
         <div class="filters">
-            <button class="filter-btn active" data-filter="all">
-                All Posts
-            </button>
+            <button class="filter-btn active" data-filter="all">All Posts</button>
             <button class="filter-btn" data-filter="created">My Posts</button>
             <button class="filter-btn" data-filter="liked">Liked Posts</button>
             <select id="category-filter">
@@ -36,11 +26,10 @@
             </select>
         </div>
 
+        <!-- Discuss With Us Button -->
+        <button class="discuss-btn" onclick="location.href='/register'">Discuss With Us</button>
         <main class="posts-container">
-            <!-- Posts will be dynamically inserted here -->
         </main>
-
-        <button class="create-post-btn">+</button>
 
         <div class="modal">
             <div class="modal-content">
@@ -49,12 +38,7 @@
                     <button class="close-modal">&times;</button>
                 </div>
                 <form class="post-form">
-                    <textarea
-                        name="content"
-                        placeholder="Post Content"
-                        required
-                        rows="5"
-                    ></textarea>
+                    <textarea name="content" placeholder="Post Content" required rows="5"></textarea>
                     <select name="category" required>
                         <option value="tech">Technology</option>
                         <option value="health">Health</option>
@@ -64,8 +48,5 @@
                 </form>
             </div>
         </div>
-
-        <!-- <script src="data.js"></script> -->
-        <script src="script.js"></script>
     </body>
 </html>
