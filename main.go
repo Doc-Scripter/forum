@@ -30,7 +30,6 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "33333"
-		port = "33333"
 	}
 
 	fmt.Printf("Starting server on: %s\n", port)
