@@ -23,13 +23,7 @@ let currentFilter = 'all';
 let currentCategory = 'all';
 let posts = [];
 
-// filterbutton.addEventListener("click", () => {
-  // const category = document.getElementById("category-filter").value;
 
-  // const filterCriteria = {
-  //   category,
-  // };
-  // Fetch posts from API, then update the UI with the filtered posts
   function fetchPosts(){
   fetch("/posts")
     .then((response) => response.json())
@@ -49,7 +43,6 @@ function displayPosts(posts,category) {
     filteredPosts=posts.filter(post=>post.category===category);
 
   }
-  console.log(filteredPosts)
   
   if (filteredPosts.length===0||!posts){
     postsContainer.innerHTML = `<article class="post">
@@ -289,7 +282,7 @@ filterBtns.forEach(btn => {
     filterBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.filter;
-    filterPosts();
+    displayPosts(posts,currentFilter);
   });
 });
 
