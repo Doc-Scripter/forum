@@ -9,7 +9,69 @@ const createPostBtn = document.querySelector('.create-post-btn');
 const modal = document.querySelector('.modal');
 const closeModal = document.querySelector('.close-modal');
 const postForm = document.querySelector('.post-form');
-// const hamburgerIcon = document.querySelector('.hamburger-icon');
+const hamburgerIcon = document.querySelector('.hamburger-icon');
+const likebutton= document.querySelectorAll('.like-btn')
+const dislikebutton= document.querySelectorAll('.dislike-btn')
+
+
+
+// likebutton.forEach(btn => {
+//   btn.addEventListener('click', () => {
+//     console.log('like button clicked');
+//   const postId = btn.dataset.postId;
+//   fetch("/likes", {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ post_id: postId}),
+//   })
+//     .then(response => response.json())
+//     .then(data => console.log(data))
+//     .catch(error => console.error(error));
+// });
+// })
+
+// dislikebutton.forEach(btn => {
+//   btn.addEventListener('click', () => {
+//     const postId = btn.dataset.postId;
+//     fetch("/dislikes", {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ post_id: postId, user_id: userId }),
+//     })
+//       .then(response => response.json())
+//       .then(data => console.log(data))
+//       .catch(error => console.error(error));
+//   });
+//   })
+
+  // const postsContainer = document.getElementById('postsContainer');
+
+postsContainer.addEventListener('click', (e) => {
+  if (e.target.classList.contains('like-btn')) {
+    console.log('like button clicked');
+    const postId = e.target.dataset.postId;
+    fetch("/likes", {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: postId }),
+    })
+      // .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error(error));
+  }
+  
+  if (e.target.classList.contains('dislike-btn')) {
+    const postId = e.target.dataset.postId;
+    fetch("/dislikes", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: postId, user_id: userId }), // Ensure userId is defined
+    })
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error(error));
+  }
+});
 
 postForm.addEventListener('submit', (e) => {
   alert('Post submitted successfully!');
@@ -44,7 +106,7 @@ function displayPosts(posts,category) {
 
   }
   
-  if (filteredPosts.length===0||!posts){
+  if (filteredPosts===null||!posts){
     postsContainer.innerHTML = `<article class="post">
     <div class="post-header">
     <span class="post-date">NO Date</span>
@@ -80,6 +142,16 @@ function displayPosts(posts,category) {
     <h2 class="post-category">${post.category}</h2>
 
     <p class="post-content">${post.content}</p>
+    <div class="post-footer">
+     <div class="post-actions">
+            <button class="action-btn like-btn" data-post-id=${post.id}>
+             👍 ${post.likes}
+           </button>
+            <button class="action-btn dislike-btn" data-post-id=${post.id}>
+            👎 ${post.dislikes}
+            </button>
+            
+       </div>
     </article>
     `).join('')
   }
