@@ -13,7 +13,8 @@ func Routers() (*http.ServeMux, error) {
 
 	mux.HandleFunc("/", handler.LandingPage)
 	mux.HandleFunc("/login", handler.Login)
-	mux.Handle("/logging", handler.AuthMiddleware(http.HandlerFunc(handler.AuthenticateUserCredentialsLogin)))
+	mux.HandleFunc("/logging", handler.AuthenticateUserCredentialsLogin)
+	// mux.Handle("/logging", handler.AuthMiddleware(http.HandlerFunc(handler.AuthenticateUserCredentialsLogin)))
 	mux.HandleFunc("/register", handler.Register)
 	mux.HandleFunc("/registration", handler.RegisterUser)
 	mux.HandleFunc("/logout", handler.LogoutUser)
