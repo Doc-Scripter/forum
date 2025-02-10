@@ -100,5 +100,5 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	SetSessionCookie(w, UUID, expiresAt)
 
-	HomePage(w, r)
+    http.Redirect(w, r, "/home", http.StatusSeeOther)
 }

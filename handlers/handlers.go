@@ -14,7 +14,7 @@ import (
 func LandingPage(rw http.ResponseWriter, req *http.Request) {
 
 	if bl, _ := ValidateSession(req); bl {
-		HomePage(rw, req)
+		http.Redirect(rw, req, "/home", http.StatusSeeOther)
 	} else if !bl {
 
 		tmpl, err := template.ParseFiles("./web/templates/index.html")
@@ -23,6 +23,11 @@ func LandingPage(rw http.ResponseWriter, req *http.Request) {
 		}
 		tmpl.Execute(rw, nil)
 	}
+}
+
+type ProfileData struct {
+	Username string
+	Email string
 }
 
 type Post struct {
@@ -38,19 +43,60 @@ type Post struct {
 }
 
 // serve the Homepage
+
+func getUserDetails(r *http.Request) (ProfileData, error) {
+	var PD ProfileData
+
+	cookie, err := r.Cookie("session_token")
+    if err != nil {
+        fmt.Println("Profile Section: No session cookie found")
+        return ProfileData{}, err
+    }
+
+    var (
+        userID    string
+    )
+
+    err = Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
+    if err != nil {
+        fmt.Println("Session not found in DB:", err)
+        return ProfileData{}, err
+    }
+
+	query := `
+	SELECT  username, email FROM users WHERE id = ?`
+
+	err = Db.QueryRow(query, userID).Scan(&PD.Username, &PD.Email)
+	if err != nil {
+        return ProfileData{}, err
+	}
+	return PD, nil
+
+}
+
 func HomePage(rw http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		fmt.Fprint(rw, "Bad request", http.StatusBadRequest)
+	}
+    
+    Pd, err := getUserDetails(req)
+	fmt.Println(Pd)
+	if err != nil {
+		fmt.Printf("Profile Section: %e\n", err)
+	}
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	tmpl.Execute(rw, nil)
+	
+	tmpl.Execute(rw, Pd)
 }
 
 // serve the login form
 func Login(rw http.ResponseWriter, req *http.Request) {
 
 	if bl, _ := ValidateSession(req); bl {
-		HomePage(rw, req)
+		http.Redirect(rw, req, "/home", http.StatusSeeOther)
 	} else if !bl {
 
 		tmpl, err := template.ParseFiles("./web/templates/login.html")
@@ -142,7 +188,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "could not insert post", http.StatusInternalServerError)
 		return
 	}
-	HomePage(w, r)
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
 	fmt.Println("post created")
 }
 
