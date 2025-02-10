@@ -121,7 +121,6 @@ function displayPosts(posts,category) {
   }else{
     
     // <span class="post-date">${post.date}</span>
-    // <h2 class="post-title">${post.title}</h2>
     // <span class="post-author">By ${post.author}</span>
     // <div class="post-footer">
     // <div class="post-actions">
@@ -135,13 +134,14 @@ function displayPosts(posts,category) {
     //     💬 Comments (${post.comments.length})
     //   </button>
     //   </div>
-  postsContainer.innerHTML = filteredPosts.map(post=>`
-    <article class="post">
-    <div class="post-header">
-    </div>
-    <h2 class="post-category">${post.category}</h2>
-
-    <p class="post-content">${post.content}</p>
+    postsContainer.innerHTML = filteredPosts.map(post=>`
+      <article class="post">
+      <div class="post-header">
+      </div>
+      <h2 class="post-category">${post.category}</h2>
+      
+       <h2 class="post-title">${post.title}</h2>
+      <p class="post-content">${post.content}</p>
     <div class="post-footer">
      <div class="post-actions">
             <button class="action-btn like-btn" data-post-id=${post.id}>

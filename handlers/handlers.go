@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"text/template"
+	"time"
 )
 
 // serve the login form
@@ -25,14 +26,17 @@ func LandingPage(rw http.ResponseWriter, req *http.Request) {
 }
 
 type Post struct {
-	CreatedAt string `json:"created_at"`
-	Category  string `json:"category"`
-	Likes     int    `json:"likes"`
-	Dislikes  int    `json:"dislikes"`
-	Comments  *string    `json:"comments"`
-	Content   string `json:"content"`
-	ID 	  int    `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	Category  string    `json:"category"`
+	Likes     int       `json:"likes"`
+	Title     string    `json:"title"`
+	Dislikes  int       `json:"dislikes"`
+	Comments  string   `json:"comments"`
+	Content   string    `json:"content"`
+	ID        int       `json:"id"`
+	
 }
+
 // serve the Homepage
 func HomePage(rw http.ResponseWriter, req *http.Request) {
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
@@ -70,30 +74,29 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", 404)
 	}
-	rows, err := Db.Query("SELECT category,content,comments,created_at,likes FROM posts")
+	rows, err := Db.Query("SELECT category,title,content,created_at FROM posts")
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "could not get posts", http.StatusInternalServerError)
 	}
 	defer rows.Close()
-	// var posts []map[string]interface{}
-	// posts:=[]post
+	
 
 	var posts []Post
 	for rows.Next() {
 		var eachPost Post
-		var comments sql.NullString
-		err := rows.Scan(&eachPost.Category, &eachPost.Content,&comments, &eachPost.CreatedAt, &eachPost.Likes)
+		// var comments sql.NullString
+		err := rows.Scan(&eachPost.Category, &eachPost.Title, &eachPost.Content, &eachPost.CreatedAt, )
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get post", http.StatusInternalServerError)
 			return
 		}
-		if comments.Valid {
-			eachPost.Comments = &comments.String
-		} else {
-			eachPost.Comments = nil
-		}
+		// if comments.Valid {
+		// 	eachPost.Comments = &comments.String
+		// } else {
+		// 	eachPost.Comments = nil
+		// }
 		// Retrieve like and dislike counts from the database
 		var likeCount, dislikeCount int
 		err = Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", eachPost.ID).Scan(&likeCount)
@@ -131,8 +134,10 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	category := r.FormValue("category")
 	content := r.FormValue("content")
+	title := r.FormValue("title")
 
-	_, err := Db.Exec("INSERT INTO posts (category, content) VALUES ($1, $2)", category, content)
+	_, err := Db.Exec("INSERT INTO posts (category, content, title) VALUES ($1, $2, $3)", category, content, title)
+	fmt.Println(err)
 	if err != nil {
 		http.Error(w, "could not insert post", http.StatusInternalServerError)
 		return
@@ -141,10 +146,8 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("post created")
 }
 
-
-
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	// fmt.Println("liking post")
 	// fmt.Println(r.Method)
 	if r.Method != http.MethodPost {
