@@ -23,12 +23,11 @@ func LandingPage(rw http.ResponseWriter, req *http.Request) {
 
 // serve the Homepage
 func HomePage(rw http.ResponseWriter, req *http.Request) {
-	var User *User
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	tmpl.Execute(rw, User)
+	tmpl.Execute(rw, nil)
 }
 
 // serve the login form
