@@ -12,13 +12,15 @@ import (
 
 func init() {
 	// check the number of arguments
-	// check the number of arguments
 	if len(os.Args) != 1 {
 		log.Fatal("\nUsage: go run main.go")
 	}
 
 	// start the database connection
-	han.StartDbConnection()
+	err := han.StartDbConnection()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
@@ -29,7 +31,6 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "33333"
 		port = "33333"
 	}
 

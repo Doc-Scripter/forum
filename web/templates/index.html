@@ -1,63 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forum</title>
-  <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-  <header>
-    <div class="logo">Forum</div>
-    <div class="hamburger-menu">
-      <div class="hamburger-icon">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <div class="menu-content">
-        <span class="user-name">John Smith</span>
-        <button class="logout-btn">Logout</button>
-      </div>
-    </div>
-  </header>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Forum</title>
+        <link rel="stylesheet" href="/static/styles.css" />
+        <link rel="stylesheet" href="/static/landingPage.css" />
+        <header>
+            <div class="logo">Forum</div>
+            <button class="auth-btn" onclick="location.href='/login'">Login</button>
+            <button class="auth-btn register" onclick="location.href='/register'">Register</button>
+        </header>
 
-  <div class="filters">
-    <button class="filter-btn active" data-filter="all">All Posts</button>
-    <button class="filter-btn" data-filter="created">My Posts</button>
-    <button class="filter-btn" data-filter="liked">Liked Posts</button>
-    <select id="category-filter">
-      <option value="all">All Categories</option>
-      <option value="tech">Technology</option>
-      <option value="health">Health</option>
-      <option value="sports">Sports</option>
-    </select>
-  </div>
 
-  <main class="posts-container">
-    <!-- Posts will be dynamically inserted here -->
-  </main>
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All Posts</button>
+            <button class="filter-btn" data-filter="created">My Posts</button>
+            <button class="filter-btn" data-filter="liked">Liked Posts</button>
+            <select id="category-filter">
+                <option value="all">All Categories</option>
+                <option value="tech">Technology</option>
+                <option value="health">Health</option>
+                <option value="sports">Sports</option>
+            </select>
+        </div>
 
-  <button class="create-post-btn">+</button>
+        <!-- Discuss With Us Button -->
+        <button class="discuss-btn" onclick="location.href='/register'">Discuss With Us</button>
+        <main class="posts-container">
+        </main>
 
-  <div class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Create New Post</h2>
-        <button class="close-modal">&times;</button>
-      </div>
-      <form class="post-form" action="/create-post" method="post">
-        <textarea name="content" placeholder="Post Content" required rows="5"></textarea>
-        <select name="category" required>
-          <option value="tech">Technology</option>
-          <option value="health">Health</option>
-          <option value="sports">Sports</option>
-        </select>
-        <button type="submit">Create Post</button>
-      </form>
-    </div>
-  </div>
-
-  <script src="/web/scripts/script.js"></script>
-</body>
+        <div class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Create New Post</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <form class="post-form">
+                    <textarea name="content" placeholder="Post Content" required rows="5"></textarea>
+                    <select name="category" required>
+                        <option value="tech">Technology</option>
+                        <option value="health">Health</option>
+                        <option value="sports">Sports</option>
+                    </select>
+                    <button type="submit">Create Post</button>
+                </form>
+            </div>
+        </div>
+    </body>
 </html>
