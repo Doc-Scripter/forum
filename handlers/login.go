@@ -10,14 +10,17 @@ import (
 )
 
 func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
-
+	
+	fmt.Println(r.Method)
 	if bl, _ := ValidateSession(r); bl {
 		HomePage(w, r)
+		return
 	}else if !bl{
-		// if r.Method != http.MethodPost {
-		// 	http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		// 	HomePage(w, r)
-		// }
+		if r.Method != http.MethodPost {			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+			// http.Redirect(w, r, "/web//", http.StatusFound)
+			LandingPage(w, r)
+			return
+		}
 	
 	err := r.ParseForm()
 	if err != nil {
