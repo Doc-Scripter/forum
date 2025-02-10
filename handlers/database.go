@@ -64,8 +64,16 @@ func StartDbConnection() error {
 	if err != nil {
 		return err
 	}
-	CreateUserTable()
-	CreateSessionTable()
+
+	err = CreateUserTable()
+	if err!= nil{
+        return err
+    }
+
+	err = CreateSessionTable()
+	if err!= nil{
+        return err
+    }
 
 	fmt.Println("Connected to SQLite database successfully!")
 	return nil
