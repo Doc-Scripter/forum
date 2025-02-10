@@ -3,8 +3,10 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
+	"forum/database"
 	"log"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var Db *sql.DB
@@ -65,9 +67,14 @@ func StartDbConnection() error {
 	}
 	CreateUserTable()
 	CreateSessionTable()
+	if err = database.CreatePostsTable(Db); err != nil {
+		log.Fatalf("\nCould not create posts table: %e\n", err)
+	}
+	if err = database.CreateCommentsTable(Db); err != nil {
+		log.Fatalf("\nCould not create comments table: %e\n", err)
+	}
 
 	fmt.Println("Connected to SQLite database successfully!")
 	return nil
 
 }
-
