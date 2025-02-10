@@ -33,7 +33,7 @@ type Post struct {
 }
 // serve the Homepage
 func HomePage(rw http.ResponseWriter, req *http.Request) {
-	tmpl, err := template.ParseFiles("./web/templates/index.html")
+	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
 		log.Fatal(err)
 	}

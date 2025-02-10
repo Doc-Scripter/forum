@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 )
 
 // User struct to store user details
@@ -53,7 +53,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// Check if username or email already exists
 	if credentialExists(Db, user.Username) || credentialExists(Db, user.Email) {
 		http.Error(w, "Username or email already in use", http.StatusConflict)
-		http.Redirect(w, r, "/signup", http.StatusFound)
+		http.Redirect(w, r, "/register", http.StatusFound)
 		return
 	}
 
@@ -63,7 +63,13 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// generate a UUID for the user
-	UUID := uuid.New().String()
+	// UUID := uuid.New().String()
+	u, err := uuid.NewV4()
+	if err != nil {
+		fmt.Println("Error generating UUID:", err)
+		return
+	}
+	UUID := u.String()
 	expiresAt := time.Now().Add(24 * time.Hour)
 
 	// Insert new user into the database
