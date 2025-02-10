@@ -20,17 +20,11 @@ type User struct {
 
 // =========Handle user registration========================
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Registering")
 	var err error
-
+	
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
-	}
-
-	//redundancy....!
-	if r.URL.Path != "/registration" {
-		fmt.Fprint(w, "Error: Bad request!")
 	}
 
 	if err := r.ParseForm(); err != nil {
@@ -38,10 +32,12 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user *User
-	user.Username =  r.FormValue("username")
-	user.Email = r.FormValue("email")
-	user.Password =  r.FormValue("password")
+	user := User{
+		
+		Username:  r.FormValue("username"),
+		Email: r.FormValue("email"),
+		Password:  r.FormValue("password"),
+	}
 
 	// Validate input fields
 	if user.Username == "" || user.Email == "" || user.Password == "" {
