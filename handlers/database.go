@@ -12,7 +12,7 @@ import (
 var Db *sql.DB
 
 // ==========This function creates a 'users' table in the SQLite database===========
-func CreateUserTable() {
+func CreateUserTable() error{
 	query := `
 	CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,14 +25,15 @@ func CreateUserTable() {
 
 	_, err := Db.Exec(query)
 	if err != nil {
-		log.Fatal("Error creating table:", err)
+		return err
 	}
 
 	fmt.Println("Table 'users' created successfully!")
+	return nil
 }
 
 // ==========This function creates a 'sessions' table in the SQLite database===========
-func CreateSessionTable() {
+func CreateSessionTable() error {
 	query := `
 	CREATE TABLE IF NOT EXISTS sessions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,10 +45,11 @@ func CreateSessionTable() {
 
 	_, err := Db.Exec(query)
 	if err != nil {
-		log.Fatal("Error creating table:", err)
+		return err
 	}
 
 	fmt.Println("Table 'sessions' created successfully!")
+	return nil
 }
 
 // ============Starting the connection to the database=============
