@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	// "fmt"
+	"fmt"
 	"time"
 	"net/http"
 	"database/sql"
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -38,7 +38,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	
 	// Retrieve user from DB using their email
 	var dbPassword, userID string
-	err = Db.QueryRow("SELECT password, uuid FROM users WHERE email = ?", email).Scan(&dbPassword, &userID)
+	err = Db.QueryRow("SELECT password, id FROM users WHERE email = ?", email).Scan(&dbPassword, &userID)
 	if err == sql.ErrNoRows {
 		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 		HomePage(w, r)
@@ -54,7 +54,14 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		
 		// Generate a session token
-		sessionToken := uuid.New().String()
+		// sessionToken := uuid.New().String()
+
+		u, err := uuid.NewV4()
+		if err != nil {
+			fmt.Println("Error generating UUID:", err)
+			return
+		}
+		sessionToken := u.String()
 		expiresAt := time.Now().Add(24 * time.Hour)
 		
 		// Store session in the database
