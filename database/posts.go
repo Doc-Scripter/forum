@@ -9,7 +9,7 @@ func CreatePostsTable(db *sql.DB) error {
 	query := `
     CREATE TABLE IF NOT EXISTS posts (
         post_id INTEGER  PRIMARY KEY AUTOINCREMENT DEFAULT 0,
-		user_id INTEGER,
+		user_uuid TEXT NOT NULL,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         category  TEXT NOT NULL,
@@ -17,7 +17,7 @@ func CreatePostsTable(db *sql.DB) error {
         dislikes INTEGER DEFAULT 0,
 		comments TEXT NOT NULL DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (user_uuid) REFERENCES users(uuid)
     );`
 	_, err := db.Exec(query)
 	return err
