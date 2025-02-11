@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"fmt"
-	"time"
-	"net/http"
 	"database/sql"
+	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )

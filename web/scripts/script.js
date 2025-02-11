@@ -9,7 +9,84 @@ const createPostBtn = document.querySelector('.create-post-btn');
 const modal = document.querySelector('.modal');
 const closeModal = document.querySelector('.close-modal');
 const postForm = document.querySelector('.post-form');
-// const hamburgerIcon = document.querySelector('.hamburger-icon');
+const hamburgerIcon = document.querySelector('.hamburger-icon');
+const likebutton= document.querySelectorAll('.like-btn')
+const dislikebutton= document.querySelectorAll('.dislike-btn')
+
+
+
+// likebutton.forEach(btn => {
+//   btn.addEventListener('click', () => {
+//     console.log('like button clicked');
+//   const postId = btn.dataset.postId;
+//   fetch("/likes", {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ post_id: postId}),
+//   })
+//     .then(response => response.json())
+//     .then(data => console.log(data))
+//     .catch(error => console.error(error));
+// });
+// })
+
+// dislikebutton.forEach(btn => {
+//   btn.addEventListener('click', () => {
+//     const postId = btn.dataset.postId;
+//     fetch("/dislikes", {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ post_id: postId, user_id: userId }),
+//     })
+//       .then(response => response.json())
+//       .then(data => console.log(data))
+//       .catch(error => console.error(error));
+//   });
+//   })
+
+  // const postsContainer = document.getElementById('postsContainer');
+
+postsContainer.addEventListener('click', (e) => {
+  if (e.target.classList.contains('like-btn')) {
+    console.log('like button clicked');
+    const postId = e.target.dataset.postId;
+    fetch("/likes", {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: postId }),
+    })
+      // .then(response => response.json())
+      .then(() => {
+        fetchPosts()
+      })
+      .catch(error => 
+        console.error(error)
+        // alert('You have already liked this post')
+      );
+     
+      
+  }
+  
+  if (e.target.classList.contains('dislike-btn')) {
+    console.log('dislike button clicked');
+
+    const postId = e.target.dataset.postId;
+    fetch("/dislikes", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: postId}), // Ensure userId is defined
+    })
+    // .then(response => response.json())
+    // .then(data => console.log(data))
+    .then(()=>{
+      fetchPosts()
+    })
+    .catch(error => 
+      console.error(error)
+      // alert('You have already disliked this post')
+    );
+  }
+});
 
 postForm.addEventListener('submit', (e) => {
   alert('Post submitted successfully!');
@@ -44,7 +121,7 @@ function displayPosts(posts,category) {
 
   }
   
-  if (filteredPosts.length===0||!posts){
+  if (filteredPosts===null||!posts){
     postsContainer.innerHTML = `<article class="post">
     <div class="post-header">
     <span class="post-date">NO Date</span>
@@ -59,7 +136,6 @@ function displayPosts(posts,category) {
   }else{
     
     // <span class="post-date">${post.date}</span>
-    // <h2 class="post-title">${post.title}</h2>
     // <span class="post-author">By ${post.author}</span>
     // <div class="post-footer">
     // <div class="post-actions">
@@ -73,13 +149,24 @@ function displayPosts(posts,category) {
     //     💬 Comments (${post.comments.length})
     //   </button>
     //   </div>
-  postsContainer.innerHTML = filteredPosts.map(post=>`
-    <article class="post">
-    <div class="post-header">
-    </div>
-    <h2 class="post-category">${post.category}</h2>
-
-    <p class="post-content">${post.content}</p>
+    postsContainer.innerHTML = filteredPosts.map(post=>`
+      <article class="post">
+      <div class="post-header">
+      </div>
+      <h2 class="post-category">${post.category}</h2>
+      
+       <h2 class="post-title">${post.title}</h2>
+      <p class="post-content">${post.content}</p>
+    <div class="post-footer">
+     <div class="post-actions">
+            <button class="action-btn like-btn" data-post-id=${post.post_id}>
+             👍${post.likes}
+           </button>
+            <button class="action-btn dislike-btn" data-post-id=${post.post_id}>
+            👎${post.dislikes}
+            </button>
+            
+       </div>
     </article>
     `).join('')
   }

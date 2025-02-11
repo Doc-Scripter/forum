@@ -7,7 +7,7 @@ import (
 	"os"
 
 	han "forum/handlers"
-	r "forum/routers"
+	r "forum/routes"
 )
 
 func init() {

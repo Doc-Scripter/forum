@@ -75,6 +75,9 @@ func StartDbConnection() error {
 	if err = database.CreateCommentsTable(Db); err != nil {
 		log.Fatalf("\nCould not create comments table: %e\n", err)
 	}
+	if err = database.CreateLikesDislikesTable(Db); err != nil {
+		log.Fatalf("\nCould not create likes_dislikes table: %e\n", err)
+	}
 
 	fmt.Println("Connected to SQLite database successfully!")
 	return nil
