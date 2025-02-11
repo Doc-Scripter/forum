@@ -57,7 +57,7 @@ func getUserDetails(r *http.Request) (ProfileData, error) {
 
 	var userID string
 
-	err = Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
+	err = d.Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
 	if err != nil {
 		fmt.Println("Session not found in DB:", err)
 		return ProfileData{}, err
@@ -118,7 +118,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", 404)
 	}
-	rows, err := Db.Query("SELECT category,title,content,created_at,post_id FROM posts")
+	rows, err := d.Db.Query("SELECT category,title,content,created_at,post_id FROM posts")
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "could not get posts", http.StatusInternalServerError)
@@ -142,13 +142,13 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		// }
 		// Retrieve like and dislike counts from the database
 		var likeCount, dislikeCount int
-		err = Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", eachPost.Post_ID).Scan(&likeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", eachPost.Post_ID).Scan(&likeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get like count", http.StatusInternalServerError)
 			return
 		}
-		err = Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", eachPost.Post_ID).Scan(&dislikeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", eachPost.Post_ID).Scan(&dislikeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get dislike count", http.StatusInternalServerError)
@@ -179,7 +179,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 	title := r.FormValue("title")
 
-	_, err := Db.Exec("INSERT INTO posts (category, content, title) VALUES ($1, $2, $3)", category, content, title)
+	_, err := d.Db.Exec("INSERT INTO posts (category, content, title) VALUES ($1, $2, $3)", category, content, title)
 	fmt.Println(err)
 	if err != nil {
 		http.Error(w, "could not insert post", http.StatusInternalServerError)
@@ -224,17 +224,17 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the user has already liked or disliked the post
 	var likeDislike string
-	err = Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND post_id = ?", PostNumID).Scan(&likeDislike)
+	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND post_id = ?", PostNumID).Scan(&likeDislike)
 	if err == sql.ErrNoRows {
-		err = Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id ", PostNumID).Scan(&likeDislike)
+		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id ", PostNumID).Scan(&likeDislike)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				fmt.Println("had not liked it")
-				err = Db.QueryRow("SELECT * FROM likes_dislikes WHERE post_id = ?", PostNumID).Scan(&likeDislike)
+				err = d.Db.QueryRow("SELECT * FROM likes_dislikes WHERE post_id = ?", PostNumID).Scan(&likeDislike)
 				if err == sql.ErrNoRows {
 
 					// If the user hasn't liked or disliked the post, insert a new like
-					_, err = Db.Exec("INSERT INTO  likes_dislikes (like_dislike,post_id) VALUES ('like',?)", PostNumID)
+					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,post_id) VALUES ('like',?)", PostNumID)
 					if err != nil {
 						fmt.Println("Failed to like post", err)
 						http.Error(w, "Failed to like post", http.StatusInternalServerError)
@@ -242,7 +242,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				} else {
 					// If the user hasn't liked or disliked the post, insert a new like
-					_, err = Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ? ", PostNumID)
+					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ? ", PostNumID)
 					if err != nil {
 						fmt.Println("Failed to like post", err)
 						http.Error(w, "Failed to like post", http.StatusInternalServerError)
@@ -257,7 +257,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		_, err = Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ? ", PostNumID)
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ? ", PostNumID)
 		if err != nil {
 			fmt.Println("Failed to like post", err)
 			http.Error(w, "Failed to like post", http.StatusInternalServerError)
@@ -271,7 +271,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	} else if likeDislike == "like" {
 		fmt.Println("had liked it")
 		// If the user has already liked the post, minus the like
-		_, err = Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ? ", PostNumID)
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ? ", PostNumID)
 		if err != nil {
 			http.Error(w, "Failed to minus like", http.StatusInternalServerError)
 			fmt.Println("Failed to minus like", err)
@@ -309,17 +309,17 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the user has already liked or disliked the post
 	var likeDislike string
-	err = Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ?", PostNumID).Scan(&likeDislike)
+	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ?", PostNumID).Scan(&likeDislike)
 	if err == sql.ErrNoRows {
-		err = Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'slike' AND post_id ", PostNumID).Scan(&likeDislike)
+		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'slike' AND post_id ", PostNumID).Scan(&likeDislike)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				fmt.Println("had  liked it")
-				err = Db.QueryRow("SELECT * FROM likes_dislikes WHERE post_id = ?", PostNumID).Scan(&likeDislike)
+				err = d.Db.QueryRow("SELECT * FROM likes_dislikes WHERE post_id = ?", PostNumID).Scan(&likeDislike)
 				if err == sql.ErrNoRows {
 
 					// If the user hasn't liked or disliked the post, insert a new like
-					_, err = Db.Exec("INSERT INTO  likes_dislikes (like_dislike,post_id) VALUES ('dislike',?)", PostNumID)
+					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,post_id) VALUES ('dislike',?)", PostNumID)
 					if err != nil {
 						fmt.Println("Failed to dislike post", err)
 						http.Error(w, "Failed to dislike post", http.StatusInternalServerError)
@@ -327,7 +327,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				} else {
 					// If the user hasn't liked or disliked the post, insert a new like
-					_, err = Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE post_id = ? ", PostNumID)
+					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE post_id = ? ", PostNumID)
 					if err != nil {
 						fmt.Println("Failed to dislike post", err)
 						http.Error(w, "Failed to dislike post", http.StatusInternalServerError)
@@ -350,7 +350,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	} else if likeDislike == "dislike" {
 		fmt.Println("had disliked it")
 		// If the user has already liked the post, minus the like
-		_, err = Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ? ", PostNumID)
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ? ", PostNumID)
 		if err != nil {
 			http.Error(w, "Failed to minus dislike", http.StatusInternalServerError)
 			fmt.Println("Failed to minus dislike", err)

@@ -24,8 +24,18 @@ func StartDbConnection() error {
 		return err
 	}
 
-	CreateUsersTable(Db)
-	CreateSessionsTable(Db)
+	if err = CreateUsersTable(Db); err != nil {
+		log.Fatalf("\nCould not create User table: %e\n", err)
+	}
+
+	if err = CreateLikesDislikesTable(Db); err != nil {
+		log.Fatalf("\nCould not create Likes and Dislikes table: %e\n", err)
+	}
+
+	if err = CreateSessionsTable(Db); err != nil {
+		log.Fatalf("\nCould not create sessions table: %e\n", err)
+	}
+	
 	if err = CreatePostsTable(Db); err != nil {
 		log.Fatalf("\nCould not create posts table: %e\n", err)
 	}
