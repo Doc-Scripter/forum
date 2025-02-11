@@ -4,38 +4,26 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"text/template"
+	"time"
+	e "forum/Error"
 
 	d "forum/database"
 	"forum/models"
 )
 
 // serve the login form
-func LandingPage(rw http.ResponseWriter, req *http.Request) {
-	if bl, _ := ValidateSession(req); bl {
-		fmt.Println("valid user")
-		http.Redirect(rw, req, "/home", http.StatusSeeOther)
-		return
-	} else if !bl {
-
-		tmpl, err := template.ParseFiles("./web/templates/index.html")
-		if err != nil {
-			log.Fatal(err)
-		}
-		tmpl.Execute(rw, nil)
-	}
-	e "forum/Error"
-)
 
 type ErrorData struct {
-	Msg string
+	Msg  string
 	Code int
 }
 
 type ProfileData struct {
-	UUID string
+	UUID     string
 	Username string
 	Email    string
 }
@@ -52,45 +40,45 @@ type Post struct {
 }
 
 var InternalError = ErrorData{
-	Msg: "An unexpected error occurred. The error seems to be on our end. Hang tight",
-    Code: http.StatusInternalServerError,
+	Msg:  "An unexpected error occurred. The error seems to be on our end. Hang tight",
+	Code: http.StatusInternalServerError,
 }
 
 var PageNotFound = ErrorData{
-	Msg: "The Page you are trying to access does not seem to exist",
-    Code: http.StatusNotFound,
+	Msg:  "The Page you are trying to access does not seem to exist",
+	Code: http.StatusNotFound,
 }
 
 var BadRequest = ErrorData{
-	Msg: "That's a Bad Request",
-    Code: http.StatusBadRequest,
+	Msg:  "That's a Bad Request",
+	Code: http.StatusBadRequest,
 }
 
 var Unauthorized = ErrorData{
-    Msg: "You are not authorized to view this page",
-    Code: http.StatusUnauthorized,
+	Msg:  "You are not authorized to view this page",
+	Code: http.StatusUnauthorized,
 }
 
 var Forbidden = ErrorData{
-    Msg: "You are not allowed to perform this action",
-    Code: http.StatusForbidden,
+	Msg:  "You are not allowed to perform this action",
+	Code: http.StatusForbidden,
 }
 
 var MethodNotAllowed = ErrorData{
-	Msg: "The HTTP method you used is not allowed for this route",
-    Code: http.StatusMethodNotAllowed,
+	Msg:  "The HTTP method you used is not allowed for this route",
+	Code: http.StatusMethodNotAllowed,
 }
 
 func ErrorPage(Error error, Err ErrorData, w http.ResponseWriter, r *http.Request) {
 
 	e.LogError(Error)
 	tmpl, err := template.ParseFiles("./web/templates/error.html")
-		if err != nil {
-			e.LogError(err)
-		}
-		if err = tmpl.Execute(w, Err); err != nil {
-			e.LogError(err)
-		}
+	if err != nil {
+		e.LogError(err)
+	}
+	if err = tmpl.Execute(w, Err); err != nil {
+		e.LogError(err)
+	}
 }
 
 // serve the login form
@@ -98,8 +86,8 @@ func LandingPage(w http.ResponseWriter, r *http.Request) {
 	if bl, _ := ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	} else if !bl {
-		
-		if r.Method == http.MethodGet{
+
+		if r.Method == http.MethodGet {
 			ErrorPage(nil, InternalError, w, r)
 		}
 		tmpl, err := template.ParseFiles("./web/templates/index.html")
@@ -125,7 +113,7 @@ func getUserDetails(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		fmt.Println("Profile Section: No session cookie found")
 		ErrorPage(err, InternalError, w, r)
-		return  err
+		return err
 	}
 
 	var userID string
@@ -152,7 +140,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Pd, err := getUserDetails(w, r)
+	err := getUserDetails(w, r)
 	if err != nil {
 		ErrorPage(err, InternalError, w, r)
 		return
@@ -163,7 +151,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = tmpl.Execute(w, Pd); err != nil {
+	if err = tmpl.Execute(w, models.Profile); err != nil {
 		ErrorPage(err, InternalError, w, r)
 		return
 	}
@@ -193,7 +181,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodGet {
 		ErrorPage(nil, MethodNotAllowed, w, r)
-        return
+		return
 	}
 
 	tmpl, err := template.ParseFiles("./web/templates/register.html")
@@ -202,7 +190,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 	if err = tmpl.Execute(w, nil); err != nil {
 		ErrorPage(err, InternalError, w, r)
-        return
+		return
 	}
 }
 
@@ -216,7 +204,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		ErrorPage(err, InternalError, w, r)
 		return
-		
+
 	}
 	defer rows.Close()
 
@@ -292,25 +280,25 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	if r.Method != http.MethodPost {
 		// http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		ErrorPage(nil, MethodNotAllowed, w, r)
 		return
 	}
 
-	str, _ := io.ReadAll(r.Body)
-	var postID struct {
-		Post_id string `json:"post_id"`
-	}
-	fmt.Println(string(str))
-	err := json.Unmarshal(str, &postID)
+	// str, _ := io.ReadAll(r.Body)
+	// var postID struct {
+	// 	Post_id string `json:"post_id"`
+	// }
+	// fmt.Println(string(str))
+	// err := json.Unmarshal(str, &postID)
 
-	if err != nil {
-		fmt.Println("could not unmarshal post id")
-		ErrorPage(err, BadRequest, w, r)
-		return
-	}
+	// if err != nil {
+	// 	fmt.Println("could not unmarshal post id")
+	// 	ErrorPage(err, BadRequest, w, r)
+	// 	return
+	// }
 
 	// Check if the user has already liked or disliked the post
 	var likeDislike string
@@ -374,14 +362,39 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		ErrorPage(nil, BadRequest, w, r)
+
+	str, err := io.ReadAll(r.Body)
+	if err != nil {
+		ErrorPage(err, BadRequest, w, r)
+		return
+	}
+	var postID struct {
+		Post_id string `json:"post_id"`
+	}
+
+	err = json.Unmarshal(str, &postID)
+	if err != nil {
+
+		http.Error(w, "could not unmarshal post id", http.StatusBadRequest)
 		return
 	}
 
+	if r.Method != http.MethodPost {
+		fmt.Println(r.Method)
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// PostNumID, err := strconv.Atoi(postID.Post_id)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	http.Error(w, "Invalid post id", http.StatusBadRequest)
+	// 	return
+	// }
+
 	// Check if the user has already liked or disliked the post
 	var likeDislike string
-	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ?", PostNumID).Scan(&likeDislike)
+	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND user_uuid = ?", models.Profile.Uuid).Scan(&likeDislike)
 	if err == sql.ErrNoRows {
 		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'slike' AND user_uuid = ?", models.Profile.Uuid).Scan(&likeDislike)
 		if err != nil {
@@ -495,7 +508,7 @@ func LikedPostHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		
+
 		var likeCount, dislikeCount int
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", models.Profile.Uuid).Scan(&likeCount)
 		if err != nil {
