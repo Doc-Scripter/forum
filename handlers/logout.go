@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"net/http"
 	"time"
+	"net/http"
+	d "forum/database"
 )
 
 // LogoutUser removes session from the database and clears the cookie
@@ -15,7 +16,7 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = Db.Exec("DELETE FROM sessions WHERE session_token = ?", cookie.Value)
+	_, err = d.Db.Exec("DELETE FROM sessions WHERE session_token = ?", cookie.Value)
 	if err != nil {
 		http.Error(w, "Failed to log out", http.StatusInternalServerError)
 		return

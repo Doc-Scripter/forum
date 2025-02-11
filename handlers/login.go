@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	d "forum/database"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -42,7 +43,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	    
 	    // Retrieve user from DB using their email
 	    var dbPassword, userID string
-	    err = Db.QueryRow("SELECT password, id FROM users WHERE email = ?", email).Scan(&dbPassword, &userID)
+	    err = d.Db.QueryRow("SELECT password, id FROM users WHERE email = ?", email).Scan(&dbPassword, &userID)
 	    if err == sql.ErrNoRows {
 	    	http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 	    	http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -66,7 +67,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	    expiresAt := time.Now().Add(24 * time.Hour)
 	    	
 	    // Store session in the database
-	    _, err = Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", userID, sessionToken, expiresAt)
+	    _, err = d.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", userID, sessionToken, expiresAt)
 	    if err != nil {
 	    	http.Error(w, "Error creating session", http.StatusInternalServerError)
 	    	return

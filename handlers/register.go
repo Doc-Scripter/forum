@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	d "forum/database"
+
 	"github.com/gofrs/uuid"
 )
 
@@ -21,7 +23,7 @@ type User struct {
 // =========Handle user registration========================
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var err error
-	
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
@@ -33,10 +35,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := User{
-		
-		Username:  r.FormValue("username"),
-		Email: r.FormValue("email"),
-		Password:  r.FormValue("password"),
+		Username: r.FormValue("username"),
+		Email:    r.FormValue("email"),
+		Password: r.FormValue("password"),
 	}
 
 	// Validate input fields
@@ -51,7 +52,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if username or email already exists
-	if credentialExists(Db, user.Username) || credentialExists(Db, user.Email) {
+	if credentialExists(d.Db, user.Username) || credentialExists(d.Db, user.Email) {
 		http.Error(w, "Username or email already in use", http.StatusConflict)
 		http.Redirect(w, r, "/register", http.StatusFound)
 		return
@@ -74,14 +75,14 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	// Insert new user into the database
 	query := `INSERT INTO users (uuid, username, email, password) VALUES (?, ?, ?, ?)`
-	_, err = Db.Exec(query, UUID, user.Username, user.Email, user.Password)
+	_, err = d.Db.Exec(query, UUID, user.Username, user.Email, user.Password)
 	if err != nil {
 		http.Error(w, "Failed to register user", http.StatusInternalServerError)
 		return
 	}
 
 	var userID string
-	err = Db.QueryRow("SELECT id FROM users WHERE email = ?", user.Email).Scan(&userID)
+	err = d.Db.QueryRow("SELECT id FROM users WHERE email = ?", user.Email).Scan(&userID)
 	if err == sql.ErrNoRows {
 		fmt.Println(err)
 	} else if err != nil {
@@ -91,8 +92,8 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Store session in the database
-	// _, err = Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", userID, UUID, expiresAt)
-	_, err = Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", userID, UUID, expiresAt)
+	// _, err = d.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", userID, UUID, expiresAt)
+	_, err = d.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", userID, UUID, expiresAt)
 	if err != nil {
 		http.Error(w, "Error creating session", http.StatusInternalServerError)
 		return
@@ -100,5 +101,5 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	SetSessionCookie(w, UUID, expiresAt)
 
-    http.Redirect(w, r, "/home", http.StatusSeeOther)
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }

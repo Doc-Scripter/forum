@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	han "forum/handlers"
+	d "forum/database"
 	r "forum/routes"
 )
 
@@ -17,7 +17,7 @@ func init() {
 	}
 
 	// start the database connection
-	err := han.StartDbConnection()
+	err := d.StartDbConnection()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,5 +39,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	defer han.Db.Close()
+	defer d.Db.Close()
 }
