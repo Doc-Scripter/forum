@@ -112,6 +112,28 @@ let posts = [];
 
 }
 
+function fetchMyPosts(){
+  fetch("/myPosts")
+    .then((response) => response.json())
+    .then((data) => {
+       posts = data;
+      displayPosts(posts,currentCategory);
+    })
+    .catch(error => { console.error("Error fetching posts:",error)});
+
+}
+
+function fetchLikedPosts(){
+  fetch("/likedPosts")
+    .then((response) => response.json())
+    .then((data) => {
+       posts = data;
+      displayPosts(posts,currentCategory);
+    })
+    .catch(error => { console.error("Error fetching posts:",error)});
+
+}
+
 function displayPosts(posts,category) {
   let filteredPosts = [];
   if (category==="all"){
@@ -379,6 +401,7 @@ filterBtns.forEach(btn => {
     filterBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.filter;
+    fetchPosts()
     displayPosts(posts,currentFilter);
   });
 });

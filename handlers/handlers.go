@@ -360,3 +360,22 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func MyPostHandler(w http.ResponseWriter,r *http.Request){
+
+	// user,err:=getUserDetails(r)
+
+	// if err !=nil{
+	// 	http.Error(w,"Internal server error",http.StatusInternalServerError)
+	// }
+
+	// rows,err:=d.Db.Query(SELECT )
+
+}
+
+func LikedPostHandler(w http.ResponseWriter,r *http.Request){
+
+
+
+	
+}
