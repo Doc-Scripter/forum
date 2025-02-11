@@ -7,7 +7,7 @@ import (
 	"os"
 
 	d "forum/database"
-	r "forum/routers"
+	r "forum/routes"
 )
 
 func init() {

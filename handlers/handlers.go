@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -8,6 +10,8 @@ import (
 	"strconv"
 	"text/template"
 	"time"
+
+	d "forum/database"
 )
 
 // serve the login form
@@ -51,9 +55,7 @@ func getUserDetails(r *http.Request) (ProfileData, error) {
 		return ProfileData{}, err
 	}
 
-	var (
-		userID string
-	)
+	var userID string
 
 	err = Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
 	if err != nil {
@@ -196,7 +198,6 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
-
 	str, _ := io.ReadAll(r.Body)
 	var postID struct {
 		Post_id string `json:"post_id"`
