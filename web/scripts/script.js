@@ -56,20 +56,35 @@ postsContainer.addEventListener('click', (e) => {
       body: JSON.stringify({ post_id: postId }),
     })
       // .then(response => response.json())
-      .then(data => console.log(data))
-      .catch(error => console.error(error));
+      .then(() => {
+        fetchPosts()
+      })
+      .catch(error => 
+        console.error(error)
+        // alert('You have already liked this post')
+      );
+     
+      
   }
   
   if (e.target.classList.contains('dislike-btn')) {
+    console.log('dislike button clicked');
+
     const postId = e.target.dataset.postId;
     fetch("/dislikes", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ post_id: postId, user_id: userId }), // Ensure userId is defined
+      body: JSON.stringify({ post_id: postId}), // Ensure userId is defined
     })
-      .then(response => response.json())
-      .then(data => console.log(data))
-      .catch(error => console.error(error));
+    // .then(response => response.json())
+    // .then(data => console.log(data))
+    .then(()=>{
+      fetchPosts()
+    })
+    .catch(error => 
+      console.error(error)
+      // alert('You have already disliked this post')
+    );
   }
 });
 
@@ -144,11 +159,11 @@ function displayPosts(posts,category) {
       <p class="post-content">${post.content}</p>
     <div class="post-footer">
      <div class="post-actions">
-            <button class="action-btn like-btn" data-post-id=${post.id}>
-             👍 ${post.likes}
+            <button class="action-btn like-btn" data-post-id=${post.post_id}>
+             👍${post.likes}
            </button>
-            <button class="action-btn dislike-btn" data-post-id=${post.id}>
-            👎 ${post.dislikes}
+            <button class="action-btn dislike-btn" data-post-id=${post.post_id}>
+            👎${post.dislikes}
             </button>
             
        </div>

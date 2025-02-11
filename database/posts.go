@@ -1,14 +1,14 @@
 package database
 
 import (
-    "database/sql"
-    _ "github.com/mattn/go-sqlite3"
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func CreatePostsTable(db *sql.DB) error {
-    query := `
+	query := `
     CREATE TABLE IF NOT EXISTS posts (
-        post_id INTEGER  PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER  PRIMARY KEY AUTOINCREMENT DEFAULT 0,
 		user_id INTEGER,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
@@ -19,6 +19,6 @@ func CreatePostsTable(db *sql.DB) error {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id)
     );`
-    _, err := db.Exec(query)
-    return err
+	_, err := db.Exec(query)
+	return err
 }
