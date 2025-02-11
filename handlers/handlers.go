@@ -1,17 +1,17 @@
 package handlers
 
 import (
-	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"database/sql"
+	"encoding/json"
 	"text/template"
+	d "forum/database"
 )
 
 // serve the login form
 func LandingPage(rw http.ResponseWriter, req *http.Request) {
-
 	if bl, _ := ValidateSession(req); bl {
 		http.Redirect(rw, req, "/home", http.StatusSeeOther)
 	} else if !bl {
@@ -26,54 +26,52 @@ func LandingPage(rw http.ResponseWriter, req *http.Request) {
 
 type ProfileData struct {
 	Username string
-	Email string
+	Email    string
 }
 
 type Post struct {
-	CreatedAt string `json:"created_at"`
-	Category  string `json:"category"`
-	Likes     int    `json:"likes"`
-	Comments  *string    `json:"comments"`
-	Content   string `json:"content"`
+	CreatedAt string  `json:"created_at"`
+	Category  string  `json:"category"`
+	Likes     int     `json:"likes"`
+	Comments  *string `json:"comments"`
+	Content   string  `json:"content"`
 }
+
 // serve the Homepage
 
 func getUserDetails(r *http.Request) (ProfileData, error) {
 	var PD ProfileData
 
 	cookie, err := r.Cookie("session_token")
-    if err != nil {
-        fmt.Println("Profile Section: No session cookie found")
-        return ProfileData{}, err
-    }
+	if err != nil {
+		fmt.Println("Profile Section: No session cookie found")
+		return ProfileData{}, err
+	}
 
-    var (
-        userID    string
-    )
+	var userID string
 
-    err = Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
-    if err != nil {
-        fmt.Println("Session not found in DB:", err)
-        return ProfileData{}, err
-    }
+	err = d.Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
+	if err != nil {
+		fmt.Println("Session not found in DB:", err)
+		return ProfileData{}, err
+	}
 
 	query := `
 	SELECT  username, email FROM users WHERE id = ?`
 
-	err = Db.QueryRow(query, userID).Scan(&PD.Username, &PD.Email)
+	err = d.Db.QueryRow(query, userID).Scan(&PD.Username, &PD.Email)
 	if err != nil {
-        return ProfileData{}, err
+		return ProfileData{}, err
 	}
 	return PD, nil
-
 }
 
 func HomePage(rw http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
 		fmt.Fprint(rw, "Bad request", http.StatusBadRequest)
 	}
-    
-    Pd, err := getUserDetails(req)
+
+	Pd, err := getUserDetails(req)
 	fmt.Println(Pd)
 	if err != nil {
 		fmt.Printf("Profile Section: %e\n", err)
@@ -82,13 +80,12 @@ func HomePage(rw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	tmpl.Execute(rw, Pd)
 }
 
 // serve the login form
 func Login(rw http.ResponseWriter, req *http.Request) {
-
 	if bl, _ := ValidateSession(req); bl {
 		http.Redirect(rw, req, "/home", http.StatusSeeOther)
 	} else if !bl {
@@ -114,7 +111,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", 404)
 	}
-	rows, err := Db.Query("SELECT category,content,comments,created_at,likes FROM posts")
+	rows, err := d.Db.Query("SELECT category,content,comments,created_at,likes FROM posts")
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "could not get posts", http.StatusInternalServerError)
@@ -127,7 +124,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var eachPost Post
 		var comments sql.NullString
-		err := rows.Scan(&eachPost.Category, &eachPost.Content,&comments, &eachPost.CreatedAt, &eachPost.Likes)
+		err := rows.Scan(&eachPost.Category, &eachPost.Content, &comments, &eachPost.CreatedAt, &eachPost.Likes)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get post", http.StatusInternalServerError)
@@ -158,7 +155,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	category := r.FormValue("category")
 	content := r.FormValue("content")
 
-	_, err := Db.Exec("INSERT INTO posts (category, content) VALUES ($1, $2)", category, content)
+	_, err := d.Db.Exec("INSERT INTO posts (category, content) VALUES ($1, $2)", category, content)
 	if err != nil {
 		http.Error(w, "could not insert post", http.StatusInternalServerError)
 		return

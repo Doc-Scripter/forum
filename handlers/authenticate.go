@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"time"
 
+	d "forum/database"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -53,7 +55,7 @@ func ValidateSession(r *http.Request) (bool, string) {
 		expiresAt time.Time
 	)
 
-	err = Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID, &expiresAt)
+	err = d.Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID, &expiresAt)
 	if err != nil {
 		fmt.Println("Session not found in DB:", err)
 		return false, ""

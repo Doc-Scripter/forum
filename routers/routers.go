@@ -1,8 +1,10 @@
 package routers
 
-import(
+import (
 	"net/http"
-	handler "forum/handlers"
+	han "forum/handlers"
+	
+
 )
 
 func Routers() (*http.ServeMux, error) {
@@ -12,19 +14,19 @@ func Routers() (*http.ServeMux, error) {
 	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
 	scriptServer := http.FileServer(http.Dir("web/scripts/"))
-    mux.Handle("/web/scripts/", http.StripPrefix("/web/scripts/", scriptServer))
+	mux.Handle("/web/scripts/", http.StripPrefix("/web/scripts/", scriptServer))
 
-	mux.HandleFunc("/", handler.LandingPage)
-	mux.HandleFunc("/login", handler.Login)
-	mux.HandleFunc("/logging", handler.AuthenticateUserCredentialsLogin)
-	// mux.Handle("/logging", handler.AuthMiddleware(http.HandlerFunc(handler.AuthenticateUserCredentialsLogin)))
-	mux.HandleFunc("/posts", handler.PostsHandler)
-	mux.HandleFunc("/create-post", handler.CreatePostsHandler)
-    mux.HandleFunc("/home", handler.HomePage)
+	mux.HandleFunc("/", han.LandingPage)
+	mux.HandleFunc("/login", han.Login)
+	mux.HandleFunc("/logging", han.AuthenticateUserCredentialsLogin)
+	// mux.Handle("/logging", han.AuthMiddleware(http.HandlerFunc(han.AuthenticateUserCredentialsLogin)))
+	mux.HandleFunc("/posts", han.PostsHandler)
+	mux.HandleFunc("/create-post", han.CreatePostsHandler)
+	mux.HandleFunc("/home", han.HomePage)
 
-	mux.HandleFunc("/register", handler.Register)
-	mux.HandleFunc("/registration", handler.RegisterUser)
-	mux.HandleFunc("/logout", handler.LogoutUser)
+	mux.HandleFunc("/register", han.Register)
+	mux.HandleFunc("/registration", han.RegisterUser)
+	mux.HandleFunc("/logout", han.LogoutUser)
 
 	return mux, nil
 }
