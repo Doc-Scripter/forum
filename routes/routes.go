@@ -3,6 +3,7 @@ package routers
 import(
 	"net/http"
 	handler "forum/handlers"
+	d "forum/database"
 )
 
 func Routers() (*http.ServeMux, error) {
@@ -23,6 +24,8 @@ func Routers() (*http.ServeMux, error) {
     mux.HandleFunc("/home", handler.HomePage)
 	mux.HandleFunc("/likes", handler.LikePostHandler)
 	mux.HandleFunc("/dislikes", handler.DislikePostHandler)
+	mux.HandleFunc("/comments", handler.GetCommentsHandler(d.Db))
+	mux.HandleFunc("/comments/add", handler.AddCommentHandler(d.Db))
 	
 
 	mux.HandleFunc("/register", handler.Register)
