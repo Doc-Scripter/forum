@@ -441,13 +441,13 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var likeCount, dislikeCount int
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like' AND post_id = ?", Profile.Uuid, eachPost.Post_id).Scan(&likeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND post_id = ?",  eachPost.Post_id).Scan(&likeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get like count", http.StatusInternalServerError)
 			return
 		}
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'dislike' AND post_id = ?", Profile.Uuid, eachPost.Post_id).Scan(&dislikeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ?", eachPost.Post_id).Scan(&dislikeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get dislike count", http.StatusInternalServerError)
