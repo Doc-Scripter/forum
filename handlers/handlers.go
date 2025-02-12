@@ -444,3 +444,22 @@ func AddCommentHandler(db *sql.DB) http.HandlerFunc {
 		json.NewEncoder(w).Encode(response)
 	}
 }
+func GetCommentsHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		postIDStr := r.URL.Query().Get("post_id")
+		postID, err := strconv.Atoi(postIDStr)
+		if err != nil || postID <= 0 {
+			http.Error(w, "Invalid post ID", http.StatusBadRequest)
+			return
+		}
+		// Retrieve comments from the database
+		comments, err := GetCommentsByPostID(db, postID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to retrieve comments: %v", err), http.StatusInternalServerError)
+			return
+		}
+		// Return comments in the response
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(comments)
+	}
+}
