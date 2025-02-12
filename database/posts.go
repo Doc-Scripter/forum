@@ -9,7 +9,7 @@ func CreatePostsTable(db *sql.DB) error {
 	query := `
     CREATE TABLE IF NOT EXISTS posts (
         post_id INTEGER  PRIMARY KEY AUTOINCREMENT DEFAULT 0,
-		user_uuid TEXT NOT NULL,
+		user_uuid TEXT UNIQUE NOT NULL,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         category  TEXT NOT NULL,
