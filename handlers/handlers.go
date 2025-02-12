@@ -413,3 +413,34 @@ func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
 	return comments, nil
 }
 
+func AddCommentHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Parse the request body
+		var request struct {
+			PostID  int    `json: "post_id"`
+			Content string `json: "content"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		// Validate input
+		if request.PostID <= 0 || request.Content == "" {
+			http.Error(w, "Post ID and content are required", http.StatusBadRequest)
+			return
+		}
+		// Add the comment to the database
+		commentID, err := AddComment(db, request.PostID, request.Content)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to add comment: %v", err), http.StatusInternalServerError)
+			return
+		}
+		response := struct {
+			CommentID int `json: "comment_id"`
+		}{
+			CommentID: commentID,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}
+}
