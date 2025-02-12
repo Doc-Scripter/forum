@@ -384,3 +384,32 @@ func AddComment(db *sql.DB, postID int, content string) (int, error) {
 	return int(commentID), nil
 }
 
+// Fetch comments for a specific post
+func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
+	query := `
+	SELECT comment_id, post_id, content, created_at
+	FROM comments
+	WHERE post_id=?
+	ORDER BY created_at ASC
+	`
+	rows, err := db.Query(query, postID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query comments %v:", err)
+	}
+	defer rows.Close()
+
+	var comments []Comment
+	for rows.Next() {
+		var comment Comment
+		err := rows.Scan(&comment.CommentID, &comment.PostID, &comment.Content, &comment.CreatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan comment: %v", err)
+		}
+		comments = append(comments, comment)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over rows: %v", err)
+	}
+	return comments, nil
+}
+
