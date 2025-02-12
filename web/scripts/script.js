@@ -252,7 +252,7 @@ filterBtns.forEach(btn => {
         route = "/myPosts";
         break;
       case 'liked':
-        route = "/likedPosts";
+        route = "/favorites";
         break;
       default:
         console.error("Invalid filter value");

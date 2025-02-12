@@ -268,7 +268,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				} else {
 					fmt.Println("had not liked it")
-					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ?",postID.Post_id)
+					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ?", postID.Post_id)
 					if err != nil {
 						fmt.Println("Failed to like post", err)
 						http.Error(w, "Failed to like post", http.StatusInternalServerError)
@@ -397,29 +397,30 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func MyPostHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.Db.Query("SELECT title,content,category FROM posts WHERE user_uuid = ?", m.Profile.Uuid)
+	rows, err := d.Db.Query("SELECT title,content,category,post_id FROM posts WHERE user_uuid = ?", m.Profile.Uuid)
 	if err != nil {
 		fmt.Println("unable to query my posts", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+
 	var posts []m.Post
 	for rows.Next() {
 		var eachPost m.Post
-		err = rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Category)
+		err = rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Category, &eachPost.Post_id)
 		if err != nil {
 			fmt.Println(fmt.Println("unable to scan my posts", err))
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 		var likeCount, dislikeCount int
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", m.Profile.Uuid).Scan(&likeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like' AND post_id = ?", m.Profile.Uuid, eachPost.Post_id).Scan(&likeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get like count", http.StatusInternalServerError)
 			return
 		}
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'dislike'", m.Profile.Uuid).Scan(&dislikeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'dislike' AND post_id = ?", m.Profile.Uuid, eachPost.Post_id).Scan(&dislikeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get dislike count", http.StatusInternalServerError)
@@ -438,46 +439,55 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(postsJson)
 }
 
 func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
-	str, _ := io.ReadAll(r.Body)
-	var postID struct {
-		Post_id string `json:"post_id"`
-	}
-	fmt.Println(string(str))
-	err := json.Unmarshal(str, &postID)
-	if err != nil {
-		fmt.Println("could not unmarshal post id")
-		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
-		return
-	}
-
-	rows, err := d.Db.Query("SELECT title,content,category FROM posts WHERE user_uuid = (SELECT user_uuid FROM likes_dislikes WHERE like_dislike = 'like')", m.Profile.Uuid)
+	likedRows, err := d.Db.Query("SELECT post_id FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", m.Profile.Uuid)
 	if err != nil {
 		fmt.Println("unable to query my posts", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+
 	var posts []m.Post
-	for rows.Next() {
-		var eachPost m.Post
-		err = rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Category)
+	for likedRows.Next() {
+		var postID int
+		err = likedRows.Scan(&postID)
 		if err != nil {
 			fmt.Println(fmt.Println("unable to scan my posts", err))
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
+		Postrows, err := d.Db.Query("SELECT category, likes, dislikes, title, content, post_id FROM posts WHERE post_id = ?", postID)
+		if err != nil {
+			fmt.Println("unable to query my posts", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		var eachPost m.Post
+
+		for Postrows.Next() {
+
+			err = Postrows.Scan(&eachPost.Category, &eachPost.Likes, &eachPost.Dislikes, &eachPost.Title, &eachPost.Content, &eachPost.Post_id)
+			if err != nil {
+				fmt.Println(fmt.Println("unable to scan my posts", err))
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				return
+			}
+
+		}
+
 		var likeCount, dislikeCount int
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", m.Profile.Uuid).Scan(&likeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", eachPost.Post_id).Scan(&likeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get like count", http.StatusInternalServerError)
 			return
 		}
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'dislike'", m.Profile.Uuid).Scan(&dislikeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", eachPost.Post_id).Scan(&dislikeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get dislike count", http.StatusInternalServerError)
@@ -495,6 +505,6 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(postsJson)
 }
