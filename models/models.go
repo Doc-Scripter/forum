@@ -55,7 +55,6 @@ var ErrorsData = Errors{
 	},
 }
 
-var Profile ProfileData
 
 type Post struct {
 	CreatedAt time.Time `json:"created_at"`
