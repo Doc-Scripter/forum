@@ -15,7 +15,6 @@ func CreatePostsTable(db *sql.DB) error {
         category  TEXT NOT NULL,
 		likes INTEGER DEFAULT 0,
         dislikes INTEGER DEFAULT 0,
-		comments TEXT NOT NULL DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_uuid) REFERENCES users(uuid)
     );`

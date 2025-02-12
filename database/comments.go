@@ -13,6 +13,8 @@ func CreateCommentsTable(db *sql.DB) error {
         user_uuid INTEGER NOT NULL,
         post_id INTEGER NOT NULL,
         content TEXT NOT NULL,
+        likes INTEGER DEFAULT 0,
+        dislikes INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_uuid) REFERENCES posts(uuid)
         FOREIGN KEY (post_id) REFERENCES posts(post_id)
