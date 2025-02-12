@@ -25,7 +25,7 @@ func Routers() (*http.ServeMux, error) {
 	mux.HandleFunc("/dislikes", handler.DislikePostHandler)
 
 	mux.HandleFunc("/myPosts", handler.MyPostHandler)
-	mux.HandleFunc("/likedPosts", handler.LikedPostHandler)
+	mux.HandleFunc("/favorites", handler.FavoritesPostHandler)
 	
 	
 
