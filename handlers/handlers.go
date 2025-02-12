@@ -43,6 +43,12 @@ type Post struct {
 	Content   string    `json:"content"`
 	Post_ID   int       `json:"post_id"`
 }
+type Comment struct {
+	CommentID int       `json:"comment_id"`
+	PostID    int       `json:"post_id"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+}
 
 // serve the Homepage
 
@@ -360,3 +366,21 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+// Inserts a new comment into the database
+func AddComment(db *sql.DB, postID int, content string) (int, error) {
+	query := `
+	INSERT INTO comments (post_id, content)
+	VALUES (?, ?)
+	`
+	result, err := db.Exec(query, postID, content)
+	if err != nil {
+		return 0, fmt.Errorf("failed to insert comment: %v", err)
+	}
+	commentID, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get last insert ID: %v", err)
+	}
+	return int(commentID), nil
+}
+
