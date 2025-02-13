@@ -122,7 +122,7 @@ func Register(rw http.ResponseWriter, req *http.Request) {
 
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", 404)
+		http.Error(w, "method not allowed", 405)
 	}
 	rows, err := d.Db.Query("SELECT category,title,content,created_at,post_id FROM posts")
 	if err != nil {
