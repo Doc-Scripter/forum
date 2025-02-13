@@ -10,6 +10,22 @@
     />
     <link rel="stylesheet" href="/static/styles.css" />
 
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const username = document.getElementById("username").value;
+
+        function getInitials(name) {
+          let initials = name
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase())
+            .join("");
+          return initials;
+        }
+
+        const initials = getInitials(username);
+        document.getElementById("profile-Name").textContent = initials;
+      });
+    </script>
   </head>
 
   <body>
@@ -42,8 +58,8 @@
       <div class="sidebar" id="sidebar">
         <button class="close-btn" onclick="toggleSidebar()">×</button>
         <div class="profile">
-          <div class="avatar">N/A</div>
-          <p class="username">{{.Username}}</p>
+          <div class="avatar" id="profile-Name"></div>
+          <p class="username" value="{{.Username}}">{{.Username}}</p>
           <p class="email">{{.Email}}</p>
         </div>
       </div>
