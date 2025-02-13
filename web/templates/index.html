@@ -1,5 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forum UI</title>
+    <link
+    href="https://fonts.googleapis.com/css?family=Inknut+Antiqua&display=swap"
+    rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+
+  </head>
+
+  <body>
+    <main style="border-radius: 19px">
+      <div class="header">
+        <h1 style="font-family: 'Inkut Antiqua'">FORUM</h1>
+        <div class="user-icon">
+          <a href="/login"><img style="background-color: rgb(60, 128, 229);" src="/static/images/login.png" alt="Login" /></a>
+          <a href="/register"><img src="/static/images/profile.png" alt="User" /></a>
+        </div>
+      </div>
+
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All Posts</button>
+        <button class="filter-btn" data-filter="created">My Posts</button>
+        <button class="filter-btn" data-filter="liked">Favorites</button>
+        <select id="category-filter">
+          <option value="all">All Categories</option>
+          <option value="tech">Technology</option>
+          <option value="health">Health</option>
+          <option value="math">Games</option>
+          <option value="math">Religion</option>
+          <option value="math">Education</option>
+          <option value="math">Politics</option>
+          <option value="math">Fashion</option>
+          <option value="math">Lifestyle</option>
+          <option value="sports">Sports</option>
+        </select>
+      </div>
+
+      <div class="sidebar" id="sidebar">
+        <button class="close-btn" onclick="toggleSidebar()">×</button>
+        <div class="profile">
+          <div class="avatar">N/A</div>
+          <p class="username">{{.Username}}</p>
+          <p class="email">{{.Email}}</p>
+        </div>
+      </div>
+
+      <button class="create-post-btn-landingPage" onclick="location='/register'">+</button>
+
+      <div class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 style="font-family: 'Inkut Antiqua'">Create New Post</h2>
+            <button class="close-modal">&times;</button>
+          </div>
+          <form class="post-form" action="/create-post" method="post">
+            <textarea
+              name="title"
+              placeholder="Post Title"
+              required
+              rows="1"
+            ></textarea>
+
+            <textarea
+              name="content"
+              placeholder="Post Content"
+              required
+              rows="5"
+            ></textarea>
+            <select name="category" required>
+              <option value="tech">Technology</option>
+              <option value="health">Health</option>
+              <option value="math">Math</option>
+              <option value="science">Science</option>
+              <option value="sports">Sports</option>
+            </select>
+            <button type="submit" style="font-family: 'Inkut Antiqua'">
+              Create Post
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        function toggleSidebar() {
+          const sidebar = document.getElementById("sidebar");
+          sidebar.classList.toggle("open");
+        }
+      </script>
+    </main>
+  </body>
+</html>
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forum</title>
+    <link rel="stylesheet" href="../static/styles.css" />
+  </head>
+  <body>
+    <div class="v1_2">
+      <div class="v1_5"></div>
+      <div class="v3_144"></div>
+      <div class="v3_143"></div>
+      <div class="v1_10">
+        <div class="v1_6">
+          <div class="filters">
+            <button class="filter-btn active" data-filter="all">All Posts</button>
+            <button class="filter-btn" data-filter="created">My Posts</button>
+            <button class="filter-btn" data-filter="liked">Liked Posts</button>
+            <select id="category-filter">
+              <option value="all">All Categories</option>
+              <option value="tech">Technology</option>
+              <option value="health">Health</option>
+              <option value="math">Games</option>
+              <option value="math">Religion</option>
+              <option value="math">Education</option>
+              <option value="math">Politics</option>
+              <option value="math">Fashion</option>
+              <option value="math">Lifestyle</option>
+              <option value="sports">Sports</option>
+            </select>
+          </div>
+        </div>
+        <div class="v1_3"></div>
+        <a href="/home"><span class="v1_4">FORUM</span></a>
+      </div>
+
+      <div class="login-user">
+        <a href="/login"
+          ><img src="../static/images/login.png" class="login-icon"
+        /></a>
+      </div>
+      
+      <div class="unidentified-user">
+        <a href="/register"
+          ><img src="../static/images/profile.png" class="undUsr"
+        /></a>
+      </div>
+
+      <aside class="sidebar">
+        <div class="sidebar-background"></div>
+        <div class="cancel-sidebar">
+          <img class="cancel-sidebar" src="./images/cancel.png" alt="cancel" />
+        </div>
+        <div class="profile-details">
+          <div class="profile-backg">
+            <span class="profile-Name" id="profile-Name">NO</span>
+          </div>
+          <span class="user-Name" id="user-Name" value="{{.Username}}"
+            >{{.Username}}</span
+          >
+          <span class="user-email">{{.Email}}</span>
+        </div>
+        <div class="logout-btn" onclick="location='/logout'">
+          <span class="logout-btn-text">Logout</span>
+        </div>
+      </aside>
+    </div>
+
+    <main class="posts-container">
+       Posts will be dynamically inserted here
+    </main>
+
+    <button class="create-post-btn-landingPage" onclick="location='/register'">+</button>
+
+    <div class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Post</h2>
+          <button class="close-modal">&times;</button>
+        </div>
+        <form class="post-form" action="/create-post" method="post">
+          <textarea
+            name="title"
+            placeholder="Post Title"
+            required
+            rows="1"
+          ></textarea>
+
+          <textarea
+            name="content"
+            placeholder="Post Content"
+            required
+            rows="5"
+          ></textarea>
+          <select name="category" required>
+            <option value="tech">Technology</option>
+            <option value="health">Health</option>
+            <option value="math">Math</option>
+            <option value="math">Games</option>
+            <option value="math">Religion</option>
+            <option value="math">Education</option>
+            <option value="math">Politics</option>
+            <option value="math">Fashion</option>
+            <option value="math">Lifestyle</option>
+            <option value="science">Science</option>
+            <option value="sports">Sports</option>
+          </select>
+          <button type="submit">Create Post</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="/web/scripts/script.js"></script>
+    <script src="/scripts/post_button.js"></script>
+    <!-- <footer>
+      <div class="footer-container">
+        <div class="footer-section">
+          <h4>About Us</h4>
+          <p>
+            Welcome to our forum, a place to share knowledge and connect with others.
+          </p>
+        </div>
+        <div class="footer-section">
+          <h4>Links</h4>
+          <ul> -->
+    <!-- <li><a href="/about">About</a></li> -->
+    <!-- <li><a href="https://zone01kisumu.ke">Visit us</a></li> -->
+    <!-- <li><a href="/terms">Terms of Service</a></li> -->
+    <!-- <li><a href="/privacy">Privacy Policy</a></li> -->
+    <!-- </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Developers</h4>
+          <div class="social-icons">
+            <a href="#" target="_blank"
+              ><img src="#" alt="Shadrack"
+            /></a>
+            <a href="https://martinraymondogwel.netlify.app" target="_blank"
+              ><img src="#" alt="Raymond"
+            /></a>
+            <a href="#" target="_blank"
+              ><img src="#" alt="Clifford"
+            /></a>
+            <a href="#" target="_blank"
+            ><img src="#" alt="Valentine"
+          /></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Forum. All rights reserved.</p>
+      </div>
+    </footer> -->
+  </body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,7 +282,7 @@
             </select>
         </div>
 
-        <!-- Discuss With Us Button -->
+       Discuss With Us Button
         <button class="discuss-btn" onclick="location.href='/register'">Discuss With Us</button>
         <main class="posts-container">
         </main>
@@ -46,10 +303,10 @@
         <div class="footer-section">
           <h4>Links</h4>
           <ul>
-            <!-- <li><a href="/about">About</a></li> -->
+             <li><a href="/about">About</a></li>
             <li><a href="https://zone01kisumu.ke">Visit us</a></li>
-            <!-- <li><a href="/terms">Terms of Service</a></li> -->
-            <!-- <li><a href="/privacy">Privacy Policy</a></li> -->
+             <li><a href="/terms">Terms of Service</a></li>
+             <li><a href="/privacy">Privacy Policy</a></li>
           </ul>
         </div>
         <div class="footer-section">
@@ -75,4 +332,4 @@
       </div>
     </footer>
     </body>
-</html>
+</html> -->
