@@ -264,7 +264,12 @@ body {
 }
 
 .post-form input,
-.post-form textarea,
+.post-form textarea {
+  max-width: 100%;
+  min-width: 100%;
+  /* max-width: max-content; */
+}
+
 .post-form select {
   padding: 0.5rem;
   border: 1px solid #ddd;

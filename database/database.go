@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -25,22 +24,22 @@ func StartDbConnection() error {
 	}
 
 	if err = CreateUsersTable(Db); err != nil {
-		log.Fatalf("\nCould not create User table: %e\n", err)
+		fmt.Println("Could not create User table: ", err)
 	}
 
 	if err = CreateLikesDislikesTable(Db); err != nil {
-		log.Fatalf("\nCould not create Likes and Dislikes table: %e\n", err)
+		fmt.Println("Could not create Likes and Dislikes table: ", err)
 	}
 
 	if err = CreateSessionsTable(Db); err != nil {
-		log.Fatalf("\nCould not create sessions table: %e\n", err)
+		fmt.Println("Could not create sessions table: %", err)
 	}
-	
+
 	if err = CreatePostsTable(Db); err != nil {
-		log.Fatalf("\nCould not create posts table: %e\n", err)
+		fmt.Println("Could not create posts table: ", err)
 	}
 	if err = CreateCommentsTable(Db); err != nil {
-		log.Fatalf("\nCould not create comments table: %e\n", err)
+		fmt.Println("Could not create comments table: ", err)
 	}
 
 	fmt.Println("Connected to SQLite database successfully!")
