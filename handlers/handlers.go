@@ -55,14 +55,14 @@ func LandingPage(w http.ResponseWriter, r *http.Request) {
 
 // serve the Homepage
 
-func getUserDetails(w http.ResponseWriter, r *http.Request) error {
-	// var PD m.ProfileData
+func getUserDetails(w http.ResponseWriter, r *http.Request) (error, m.ProfileData) {
+	var Profile m.ProfileData
 
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		fmt.Println("Profile Section: No session cookie found:", err)
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return err
+		return err,Profile
 	}
 
 	var userID string
@@ -70,17 +70,18 @@ func getUserDetails(w http.ResponseWriter, r *http.Request) error {
 	err = d.Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
 	if err != nil {
 		fmt.Println("Session not found in DB:", err)
-		return err
+		return err,Profile
 	}
 
 	query := `
-	SELECT  username, email , uuid  FROM users WHERE id = ?`
+		SELECT  username, email , uuid  FROM users WHERE id = ?`
 
-	err = d.Db.QueryRow(query, userID).Scan(&m.Profile.Username, &m.Profile.Email, &m.Profile.Uuid)
+
+	err = d.Db.QueryRow(query, userID).Scan(&Profile.Username, &Profile.Email, &Profile.Uuid)
 	if err != nil {
-		return err
+		return err,Profile
 	}
-	return nil
+	return nil,Profile
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +90,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := getUserDetails(w, r)
+	err,Profile := getUserDetails(w, r)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
@@ -100,7 +101,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = tmpl.Execute(w, m.Profile); err != nil {
+	if err = tmpl.Execute(w, Profile); err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -143,6 +144,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
+	
 	if r.Method != http.MethodGet {
 		ErrorPage(nil, m.ErrorsData.InternalError, w, r)
 		return
@@ -197,6 +199,13 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
+
+	err,Profile := getUserDetails(w, r)
+	if err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		// http.Error(w, "method not allowed", http.StatusBadRequest)
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
@@ -208,8 +217,9 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 	title := r.FormValue("title")
 
-	_, err := d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid) VALUES ($1, $2, $3 ,$4)", category, content, title, m.Profile.Uuid)
-	fmt.Println(m.Profile.Uuid)
+
+	_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid) VALUES ($1, $2, $3 ,$4)", category, content, title, Profile.Uuid)
+	fmt.Println(Profile.Uuid)
 	if err != nil {
 		fmt.Println("could not insert posts", err)
 		// http.Error(w, "could not insert post", http.StatusInternalServerError)
@@ -228,8 +238,16 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
+	
+	
+
 	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+	err,Profile := getUserDetails(w, r)
+	if err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
 
@@ -238,7 +256,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		Post_id string `json:"post_id"`
 	}
 	fmt.Println(string(str))
-	err := json.Unmarshal(str, &postID)
+	err = json.Unmarshal(str, &postID)
 	if err != nil {
 		fmt.Println("could not unmarshal post id")
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
@@ -248,19 +266,19 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if the user has already liked or disliked the post
 	var likeDislike string
 	// check if liked
-	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND post_id = ?", postID.Post_id).Scan(&likeDislike)
+	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid).Scan(&likeDislike)
 
 	if err == sql.ErrNoRows {
 		// if not liked check if disliked
-		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ?", postID.Post_id).Scan(&likeDislike)
+		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid).Scan(&likeDislike)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				// check if the post exists
-				err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE post_id = ?", postID.Post_id).Scan(&likeDislike)
+				err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid).Scan(&likeDislike)
 				if err == sql.ErrNoRows {
 
 					fmt.Println("had not liked it")
-					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,post_id,user_uuid) VALUES ('like',?,?)", postID.Post_id, m.Profile.Uuid)
+					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,post_id,user_uuid) VALUES ('like',?,?)", postID.Post_id, Profile.Uuid)
 					if err != nil {
 						fmt.Println("Failed to like post", err)
 						http.Error(w, "Failed to like post", http.StatusInternalServerError)
@@ -268,7 +286,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				} else {
 					fmt.Println("had not liked it")
-					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ?", postID.Post_id)
+					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid)
 					if err != nil {
 						fmt.Println("Failed to like post", err)
 						http.Error(w, "Failed to like post", http.StatusInternalServerError)
@@ -286,7 +304,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ?", postID.Post_id)
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid)
 		if err != nil {
 			fmt.Println("Failed to like post", err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -301,7 +319,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	} else if likeDislike == "like" {
 
 		// If the user has already liked the post, minus the like
-		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ?", postID.Post_id)
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid)
 		if err != nil {
 			fmt.Println("Failed to minus like", err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -317,13 +335,17 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-
+	err,Profile := getUserDetails(w, r)
+	if err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	}
 	str, _ := io.ReadAll(r.Body)
 	var postID struct {
 		Post_id string `json:"post_id"`
 	}
 	fmt.Println(string(str))
-	err := json.Unmarshal(str, &postID)
+	err = json.Unmarshal(str, &postID)
 	if err != nil {
 		fmt.Println("could not unmarshal post id")
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
@@ -333,18 +355,18 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if the user has already liked or disliked the post
 	var likeDislike string
 	// check if liked
-	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ?", postID.Post_id).Scan(&likeDislike)
+	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid).Scan(&likeDislike)
 
 	if err == sql.ErrNoRows {
 		// if not liked check if disliked
-		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND post_id = ?", postID.Post_id).Scan(&likeDislike)
+		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid).Scan(&likeDislike)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE post_id = ?", postID.Post_id).Scan(&likeDislike)
+				err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid).Scan(&likeDislike)
 				if err == sql.ErrNoRows {
 
 					fmt.Println("had not disliked it")
-					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,post_id,user_uuid) VALUES ('dislike',?,?)", postID.Post_id, m.Profile.Uuid)
+					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,post_id,user_uuid) VALUES ('dislike',?,?)", postID.Post_id, Profile.Uuid)
 					if err != nil {
 						fmt.Println("Failed to dislike post", err)
 						http.Error(w, "Failed to dislike post", http.StatusInternalServerError)
@@ -352,7 +374,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				} else {
 					fmt.Println("had not disliked it")
-					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE post_id = ?", postID.Post_id)
+					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid)
 					if err != nil {
 						fmt.Println("Failed to dislike post", err)
 						http.Error(w, "Failed to dislike post", http.StatusInternalServerError)
@@ -370,7 +392,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE post_id = ?", postID.Post_id)
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid)
 		if err != nil {
 			fmt.Println("Failed to dislike post", err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -385,7 +407,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	} else if likeDislike == "dislike" {
 
 		// If the user has already liked the post, minus the like
-		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ?", postID.Post_id)
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid)
 		if err != nil {
 			fmt.Println("Failed to minus dislike", err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -397,7 +419,12 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func MyPostHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.Db.Query("SELECT title,content,category,post_id FROM posts WHERE user_uuid = ?", m.Profile.Uuid)
+	err,Profile := getUserDetails(w, r)
+	if err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	}
+	rows, err := d.Db.Query("SELECT title,content,category,post_id FROM posts WHERE user_uuid = ? ", Profile.Uuid)
 	if err != nil {
 		fmt.Println("unable to query my posts", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -414,13 +441,13 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var likeCount, dislikeCount int
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like' AND post_id = ?", m.Profile.Uuid, eachPost.Post_id).Scan(&likeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND post_id = ?",  eachPost.Post_id).Scan(&likeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get like count", http.StatusInternalServerError)
 			return
 		}
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'dislike' AND post_id = ?", m.Profile.Uuid, eachPost.Post_id).Scan(&dislikeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ?", eachPost.Post_id).Scan(&dislikeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get dislike count", http.StatusInternalServerError)
@@ -444,7 +471,13 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
-	likedRows, err := d.Db.Query("SELECT post_id FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", m.Profile.Uuid)
+
+	err,Profile := getUserDetails(w, r)
+	if err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	}
+	likedRows, err := d.Db.Query("SELECT post_id FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", Profile.Uuid)
 	if err != nil {
 		fmt.Println("unable to query my posts", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
