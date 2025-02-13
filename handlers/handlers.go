@@ -39,7 +39,7 @@ type Post struct {
 	Likes     int       `json:"likes"`
 	Title     string    `json:"title"`
 	Dislikes  int       `json:"dislikes"`
-	Comments  string    `json:"comments"`
+	Comments  []Comment    `json:"comments"`
 	Content   string    `json:"content"`
 	Post_ID   int       `json:"post_id"`
 }
@@ -160,7 +160,32 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "could not get dislike count", http.StatusInternalServerError)
 			return
 		}
-
+		// Get comments for a specific post
+		commentRows, err := d.Db.Query(`
+		SELECT comment_id, content, created_at
+		FROM comments
+		WHERE post_id = ?
+		ORDER BY created_at DESC`,
+		eachPost.Post_ID,
+	)
+	if	err != nil {
+		fmt.Println(err)
+		http.Error(w, "could not get comments", http.StatusInternalServerError)
+		return
+	}
+	defer commentRows.Close()
+	var comments []Comment
+	for commentRows.Next() {
+	var comment Comment
+	err := commentRows.Scan(&comment.CommentID, &comment.Content, &comment.CreatedAt)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "could not scan comment", http.StatusInternalServerError)
+		return
+	}
+	comments = append(comments, comment)
+}
+        eachPost.Comments = comments
 		eachPost.Likes = likeCount
 		eachPost.Dislikes = dislikeCount
 
