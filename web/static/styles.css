@@ -17,15 +17,6 @@ body {
   color: var(--text-color);
 }
 
-header {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .filters {
   padding: 1rem 2rem;
   display: flex;
@@ -45,12 +36,6 @@ header {
 .filter-btn.active {
   background-color: var(--primary-color);
   color: white;
-}
-
-#category-filter {
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid #ddd;
 }
 
 .posts-container {
@@ -378,42 +363,6 @@ footer {
   overflow: hidden;
 }
 
-.sidebar {
-  width: 278px;
-  height: 762px;
-  background: url("../images/v3_17.png");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  opacity: 1;
-  transform: translateX(100%);
-  transition: transform 0.3s ease-in-out;
-  position: fixed;
-  z-index: 1000;
-  top: 0px;
-  right: 0px;
-  overflow: hidden;
-}
-
-.cancel-sidebar {
-  position: relative;
-  z-index: 1000;
-  border-radius:100%;
-  width: 30px;
-  right: 1px;
-}
-
-.sidebar-background {
-  width: 278px;
-  height: 762px;
-  background: rgba(232,242,251,1);
-  opacity: 1;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  overflow: hidden;
-}
-
 .profile-details {
   width: 252px;
   height: 197px;
@@ -716,4 +665,111 @@ footer {
   position: absolute;
   top: 318px;
   left: 67px;
+}
+
+.header {
+  display: flex;
+  padding: 15px;
+  border-top-left-radius: 19px;
+  border-top-right-radius: 19px;
+  color: white;
+  font-size: 24px;
+  font-family: "Inkut Antiqua";
+  font-weight: bold;
+  align-items: center;
+  z-index: 1000;
+  justify-content: space-between;
+  background: linear-gradient(to right, #4a90e2, #1976d2);
+}
+
+.user-icon img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: white;
+  padding: 5px;
+}
+
+.nav {
+  display: flex;
+  border-bottom-left-radius: 19px;
+  border-bottom-right-radius: 19px;
+  gap: 10px;
+  position: relative;
+  padding: 10px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav button,
+.nav select {
+  padding: 8px 15px;
+  border: none;
+  background: #e3f2fd;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.nav .active {
+  background: #1976d2;
+  color: white;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: -300px;
+  width: 250px;
+  height: 100%;
+  background: #e3f2fd;
+  box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2);
+  transition: right 0.3s ease-in-out;
+  padding: 20px;
+}
+
+.sidebar.open {
+  right: 0;
+}
+
+#category-filter {
+  font-family: Inkut Antiqua;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  font-family: Inkut Antiqua;
+  cursor: pointer;
+  float: right;
+}
+
+.profile {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-family: Inkut Antiqua;
+  font-weight: bold;
+  margin: 0 auto 10px;
+}
+
+textarea {
+  font-family: "Inkut Antiqua";
+}
+
+.username,
+.email {
+  font-size: 16px;
+  font-weight: bold;
 }
