@@ -4,24 +4,80 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Forum</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="../static/styles.css" />
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const username = document.getElementById("user-Name").value;
+
+        function getInitials(name) {
+          let initials = name
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase())
+            .join("");
+          return initials;
+        }
+
+        const initials = getInitials(username);
+        document.getElementById("profile-Name").textContent = initials;
+      });
+    </script>
   </head>
   <body>
-    <header>
-      <div class="logo">Forum</div>
-      <div class="hamburger-menu">
-        <div class="hamburger-icon">
-          <span></span>
-          <span></span>
-          <span></span>
+    <div class="v1_2">
+      <div class="v1_5"></div>
+      <div class="v3_144"></div>
+      <div class="v3_143"></div>
+      <div class="v1_10">
+        <div class="v1_6">
+          <div class="filters">
+            <button class="filter-btn active" data-filter="all">All Posts</button>
+            <button class="filter-btn" data-filter="created">My Posts</button>
+            <button class="filter-btn" data-filter="liked">Liked Posts</button>
+            <select id="category-filter">
+              <option value="all">All Categories</option>
+              <option value="tech">Technology</option>
+              <option value="health">Health</option>
+              <option value="math">Games</option>
+              <option value="math">Religion</option>
+              <option value="math">Education</option>
+              <option value="math">Politics</option>
+              <option value="math">Fashion</option>
+              <option value="math">Lifestyle</option>
+              <option value="sports">Sports</option>
+            </select>
+          </div>
         </div>
-        <div class="menu-content">
-          <span class="user-name">{{.Username}}</span>
-          <span class="user-email">{{.Email}}</span>
-          <button class="logout-btn" onclick="location.href='/logout'">Logout</button>
-        </div>
+        <div class="v1_3"></div>
+        <a href="/home"><span class="v1_4">FORUM</span></a>
       </div>
-    </header>
+
+      <div class="unidentified-user">
+        <img src="../static/images/profile.png" class="undUsr" />
+      </div>
+
+      <aside class="sidebar">
+        <div class="sidebar-background"></div>
+        <div class="cancel-sidebar">
+          <img
+            class="cancel-sidebar"
+            src="../static/images/cancel.png"
+            alt="cancel"
+          />
+        </div>
+        <div class="profile-details">
+          <div class="profile-backg">
+            <span class="profile-Name" id="profile-Name">NO</span>
+          </div>
+          <span class="user-Name" id="user-Name" value="{{.Username}}"
+            >{{.Username}}</span
+          >
+          <span class="user-email">{{.Email}}</span>
+        </div>
+        <div class="logout-btn" onclick="location='/logout'">
+          <span class="logout-btn-text">Logout</span>
+        </div>
+      </aside>
+    </div>
 
     <div class="filters">
       <button class="filter-btn active" data-filter="all">All Posts</button>
@@ -48,7 +104,12 @@
           <button class="close-modal">&times;</button>
         </div>
         <form class="post-form" action="/create-post" method="post">
-          <textarea name="title" placeholder="Post Title" required rows="1"></textarea>
+          <textarea
+            name="title"
+            placeholder="Post Title"
+            required
+            rows="1"
+          ></textarea>
 
           <textarea
             name="content"
@@ -67,6 +128,29 @@
         </form>
       </div>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const sidebar = document.querySelector(".sidebar");
+        const cancelBtn = document.querySelector(".cancel-sidebar");
+
+        function openSidebar() {
+          sidebar.style.transform = "translateX(0)";
+        }
+
+        function closeSidebar() {
+          sidebar.style.transform = "translateX(100%)";
+        }
+
+        // Open sidebar when the profile is clicked (or another trigger)
+        document
+          .querySelector(".undUsr")
+          .addEventListener("click", openSidebar);
+
+        // Close sidebar when cancel button is clicked
+        cancelBtn.addEventListener("click", closeSidebar);
+      });
+    </script>
     <script src="/web/scripts/script.js"></script>
     <script src="/scripts/post_button.js"></script>
     <footer>
@@ -74,7 +158,8 @@
         <div class="footer-section">
           <h4>About Us</h4>
           <p>
-            Welcome to our forum, a place to share knowledge and connect with others.
+            Welcome to our forum, a place to share knowledge and connect with
+            others.
           </p>
         </div>
         <div class="footer-section">
@@ -89,18 +174,12 @@
         <div class="footer-section">
           <h4>Developers</h4>
           <div class="social-icons">
-            <a href="#" target="_blank"
-              ><img src="#" alt="Shadrack"
-            /></a>
+            <a href="#" target="_blank"><img src="#" alt="Shadrack" /></a>
             <a href="https://martinraymondogwel.netlify.app" target="_blank"
               ><img src="#" alt="Raymond"
             /></a>
-            <a href="#" target="_blank"
-              ><img src="#" alt="Clifford"
-            /></a>
-            <a href="#" target="_blank"
-            ><img src="#" alt="Valentine"
-          /></a>
+            <a href="#" target="_blank"><img src="#" alt="Clifford" /></a>
+            <a href="#" target="_blank"><img src="#" alt="Valentine" /></a>
           </div>
         </div>
       </div>
@@ -108,6 +187,5 @@
         <p>&copy; 2025 Forum. All rights reserved.</p>
       </div>
     </footer>
-    
   </body>
 </html>
