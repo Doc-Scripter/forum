@@ -1,9 +1,9 @@
 package routers
 
-import(
+import (
 	"net/http"
+
 	handler "forum/handlers"
-	d "forum/database"
 )
 
 func Routers() (*http.ServeMux, error) {
@@ -13,7 +13,7 @@ func Routers() (*http.ServeMux, error) {
 	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
 	scriptServer := http.FileServer(http.Dir("web/scripts/"))
-    mux.Handle("/web/scripts/", http.StripPrefix("/web/scripts/", scriptServer))
+	mux.Handle("/web/scripts/", http.StripPrefix("/web/scripts/", scriptServer))
 
 	mux.HandleFunc("/", handler.LandingPage)
 	mux.HandleFunc("/login", handler.Login)
@@ -21,12 +21,11 @@ func Routers() (*http.ServeMux, error) {
 	// mux.Handle("/logging", handler.AuthMiddleware(http.HandlerFunc(handler.AuthenticateUserCredentialsLogin)))
 	mux.HandleFunc("/posts", handler.PostsHandler)
 	mux.HandleFunc("/create-post", handler.CreatePostsHandler)
-    mux.HandleFunc("/home", handler.HomePage)
+	mux.HandleFunc("/home", handler.HomePage)
 	mux.HandleFunc("/likes", handler.LikePostHandler)
 	mux.HandleFunc("/dislikes", handler.DislikePostHandler)
-	mux.HandleFunc("/comments", handler.GetCommentsHandler(d.Db))
-	mux.HandleFunc("/comments/add", handler.AddCommentHandler(d.Db))
-	
+	mux.HandleFunc("/comments", handler.GetCommentsHandler)
+	mux.HandleFunc("/add-comments", handler.AddCommentHandler)
 
 	mux.HandleFunc("/register", handler.Register)
 	mux.HandleFunc("/registration", handler.RegisterUser)
