@@ -8,38 +8,42 @@
       href="https://fonts.googleapis.com/css?family=Inknut+Antiqua&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="../static/styles.css" />
   </head>
 
-  <body>
-    <div class="header">
+  <body class="gradient-background light-theme">
+    <div class="header glass-effect">
       <h1>FORUM</h1>
       <div class="user-icon" onclick="toggleSidebar()">
-        <img src="/static/images/profile.png" alt="User" />
+        <img src="/static/images/profile.png" alt="User" class="glass-effect" />
       </div>
     </div>
 
-    <div class="filters">
-      <button class="filter-btn active" data-filter="allPosts">
-        All Posts
+    <div class="filters glass-effect">
+      <div class="filter-options">
+        <button class="filter-btn active glass-btn" data-filter="allPosts">All Posts</button>
+        <button class="filter-btn glass-btn" data-filter="created">My Posts</button>
+        <button class="filter-btn glass-btn" data-filter="liked">Favorites</button>
+        <select id="category-filter" class="glass-select">
+          <option value="all">All Categories</option>
+          <option value="tech">Technology</option>
+          <option value="health">Health</option>
+          <option value="games">Games</option>
+          <option value="religion">Religion</option>
+          <option value="education">Education</option>
+          <option value="politics">Politics</option>
+          <option value="fashion">Fashion</option>
+          <option value="lifestyle">Lifestyle</option>
+          <option value="sports">Sports</option>
+        </select>
+      </div>
+      <button id="theme-toggle" class="theme-toggle glass-btn">
+        <span class="moon">🌙</span>
+        <span class="sun">☀️</span>
       </button>
-      <button class="filter-btn" data-filter="created">My Posts</button>
-      <button class="filter-btn" data-filter="liked">Favorites</button>
-      <select id="category-filter">
-        <option value="all">All Categories</option>
-        <option value="tech">Technology</option>
-        <option value="health">Health</option>
-        <option value="games">Games</option>
-        <option value="religion">Religion</option>
-        <option value="education">Education</option>
-        <option value="politics">Politics</option>
-        <option value="fashion">Fashion</option>
-        <option value="lifestyle">Lifestyle</option>
-        <option value="sports">Sports</option>
-      </select>
     </div>
 
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar glass-effect" id="sidebar">
       <button class="close-btn" onclick="toggleSidebar()">×</button>
       <div class="profile">
         <div class="avatar" id="profile-Name">{{.Initials}}</div>
@@ -63,10 +67,10 @@
       <!-- Posts will be dynamically inserted here -->
     </main>
 
-    <button class="create-post-btn">+</button>
+    <button class="create-post-btn glass-effect"></button>
 
     <div class="modal">
-      <div class="modal-content">
+      <div class="modal-content glass-effect">
         <div class="modal-header">
           <h2 style="font-family: 'Inkut Antiqua'">Create New Post</h2>
           <button class="close-modal">&times;</button>

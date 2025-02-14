@@ -1,14 +1,16 @@
 package models
 
 import (
-	"net/http"
 	"time"
+	"strings"
+	"net/http"
 )
 
 type ProfileData struct {
 	Username string
 	Email    string
 	Uuid     string
+	Initials string
 }
 
 type ErrorData struct {
@@ -66,4 +68,36 @@ type Post struct {
 	Content   string    `json:"content"`
 	User_uuid string    `json:"user_uuid"`
 	Post_id   int       `json:"post_id"`
+	Owner         string
+	OwnerInitials string
 }
+
+// Initials interface defines the method for generating initials
+type Initials interface {
+	GenerateInitials() string
+}
+
+// Make ProfileData implement the Initials interface
+func (p *ProfileData) GenerateInitials() string {
+	parts := strings.Split(p.Username, " ")
+	
+	if len(parts) == 0 || len(parts[0]) == 0 {
+		return "?"
+	}
+	
+	// Get first initial
+	firstInitial := string(parts[0][0])
+	
+	// Get second initial if available
+	var secondInitial string
+	if len(parts) > 1 && len(parts[1]) > 0 {
+		secondInitial = string(parts[1][0])
+	}
+	
+	// Return combined initials
+	if secondInitial != "" {
+		return strings.ToUpper(firstInitial + secondInitial)
+	}
+	return strings.ToUpper(firstInitial)
+}
+
