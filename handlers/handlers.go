@@ -143,7 +143,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodGet {
 		ErrorPage(nil, m.ErrorsData.InternalError, w, r)
 		return
@@ -167,17 +166,46 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
-
-		var likeCount, dislikeCount int
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", &eachPost.Post_id).Scan(&likeCount)
+		commentsCount := 0
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", eachPost.Post_id).Scan(&commentsCount)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("unable ro query comments", err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
+		defer rows.Close()
+
+		eachPost.CommentsCount = commentsCount
+
+		rows, err := d.Db.Query(`SELECT content WHERE post_id = ?`, eachPost.Post_id)
+		if err != nil {
+			fmt.Println("unable to query comments", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
+		var comments []string
+		for rows.Next() {
+			comment := ""
+			rows.Scan(&comment)
+			comments = append(comments, comment)
+		}
+
+		eachPost.Comments = comments
+
+		var likeCount, dislikeCount int
+
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", &eachPost.Post_id).Scan(&likeCount)
+		if err != nil {
+			fmt.Println("unable to query likes and dislikes", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", &eachPost.Post_id).Scan(&dislikeCount)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("unable to query likes and dislikes", err)
+
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -189,6 +217,8 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	postsJson, err := json.Marshal(posts)
 	if err != nil {
+		fmt.Println("unable to marshal", err)
+
 		// http.Error(w, "could not marshal posts", http.StatusInternalServerError)
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
@@ -198,7 +228,6 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
-
 	err, Profile := getUserDetails(w, r)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -236,7 +265,6 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
@@ -467,7 +495,6 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
-
 	err, Profile := getUserDetails(w, r)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -561,4 +588,45 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 	// r.Method = http.MethodGet
 	// PostsHandler(w, r)
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
+}
+
+func CommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+
+	str, _ := io.ReadAll(r.Body)
+	var postID struct {
+		Post_id string `json:"post_id"`
+	}
+	fmt.Println(string(str))
+	err := json.Unmarshal(str, &postID)
+	if err != nil {
+		fmt.Println("could not unmarshal post id")
+		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+
+	rows, err := d.Db.Query(`SELECT created_at,likes,dislikes,content FROM comments WHERE post_id=?`, postID.Post_id)
+	if err != nil {
+		fmt.Println("could not query comments", err)
+		http.Error(w, "could not get like count", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var comments []m.Comment
+	for rows.Next() {
+		var eachComment m.Comment
+		rows.Scan(&eachComment.CreatedAt, &eachComment.Likes, &eachComment.Dislikes, &eachComment.Content)
+		comments = append(comments, eachComment)
+	}
+	commentsJson, err := json.Marshal(comments)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "could not get like count", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(commentsJson)
 }

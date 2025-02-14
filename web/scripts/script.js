@@ -13,17 +13,16 @@ const dislikebutton = document.querySelectorAll(".dislike-btn");
 const comments = document.querySelectorAll(".comments-section");
 const commentform = document.querySelectorAll(".comment-form");
 
-
 let currentFilter = "allPosts";
 let currentCategory = "all";
 let posts = [];
 let route = "/posts";
 
 commentform.forEach((form) => {
-form.addEventListener("submit", (e) => {
-  // e.preventDefault();
-  commentform.reset();
-})
+  form.addEventListener("submit", (e) => {
+    // e.preventDefault();
+    commentform.reset();
+  });
 });
 
 postsContainer.addEventListener("click", (e) => {
@@ -92,9 +91,11 @@ function displayPosts(posts, category) {
   if (category === "all") {
     filteredPosts = posts;
   } else {
-    filteredPosts = posts.filter((post) => post.category === category);
+    // if (posts !== null) {
+      filteredPosts = posts.filter((post) => post.category === category);
+    // }
   }
-  if (filteredPosts === null || !posts) {
+  if (filteredPosts === null || !posts || filteredPosts.length === 0) {
     postsContainer.innerHTML = `<article class="post">
     <div class="post-header">
     <span class="post-date">NO Date</span>
@@ -105,9 +106,10 @@ function displayPosts(posts, category) {
         <span class="post-author"></span>
       </div>
     </article>`;
-    
   } else {
-    postsContainer.innerHTML = filteredPosts.map((post) => `
+    postsContainer.innerHTML = filteredPosts
+      .map(
+        (post) => `
       <article class="post">
       <div class="post-header">
       </div>
@@ -124,9 +126,19 @@ function displayPosts(posts, category) {
             👎${post.dislikes}
             </button>
             <button class="comments-toggle" data-post-id="${post.post_id}">
-       💬 Comments (0)
+       💬 Comments (${post.comments })
      </button>
      <div class="comments-section" id=comments-${post.post_id}>
+
+      ${post.comments.map(comment => `
+        <div class="comment">
+          <strong>${comment.author}</strong>
+          <p>${comment.content}</p>
+          <small>${comment.date}</small>
+        </div>
+      `).join('')}
+      
+    </div>
      <form class="comment-form" data-post-id="${post.post_id}" action="/addcomment" method="post">
      <input type="hidden" name="post_id" value="${post.post_id}"/>
      <input type="text" name="add-comment" class="comment-input" placeholder="Add a comment..." required>
@@ -136,46 +148,57 @@ function displayPosts(posts, category) {
      </div>
      </article>
      `
-    )
-    .join("");
+      )
+      .join("");
   }
 
-//   commentform.forEach((form) => {
-//     form.addEventListener("submit", (e) => {
-//         e.preventDefault();
-//         const postId = form.dataset.postId;
-//         const commentInput = form.querySelector(".comment-input");
-//         const comment = commentInput.value;
-//         fetch("/addcomment", {
-//             method: "POST",
-//             headers: { "Content-Type": "application/json" },
-//             body: JSON.stringify({ post_id: postId, add_comment: comment }),
-//         })
-//             .then((response) => response.json())
-//             .then((comments) => {
-//                 const commentsSection = document.getElementById(`comments-${postId}`);
-//                 commentsSection.innerHTML = "";
-//                 comments.forEach((comment) => {
-//                     const commentElement = document.createElement("div");
-//                     commentElement.textContent = comment;
-//                     commentsSection.appendChild(commentElement);
-//                 });
-//             })
-//             .catch((error) => console.error(error));
-//     });
-// });
-
+  //   commentform.forEach((form) => {
+  //     form.addEventListener("submit", (e) => {
+  //         e.preventDefault();
+  //         const postId = form.dataset.postId;
+  //         const commentInput = form.querySelector(".comment-input");
+  //         const comment = commentInput.value;
+  //         fetch("/addcomment", {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/json" },
+  //             body: JSON.stringify({ post_id: postId, add_comment: comment }),
+  //         })
+  //             .then((response) => response.json())
+  //             .then((comments) => {
+  //                 const commentsSection = document.getElementById(`comments-${postId}`);
+  //                 commentsSection.innerHTML = "";
+  //                 comments.forEach((comment) => {
+  //                     const commentElement = document.createElement("div");
+  //                     commentElement.textContent = comment;
+  //                     commentsSection.appendChild(commentElement);
+  //                 });
+  //             })
+  //             .catch((error) => console.error(error));
+  //     });
+  // });
 
   // ${post.comments.length}
-  
+
   // Add comments toggle functionality
-document.querySelectorAll('.comments-toggle').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    const postId = btn.dataset.postId;
-    const commentsSection = document.getElementById(`comments-${postId}`);
-    commentsSection.classList.toggle('active');
+  document.querySelectorAll(".comments-toggle").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const postId = btn.dataset.postId;
+      const commentsSection = document.getElementById(`comments-${postId}`);
+      commentsSection.classList.toggle("active");
+      fetch("/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ post_id: postId }),
+      })
+        // .then(() => {
+        //   fetchPosts(route);
+        // })
+        .catch(
+          (error) => console.error(error)
+          // alert('You have already disliked this post')
+        );
+    });
   });
-});
 }
 // ${post.comments.map(comment => `
 //   <div class="comment">
@@ -205,7 +228,6 @@ document.querySelectorAll('.comments-toggle').forEach(btn => {
 
 document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 
-
 // Create Post Modal
 createPostBtn.addEventListener("click", () => {
   modal.classList.add("active");
@@ -215,18 +237,13 @@ closeModal.addEventListener("click", () => {
   modal.classList.remove("active");
 });
 
-modal.addEventListener('click', (e) => {
+modal.addEventListener("click", (e) => {
   if (e.target === modal) {
-    modal.classList.remove('active');
+    modal.classList.remove("active");
   }
 });
 
-
-
-
-
 // }
-
 
 // Event listeners for filters
 filterBtns.forEach((btn) => {
