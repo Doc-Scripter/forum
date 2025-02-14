@@ -67,9 +67,7 @@ postsContainer.addEventListener("click", (e) => {
 
 postForm.addEventListener("submit", (e) => {
   alert("Post submitted successfully!");
-  // e.preventDefault();
-  // fetchPosts();
-  // postForm.reset()
+  e.preventDefault();
 });
 
 // State
@@ -91,9 +89,9 @@ function displayPosts(posts, category) {
   if (category === "all") {
     filteredPosts = posts;
   } else {
-    // if (posts !== null) {
+    if (posts !== null) {
     filteredPosts = posts.filter((post) => post.category === category);
-    // }
+    }
   }
   if (filteredPosts === null || !posts || filteredPosts.length === 0) {
     postsContainer.innerHTML = `<article class="post">
@@ -158,32 +156,7 @@ function displayPosts(posts, category) {
       .join('');
   }
 
-  //   commentform.forEach((form) => {
-  //     form.addEventListener("submit", (e) => {
-  //         e.preventDefault();
-  //         const postId = form.dataset.postId;
-  //         const commentInput = form.querySelector(".comment-input");
-  //         const comment = commentInput.value;
-  //         fetch("/addcomment", {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/json" },
-  //             body: JSON.stringify({ post_id: postId, add_comment: comment }),
-  //         })
-  //             .then((response) => response.json())
-  //             .then((comments) => {
-  //                 const commentsSection = document.getElementById(`comments-${postId}`);
-  //                 commentsSection.innerHTML = "";
-  //                 comments.forEach((comment) => {
-  //                     const commentElement = document.createElement("div");
-  //                     commentElement.textContent = comment;
-  //                     commentsSection.appendChild(commentElement);
-  //                 });
-  //             })
-  //             .catch((error) => console.error(error));
-  //     });
-  // });
 
-  // ${post.comments.length}
 
   // Add comments toggle functionality
   document.querySelectorAll(".comments-toggle").forEach((btn) => {
@@ -203,31 +176,7 @@ function displayPosts(posts, category) {
     });
   });
 }
-// ${post.comments.map(comment => `
-//   <div class="comment">
-//     <strong>${comment.author}</strong>
-//     <p>${comment.content}</p>
-//     <small>${comment.date}</small>
-//   </div>
-// `).join('')}
-/* <button class="comments-toggle" data-post-id="${post.id}">
-  💬 Comments (${post.comments.length})
-</button>
-    <div class="comments-section" id="comments-${post.id}">
-      ${post.comments.map(comment => `
-        <div class="comment">
-          <strong>${comment.author}</strong>
-          <p>${comment.content}</p>
-          <small>${comment.date}</small>
-        </div>
-      `).join('')}
-      <form class="comment-form" data-post-id="${post.id}">
-        <input type="text" class="comment-input" placeholder="Add a comment..." required>
-        <button type="submit" class="comment-submit">Comment</button>
-      </form>
-    </div>
-  </article>
-`).join(''); */
+
 
 document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 
