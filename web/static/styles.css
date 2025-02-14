@@ -270,6 +270,7 @@ body {
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
+  color: black;
 }
 
 .modal-header {
@@ -293,16 +294,11 @@ body {
 }
 
 .post-form input,
-.post-form textarea {
+.post-form textarea,
+.post-form select {
+  color: black;
   max-width: 100%;
   min-width: 100%;
-  /* max-width: max-content; */
-}
-
-.post-form select {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
 }
 
 .post-form button {
@@ -979,7 +975,7 @@ body.light-theme {
   --primary-gradient: linear-gradient(to right, #1e4f8f, #3674B5);  /* Dark to medium blue gradient */
   --background-color: #eef5ff;  /* Light blue background instead of cyan */
   --card-background: #FFFFFF;
-  --text-color: #000000;
+  --text-color: #333333;  /* Darker text color for better contrast */
   --glass-background: #FFFFFF;
   --glass-border: rgba(54, 116, 181, 0.2);
   --secondary-text: #333333;
@@ -1048,11 +1044,11 @@ body.light-theme .theme-toggle .moon {
 /* Create Post Button - Light Theme */
 body.light-theme .create-post-btn {
   background: var(--primary-color);
-  color: white;  /* Ensure base text is white */
+  color: white;  /* Changed back to white */
 }
 
 body.light-theme .create-post-btn::before {
-  color: white;  /* Ensure the "+" and "Create Post" text is white */
+  color: white;  /* Changed back to white */
 }
 
 body.light-theme .create-post-btn:hover {
@@ -1060,5 +1056,48 @@ body.light-theme .create-post-btn:hover {
 }
 
 body.light-theme .create-post-btn:hover::before {
-  color: white;  /* Ensure text stays white on hover */
+  color: white;  /* Changed back to white */
+}
+
+/* Add these new light theme overrides */
+body.light-theme .post-category {
+    color: white;  /* Ensure category labels remain visible */
+}
+
+body.light-theme select,
+body.light-theme option {
+    color: #333333;  /* Darker text for dropdowns */
+    background-color: white;  /* Light background */
+}
+
+body.light-theme .filter-btn {
+    color: #333333;  /* Darker text for filter buttons */
+}
+
+body.light-theme .filter-btn.active {
+    color: white;  /* White text for active filter buttons */
+}
+
+body.light-theme .post-metadata {
+    color: #666666;  /* Darker gray for metadata */
+}
+
+body.light-theme .comment-input {
+    color: #333333;  /* Darker text for comment input */
+    background: white;  /* Light background */
+}
+
+body.light-theme .comment-input::placeholder {
+    color: #999999;  /* Visible placeholder text */
+}
+
+body.light-theme .modal-content {
+    color: #333333;  /* Darker text for modal content */
+}
+
+body.light-theme .post-form input,
+body.light-theme .post-form textarea,
+body.light-theme .post-form select {
+    color: #333333;  /* Darker text for form inputs */
+    background: white;  /* Light background */
 }

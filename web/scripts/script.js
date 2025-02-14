@@ -66,76 +66,86 @@ postForm.addEventListener("submit", (e) => {
 // State
 
 function fetchPosts(route) {
-  fetch(route)
-    .then((response) => response.json())
-    .then((data) => {
-      displayPosts(data, currentCategory);
-    })
-    .catch((error) => {
-      console.error("Error fetching posts:", error);
-    });
+    // Check if we're in development mode or if route is for mock data
+    if (route === '/posts' || route === '/myPosts' || route === '/favorites') {
+        // Use mock data
+        mockFetchPosts()
+            .then(data => {
+                let filteredData = data;
+                
+                // Filter posts based on route
+                if (route === '/myPosts') {
+                    filteredData = data.filter(post => post.author === 'User1'); // Simulate current user's posts
+                } else if (route === '/favorites') {
+                    filteredData = data.filter(post => post.likes > 50); // Simulate liked posts
+                }
+                
+                displayPosts(filteredData, currentCategory);
+            })
+            .catch(error => {
+                console.error("Error fetching posts:", error);
+            });
+    } else {
+        // Use real API for other routes
+        fetch(route)
+            .then(response => response.json())
+            .then(data => {
+                displayPosts(data, currentCategory);
+            })
+            .catch(error => {
+                console.error("Error fetching posts:", error);
+            });
+    }
 }
 
 function displayPosts(posts, category) {
-  let filteredPosts = [];
-  if (category === "all") {
-    filteredPosts = posts;
-  } else {
-    if (posts !== null) {
-      filteredPosts = posts.filter((post) => post.category === category);
+    let filteredPosts = posts;
+    
+    // Filter by category if specified
+    if (category && category !== 'all') {
+        filteredPosts = posts.filter(post => post.category === category);
     }
-  }
-  if (filteredPosts === null) {
-    postsContainer.innerHTML = `<article class="post">
-    <div class="post-header">
-    <span class="post-date">NO Date</span>
-    </div>
-    <h2 class="post-title">No posts available</h2>
-    <p class="post-content">No posts to display</p>
-     <div class="post-footer">
-        <span class="post-author"></span>
-      </div>
-    </article>`;
-  } else {
-    // <span class="post-date">${post.date}</span>
-    // <span class="post-author">By ${post.author}</span>
-    // <div class="post-footer">
-    // <div class="post-actions">
-    //        <button class="action-btn like-btn ${post.liked ? 'active' : ''}" data-id="${post.id}">
-    //         👍 ${post.likes}
-    //       </button>
-    //        <button class="action-btn dislike-btn ${post.disliked ? 'active' : ''}" data-id="${post.id}">
-    //        👎 ${post.dislikes}
-    //        </button>
-    //        <button class="comments-toggle" data-post-id="${post.id}">
-    //     💬 Comments (${post.comments.length})
-    //   </button>
-    //   </div>
+    
+    if (!filteredPosts || filteredPosts.length === 0) {
+        postsContainer.innerHTML = `
+            <article class="post">
+                <div class="post-header">
+                    <span class="post-date">NO Date</span>
+                </div>
+                <h2 class="post-title">No posts available</h2>
+                <p class="post-content">No posts to display</p>
+                <div class="post-footer">
+                    <span class="post-author"></span>
+                </div>
+            </article>`;
+        return;
+    }
+
     postsContainer.innerHTML = filteredPosts
-      .map(
-        (post) => `
-      <article class="post">
-      <div class="post-header">
-      </div>
-      <h2 class="post-category">${post.category}</h2>
-      
-       <h2 class="post-title">${post.title}</h2>
-      <p class="post-content">${post.content}</p>
-    <div class="post-footer">
-     <div class="post-actions">
-            <button class="action-btn like-btn" data-post-id=${post.post_id}>
-             👍${post.likes}
-           </button>
-            <button class="action-btn dislike-btn" data-post-id=${post.post_id}>
-            👎${post.dislikes}
-            </button>
-            
-       </div>
-    </article>
-    `
-      )
-      .join("");
-  }
+        .map(post => `
+            <article class="post">
+                <div class="post-header">
+                    <span class="post-date">${new Date(post.created_at).toLocaleDateString()}</span>
+                </div>
+                <h2 class="post-category">${post.category}</h2>
+                <h2 class="post-title">${post.title}</h2>
+                <p class="post-content">${post.content}</p>
+                <div class="post-footer">
+                    <div class="post-metadata">
+                        <span class="post-author">By ${post.author}</span>
+                    </div>
+                    <div class="post-actions">
+                        <button class="action-btn like-btn" data-post-id=${post.post_id}>
+                            👍 ${post.likes}
+                        </button>
+                        <button class="action-btn dislike-btn" data-post-id=${post.post_id}>
+                            👎 ${post.dislikes}
+                        </button>
+                    </div>
+                </div>
+            </article>
+        `)
+        .join("");
 }
 
 function toggleSidebar() {
@@ -143,7 +153,9 @@ function toggleSidebar() {
   sidebar.classList.toggle("open");
 }
 
-document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
+document.addEventListener("DOMContentLoaded", () => {
+    fetchPosts("/posts");
+});
 
 // Create Post Modal
 createPostBtn.addEventListener("click", () => {
@@ -153,6 +165,16 @@ createPostBtn.addEventListener("click", () => {
 closeModal.addEventListener("click", () => {
   modal.classList.remove("active");
 });
+
+// Add this event listener when the modal is opened
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+      const modal = document.querySelector('.close-modal');
+      if (modal && modal.classList.contains('active')) {
+          modal.classList.remove('active');
+      }
+  }
+}); 
 
 // modal.addEventListener('click', (e) => {
 //   if (e.target === modal) {
