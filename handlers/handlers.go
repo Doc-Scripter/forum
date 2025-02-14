@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -125,22 +124,22 @@ func Login(rw http.ResponseWriter, req *http.Request) {
 // serve the registration form
 func Register(rw http.ResponseWriter, req *http.Request) {
 	tmpl, err := template.ParseFiles("./web/templates/register.html")
-	
+
 	if req.Method != http.MethodGet {
-        http.Error(rw, "Method Not Allowed", http.StatusMethodNotAllowed)
-        return
-    }
+		http.Error(rw, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
 	if err != nil {
 		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
-        log.Printf("Error parsing template: %v", err)
-        return
+		log.Printf("Error parsing template: %v", err)
+		return
 	}
 	if err := tmpl.Execute(rw, nil); err != nil {
-        http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
-        log.Printf("Error executing template: %v", err)
-        return
-    }
+		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+		log.Printf("Error executing template: %v", err)
+		return
+	}
 }
 
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -190,7 +189,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		commentRows, err := d.Db.Query(`SELECT comment_id, content, created_at FROM comments WHERE post_id = ? ORDER BY created_at DESC`,
 			eachPost.Post_ID)
 		if err != nil {
-			fmt.Println(err)
+			log.Printf("Error fetching comments for post %d: %v", eachPost.Post_ID, err)
 			http.Error(w, "could not get comments", http.StatusInternalServerError)
 			return
 		}
@@ -201,7 +200,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 			var comment Comment
 			err := commentRows.Scan(&comment.CommentID, &comment.Content, &comment.CreatedAt)
 			if err != nil {
-				fmt.Println(err)
+				log.Printf("Error scanning comment: %v", err)
 				http.Error(w, "could not scan comment", http.StatusInternalServerError)
 				return
 			}
@@ -229,51 +228,47 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusBadRequest)
 		return
 	}
-	fmt.Println("creating post")
+
 	r.ParseForm()
 	category := r.FormValue("category")
 	content := r.FormValue("content")
 	title := r.FormValue("title")
 
+	if category == "" || content == "" || title == "" {
+		http.Error(w, "All fields are required", http.StatusBadRequest)
+		return
+	}
+
 	_, err := d.Db.Exec("INSERT INTO posts (category, content, title) VALUES ($1, $2, $3)", category, content, title)
 	fmt.Println(err)
 	if err != nil {
 		http.Error(w, "could not insert post", http.StatusInternalServerError)
+		log.Printf("Error inserting post: %v", err)
 		return
 	}
-	// Update the post like count
-	// _, err = Db.Exec("UPDATE posts SET post_id = post_id + 1 ")
-	// if err != nil {
-	// 	fmt.Println("Failed to update post count: ",err)
-	// 	http.Error(w, "Failed to update post count", http.StatusInternalServerError)
-	// 	return
-	// }
 
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
-	fmt.Println("post created")
 }
 
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
-	str, _ := io.ReadAll(r.Body)
-	var postID struct {
-		Post_id string `json:"post_id"`
-	}
-	fmt.Println(string(str))
-	err := json.Unmarshal(str, &postID)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "could not unmarshal post id", http.StatusBadRequest)
-		return
-	}
 	if r.Method != http.MethodPost {
 		fmt.Println(r.Method)
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	PostNumID, err := strconv.Atoi(postID.Post_id)
+	// Read and parse the request body
+	var requestBody struct {
+		PostID string `json:"post_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	PostNumID, err := strconv.Atoi(requestBody.PostID)
 	if err != nil {
-		fmt.Println(err)
 		http.Error(w, "Invalid post id", http.StatusBadRequest)
 		return
 	}
@@ -329,8 +324,8 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		// If the user has already liked the post, minus the like
 		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ? ", PostNumID)
 		if err != nil {
-			http.Error(w, "Failed to minus like", http.StatusInternalServerError)
-			fmt.Println("Failed to minus like", err)
+			http.Error(w, "Failed to update like", http.StatusInternalServerError)
+			fmt.Println("Failed to update like", err)
 			return
 		}
 	}
@@ -339,26 +334,23 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
-	str, _ := io.ReadAll(r.Body)
-	var postID struct {
-		Post_id string `json:"post_id"`
-	}
-	fmt.Println(string(str))
-	err := json.Unmarshal(str, &postID)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "could not unmarshal post id", http.StatusBadRequest)
-		return
-	}
 	if r.Method != http.MethodPost {
 		fmt.Println(r.Method)
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	PostNumID, err := strconv.Atoi(postID.Post_id)
+	// Read and parse the request body
+	var requestBody struct {
+		PostID string `json:"post_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	PostNumID, err := strconv.Atoi(requestBody.PostID)
 	if err != nil {
-		fmt.Println(err)
 		http.Error(w, "Invalid post id", http.StatusBadRequest)
 		return
 	}
@@ -417,100 +409,281 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Inserts a new comment into the database
-func AddComment(db *sql.DB, postID int, content string) (int, error) {
-	query := `
-	INSERT INTO comments (post_id, content)
-	VALUES (?, ?)
-	`
-	result, err := db.Exec(query, postID, content)
-	if err != nil {
-		return 0, fmt.Errorf("failed to insert comment: %v", err)
-	}
-	commentID, err := result.LastInsertId()
-	if err != nil {
-		return 0, fmt.Errorf("failed to get last insert ID: %v", err)
-	}
-	return int(commentID), nil
-}
+// // Inserts a new comment into the database
+// func AddComment(db *sql.DB, postID int, content string) (int, error) {
+// 	query := `
+// 	INSERT INTO comments (post_id, content)
+// 	VALUES (?, ?)
+// 	`
+// 	result, err := db.Exec(query, postID, content)
+// 	if err != nil {
+// 		return 0, fmt.Errorf("failed to insert comment: %v", err)
+// 	}
+// 	commentID, err := result.LastInsertId()
+// 	if err != nil {
+// 		return 0, fmt.Errorf("failed to get last insert ID: %v", err)
+// 	}
+// 	return int(commentID), nil
+// }
 
 // Fetch comments for a specific post
-func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
-	query := `
-	SELECT comment_id, post_id, content, created_at
-	FROM comments
-	WHERE post_id=?
-	ORDER BY created_at ASC
-	`
-	rows, err := db.Query(query, postID)
+
+func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse request body
+	var request struct {
+		PostID  string `json:"post_id"`
+		Content string `json:"content"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		log.Printf("Error decoding request body: %v", err)
+		return
+	}
+
+	// Validate required fields
+	if request.PostID == "" || request.Content == "" {
+		http.Error(w, "Missing required fields", http.StatusBadRequest)
+		return
+	}
+
+	// Convert post_id to int
+	postID, err := strconv.Atoi(request.PostID)
+	if err != nil || postID <= 0 {
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		return
+	}
+
+	// Validate content length
+	if len(request.Content) < 1 {
+		http.Error(w, "Content must not be empty", http.StatusBadRequest)
+		return
+	}
+
+	// Begin transaction
+	tx, err := d.Db.Begin()
 	if err != nil {
-		return nil, fmt.Errorf("failed to query comments %v:", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer tx.Rollback() // Will rollback if not committed
+
+	// Verify post exists
+	var exists bool
+	err = tx.QueryRow("SELECT EXISTS(SELECT 1 FROM posts WHERE post_id = ?)", postID).Scan(&exists)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+
+	// Insert comment
+	result, err := tx.Exec(`
+		INSERT INTO comments (post_id, content) 
+		VALUES (?, ?)`,
+		postID, request.Content,
+	)
+	if err != nil {
+		http.Error(w, "Failed to add comment", http.StatusInternalServerError)
+		return
+	}
+
+	// Get the ID of the newly inserted comment
+	commentID, err := result.LastInsertId()
+	if err != nil {
+		http.Error(w, "Failed to get comment ID", http.StatusInternalServerError)
+		log.Printf("Error getting last insert ID: %v", err)
+		return
+	}
+
+	// Get the comment details to return
+	var comment Comment
+	err = tx.QueryRow(`
+		SELECT comment_id, content, created_at 
+		FROM comments 
+		WHERE comment_id = ?`,
+		commentID,
+	).Scan(&comment.CommentID, &comment.Content, &comment.CreatedAt)
+	if err != nil {
+		http.Error(w, "Failed to fetch comment details", http.StatusInternalServerError)
+		return
+	}
+
+	// Commit transaction
+	if err = tx.Commit(); err != nil {
+		http.Error(w, "Failed to commit changes", http.StatusInternalServerError)
+		return
+	}
+
+	// Return success response with comment details
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(comment)
+}
+
+// func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
+// 	query := `
+// 	SELECT comment_id, post_id, content, created_at
+// 	FROM comments
+// 	WHERE post_id=?
+// 	ORDER BY created_at ASC
+// 	`
+// 	rows, err := db.Query(query, postID)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to query comments %v:", err)
+// 	}
+// 	defer rows.Close()
+
+// 	var comments []Comment
+// 	for rows.Next() {
+// 		var comment Comment
+// 		err := rows.Scan(&comment.CommentID, &comment.PostID, &comment.Content, &comment.CreatedAt)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("failed to scan comment: %v", err)
+// 		}
+// 		comments = append(comments, comment)
+// 	}
+// 	if err := rows.Err(); err != nil {
+// 		return nil, fmt.Errorf("error iterating over rows: %v", err)
+// 	}
+// 	return comments, nil
+// }
+
+// func AddCommentHandler() http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		// Parse the request body
+// 		var request struct {
+// 			PostID  int    `json: "post_id"`
+// 			Content string `json: "content"`
+// 		}
+// 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+// 			http.Error(w, "Invalid request body", http.StatusBadRequest)
+// 			return
+// 		}
+// 		// Validate input
+// 		if request.PostID <= 0 || request.Content == "" {
+// 			http.Error(w, "Post ID and content are required", http.StatusBadRequest)
+// 			return
+// 		}
+// 		// Add the comment to the database
+// 		commentID, err := AddComment(d.Db, request.PostID, request.Content)
+// 		if err != nil {
+// 			http.Error(w, fmt.Sprintf("failed to add comment: %v", err), http.StatusInternalServerError)
+// 			return
+// 		}
+// 		response := struct {
+// 			CommentID int `json: "comment_id"`
+// 		}{
+// 			CommentID: commentID,
+// 		}
+// 		w.Header().Set("Content-Type", "application/json")
+// 		json.NewEncoder(w).Encode(response)
+// 	}
+// }
+
+// func GetCommentsHandler() http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		postIDStr := r.URL.Query().Get("post_id")
+// 		postID, err := strconv.Atoi(postIDStr)
+// 		if err != nil || postID <= 0 {
+// 			http.Error(w, "Invalid post ID", http.StatusBadRequest)
+// 			return
+// 		}
+// 		// Retrieve comments from the database
+// 		comments, err := GetCommentsByPostID(d.Db, postID)
+// 		if err != nil {
+// 			http.Error(w, fmt.Sprintf("failed to retrieve comments: %v", err), http.StatusInternalServerError)
+// 			return
+// 		}
+// 		// Return comments in the response
+// 		w.Header().Set("Content-Type", "application/json")
+// 		json.NewEncoder(w).Encode(comments)
+// 	}
+// }
+
+func GetCommentsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get post_id from query parameters
+	postIDStr := r.URL.Query().Get("post_id")
+	if postIDStr == "" {
+		http.Error(w, "Missing post_id parameter", http.StatusBadRequest)
+		return
+	}
+
+	// Convert post_id to int
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil || postID <= 0 {
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		return
+	}
+
+	// Verify post exists
+	var exists bool
+	err = d.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM posts WHERE post_id = ?)", postID).Scan(&exists)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		log.Printf("Error checking post existence: %v", err)
+		return
+	}
+
+	// Query comments
+	rows, err := d.Db.Query(`
+        SELECT comment_id, content, created_at 
+        FROM comments 
+        WHERE post_id = ? 
+        ORDER BY created_at DESC`,
+		postID,
+	)
+	if err != nil {
+		http.Error(w, "Failed to fetch comments", http.StatusInternalServerError)
+		log.Printf("Error querying comments: %v", err)
+		return
 	}
 	defer rows.Close()
 
+	// Scan comments into slice
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		err := rows.Scan(&comment.CommentID, &comment.PostID, &comment.Content, &comment.CreatedAt)
+		err := rows.Scan(
+			&comment.CommentID,
+			&comment.Content,
+			&comment.CreatedAt,
+		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan comment: %v", err)
+			http.Error(w, "Error scanning comments", http.StatusInternalServerError)
+			log.Printf("Error scanning comment: %v", err)
+			return
 		}
 		comments = append(comments, comment)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating over rows: %v", err)
-	}
-	return comments, nil
-}
 
-func AddCommentHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Parse the request body
-		var request struct {
-			PostID  int    `json: "post_id"`
-			Content string `json: "content"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-		// Validate input
-		if request.PostID <= 0 || request.Content == "" {
-			http.Error(w, "Post ID and content are required", http.StatusBadRequest)
-			return
-		}
-		// Add the comment to the database
-		commentID, err := AddComment(d.Db, request.PostID, request.Content)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("failed to add comment: %v", err), http.StatusInternalServerError)
-			return
-		}
-		response := struct {
-			CommentID int `json: "comment_id"`
-		}{
-			CommentID: commentID,
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+	// Check for errors from iterating over rows
+	if err = rows.Err(); err != nil {
+		http.Error(w, "Error processing comments", http.StatusInternalServerError)
+		return
 	}
-}
 
-func GetCommentsHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		postIDStr := r.URL.Query().Get("post_id")
-		postID, err := strconv.Atoi(postIDStr)
-		if err != nil || postID <= 0 {
-			http.Error(w, "Invalid post ID", http.StatusBadRequest)
-			return
-		}
-		// Retrieve comments from the database
-		comments, err := GetCommentsByPostID(d.Db, postID)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("failed to retrieve comments: %v", err), http.StatusInternalServerError)
-			return
-		}
-		// Return comments in the response
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(comments)
+	// Return response
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(comments); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
 	}
 }
