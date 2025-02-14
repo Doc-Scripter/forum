@@ -10,7 +10,7 @@ import (
 	d "forum/database"
 	"golang.org/x/crypto/bcrypt"
 )
-
+// Handles form submission
 func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	
 	if bl, _ := ValidateSession(r); bl {
@@ -72,7 +72,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	    	http.Error(w, "Error creating session", http.StatusInternalServerError)
 	    	return
 	    }
-	    	
+	    // Set session ID in a cookie	
 	    SetSessionCookie(w, sessionToken, expiresAt)
 	    	
 	    http.Redirect(w, r, "/home", http.StatusSeeOther)
