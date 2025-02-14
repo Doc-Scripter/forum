@@ -138,22 +138,6 @@ function displayPosts(posts, category) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const usernameElement = document.getElementById("username");
-  const username = usernameElement.textContent; // Use textContent to get the text
-
-  function getInitials(name) {
-    let initials = name
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase())
-      .join("");
-    return initials;
-  }
-
-  const initials = getInitials(username);
-  document.getElementById("profile-Name").textContent = initials; // Update the avatar
-});
-
 function toggleSidebar() {
   const sidebar = document.getElementById("sidebar");
   sidebar.classList.toggle("open");

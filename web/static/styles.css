@@ -19,6 +19,11 @@ body {
   max-height: 100%;
 }
 
+.logout-div {
+  bottom: 1em;
+  position: relative;
+}
+
 .filters {
   padding: 1rem 2rem;
   display: flex;
@@ -70,6 +75,11 @@ body {
 .post-title {
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
+}
+
+.post-title a:hover {
+  color: #4a90e2;
+  transition: color 0.2s ease;
 }
 
 .post-content {
@@ -432,27 +442,16 @@ footer {
 }
 
 .logout-btn {
-  width: 194px;
-  height: 49px;
-  background: rgba(236, 34, 31, 1);
-  opacity: 1;
-  position: absolute;
-  top: 90%;
-  left: 30px;
-  border-radius: 12px;
-  overflow: hidden;
-}
-.logout-btn-text {
-  width: 48px;
-  color: rgba(253, 232, 231, 1);
-  position: absolute;
-  top: 15px;
-  left: 75px;
-  font-family: Inter;
-  font-weight: Semi Bold;
-  font-size: 14px;
-  opacity: 1;
-  text-align: left;
+  font-family: 'Inknut Antiqua';
+  background-color: #ff0000;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  bottom: 20px;
+  margin-top: 20px;
+  transition: transform 0.3s ease;
 }
 
 .v1_5 {
