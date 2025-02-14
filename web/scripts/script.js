@@ -92,7 +92,7 @@ function displayPosts(posts, category) {
     filteredPosts = posts;
   } else {
     // if (posts !== null) {
-      filteredPosts = posts.filter((post) => post.category === category);
+    filteredPosts = posts.filter((post) => post.category === category);
     // }
   }
   if (filteredPosts === null || !posts || filteredPosts.length === 0) {
@@ -107,49 +107,55 @@ function displayPosts(posts, category) {
       </div>
     </article>`;
   } else {
-    postsContainer.innerHTML = filteredPosts
-      .map(
-        (post) => `
+    postsContainer.innerHTML = filteredPosts.map((post) => `
       <article class="post">
-      <div class="post-header">
-      </div>
+      <div class="post-header"></div>
       <h2 class="post-category">${post.category}</h2>
-      
+
       <h2 class="post-title">${post.title}</h2>
       <p class="post-content">${post.content}</p>
       <div class="post-footer">
-     <div class="post-actions">
-     <button class="action-btn like-btn" data-post-id=${post.post_id}>
-     👍${post.likes}
-           </button>
-           <button class="action-btn dislike-btn" data-post-id=${post.post_id}>
+        
+        <div class="post-actions">
+          <button class="action-btn like-btn" data-post-id="${post.post_id}">
+            👍${post.likes}
+          </button>
+          <button class="action-btn dislike-btn" data-post-id="${post.post_id}">
             👎${post.dislikes}
-            </button>
-            <button class="comments-toggle" data-post-id="${post.post_id}">
-       💬 Comments (${post.comments })
-     </button>
-     <div class="comments-section" id=comments-${post.post_id}>
-
-      ${post.comments.map(comment => `
-        <div class="comment">
-          <strong>${comment.author}</strong>
-          <p>${comment.content}</p>
-          <small>${comment.date}</small>
+          </button>
+          <button class="comments-toggle" data-post-id="${post.post_id}">
+            💬 Comments (${post.comments ? post.comments.length : 0})
+          </button>
         </div>
-      `).join('')}
-      
-    </div>
-     <form class="comment-form" data-post-id="${post.post_id}" action="/addcomment" method="post">
-     <input type="hidden" name="post_id" value="${post.post_id}"/>
-     <input type="text" name="add-comment" class="comment-input" placeholder="Add a comment..." required>
-     <button type="submit" class="comment-submit">Comment</button>
-     </form>
-     
-     </div>
-     </article>
-     `
+        <div class="comments-section" id="comments-${post.post_id}">
+          ${post.comments ? post.comments.map(comment => `
+          <div class="comment">
+            <p>${comment}</p>
+          </div>
+          `).join('') : ''}
+
+          <form
+            class="comment-form"
+            data-post-id="${post.post_id}"
+            action="/addcomment"
+            method="post"
+          >
+            <input type="hidden" name="post_id" value="${post.post_id}" />
+            <input
+              type="text"
+              name="add-comment"
+              class="comment-input"
+              placeholder="Add a comment..."
+              required
+            />
+            <button type="submit" class="comment-submit">Comment</button>
+          </form>
+        </div>
+      </div>
+    </article>
+       `
       )
-      .join("");
+      .join('');
   }
 
   //   commentform.forEach((form) => {
@@ -190,12 +196,9 @@ function displayPosts(posts, category) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ post_id: postId }),
       })
-        // .then(() => {
-        //   fetchPosts(route);
-        // })
+
         .catch(
           (error) => console.error(error)
-          // alert('You have already disliked this post')
         );
     });
   });

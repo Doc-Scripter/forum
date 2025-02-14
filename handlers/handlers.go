@@ -177,7 +177,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		eachPost.CommentsCount = commentsCount
 
-		rows, err := d.Db.Query(`SELECT content WHERE post_id = ?`, eachPost.Post_id)
+		rows, err := d.Db.Query(`SELECT content FROM comments WHERE post_id = ?`, eachPost.Post_id)
 		if err != nil {
 			fmt.Println("unable to query comments", err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
