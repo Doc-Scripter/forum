@@ -39,7 +39,7 @@ type Post struct {
 	Likes     int       `json:"likes"`
 	Title     string    `json:"title"`
 	Dislikes  int       `json:"dislikes"`
-	Comments  []Comment    `json:"comments"`
+	Comments  []Comment `json:"comments"`
 	Content   string    `json:"content"`
 	Post_ID   int       `json:"post_id"`
 }
@@ -99,39 +99,65 @@ func HomePage(rw http.ResponseWriter, req *http.Request) {
 
 // serve the login form
 func Login(rw http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		http.Error(rw, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	if bl, _ := ValidateSession(req); bl {
 		http.Redirect(rw, req, "/home", http.StatusSeeOther)
-	} else if !bl {
+		return
+	}
 
-		tmpl, err := template.ParseFiles("./web/templates/login.html")
-		if err != nil {
-			log.Fatal(err)
-		}
-		tmpl.Execute(rw, nil)
+	tmpl, err := template.ParseFiles("./web/templates/login.html")
+	if err != nil {
+		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+		log.Printf("Error parsing template: %v", err)
+		return
+	}
+	if err := tmpl.Execute(rw, nil); err != nil {
+		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+		log.Printf("Error executing template: %v", err)
+		return
 	}
 }
 
 // serve the registration form
 func Register(rw http.ResponseWriter, req *http.Request) {
 	tmpl, err := template.ParseFiles("./web/templates/register.html")
+	
+	if req.Method != http.MethodGet {
+        http.Error(rw, "Method Not Allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
 	if err != nil {
-		log.Fatal(err)
+		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+        log.Printf("Error parsing template: %v", err)
+        return
 	}
-	tmpl.Execute(rw, nil)
+	if err := tmpl.Execute(rw, nil); err != nil {
+        http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+        log.Printf("Error executing template: %v", err)
+        return
+    }
 }
 
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", 405)
+		return
 	}
 	rows, err := d.Db.Query("SELECT category,title,content,created_at,post_id FROM posts")
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "could not get posts", http.StatusInternalServerError)
+		return
 	}
 	defer rows.Close()
 
 	var posts []Post
+
 	for rows.Next() {
 		var eachPost Post
 		// var comments sql.NullString
@@ -161,40 +187,39 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// Get comments for a specific post
-		commentRows, err := d.Db.Query(`
-		SELECT comment_id, content, created_at
-		FROM comments
-		WHERE post_id = ?
-		ORDER BY created_at DESC`,
-		eachPost.Post_ID,
-	)
-	if	err != nil {
-		fmt.Println(err)
-		http.Error(w, "could not get comments", http.StatusInternalServerError)
-		return
-	}
-	defer commentRows.Close()
-	var comments []Comment
-	for commentRows.Next() {
-	var comment Comment
-	err := commentRows.Scan(&comment.CommentID, &comment.Content, &comment.CreatedAt)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "could not scan comment", http.StatusInternalServerError)
-		return
-	}
-	comments = append(comments, comment)
-}
-        eachPost.Comments = comments
+		commentRows, err := d.Db.Query(`SELECT comment_id, content, created_at FROM comments WHERE post_id = ? ORDER BY created_at DESC`,
+			eachPost.Post_ID)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "could not get comments", http.StatusInternalServerError)
+			return
+		}
+		defer commentRows.Close()
+
+		var comments []Comment
+		for commentRows.Next() {
+			var comment Comment
+			err := commentRows.Scan(&comment.CommentID, &comment.Content, &comment.CreatedAt)
+			if err != nil {
+				fmt.Println(err)
+				http.Error(w, "could not scan comment", http.StatusInternalServerError)
+				return
+			}
+			comments = append(comments, comment)
+		}
+		eachPost.Comments = comments
 		eachPost.Likes = likeCount
 		eachPost.Dislikes = dislikeCount
 
 		posts = append(posts, eachPost)
 	}
+	// Marshal posts into JSON
 	postsJson, err := json.Marshal(posts)
 	if err != nil {
 		http.Error(w, "could not marshal posts", http.StatusInternalServerError)
+		return
 	}
+	// Send JSON RESPONSE
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(postsJson)
 }
@@ -438,7 +463,7 @@ func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
 	return comments, nil
 }
 
-func AddCommentHandler(db *sql.DB) http.HandlerFunc {
+func AddCommentHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Parse the request body
 		var request struct {
@@ -455,7 +480,7 @@ func AddCommentHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 		// Add the comment to the database
-		commentID, err := AddComment(db, request.PostID, request.Content)
+		commentID, err := AddComment(d.Db, request.PostID, request.Content)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to add comment: %v", err), http.StatusInternalServerError)
 			return
@@ -469,7 +494,8 @@ func AddCommentHandler(db *sql.DB) http.HandlerFunc {
 		json.NewEncoder(w).Encode(response)
 	}
 }
-func GetCommentsHandler(db *sql.DB) http.HandlerFunc {
+
+func GetCommentsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		postIDStr := r.URL.Query().Get("post_id")
 		postID, err := strconv.Atoi(postIDStr)
@@ -478,7 +504,7 @@ func GetCommentsHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 		// Retrieve comments from the database
-		comments, err := GetCommentsByPostID(db, postID)
+		comments, err := GetCommentsByPostID(d.Db, postID)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to retrieve comments: %v", err), http.StatusInternalServerError)
 			return
