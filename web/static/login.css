@@ -11,8 +11,6 @@ body {
     align-items: center;
     min-height: 100vh;
     background: linear-gradient(45deg, #4b6cb7, #182848);
-    background-size: cover;
-    background-position: center;
 }
 
 section {
@@ -85,28 +83,6 @@ section {
     border-radius: 5px;
 }
 
-.remember-forget {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    color: #fff;
-    font-size: 0.9em;
-}
-
-.remember-forget label input {
-    margin-right: 5px;
-}
-
-.remember-forget a {
-    color: #fff;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.remember-forget a:hover {
-    text-decoration: underline;
-}
-
 .login-box button {
     width: 100%;
     height: 50px;
@@ -143,23 +119,7 @@ section {
     text-decoration: underline;
 }
 
-/* Responsive Design */
-@media (max-width: 480px) {
-    .login-box {
-        width: 90%;
-        padding: 20px;
-    }
-
-    .login-box h2 {
-        font-size: 1.5em;
-    }
-
-    .input-box input {
-        height: 40px;
-    }
-}
-
-/*=================Add this to your existing login.css=========*/
+/* Notification Styles */
 .notification {
     position: fixed;
     top: 20px;
@@ -168,49 +128,19 @@ section {
     border-radius: 8px;
     color: #fff;
     font-size: 1em;
+    background-color: #ff4444; /* Red background for error */
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
     transform: translateX(150%);
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
-    display: flex;
-    align-items: center;
-    gap: 10px;
 }
 
-/* Add styles for close button */
-.closebtn {
-    color: white;
-    font-weight: bold;
-    font-size: 20px;
-    line-height: 20px;
-    cursor: pointer;
-    transition: 0.3s;
-    margin-right: 5px;
-}
-
-.closebtn:hover {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-/* Update existing notification show class */
 .notification.show {
     transform: translateX(0);
     opacity: 1;
     visibility: visible;
 }
 
-.notification.error {
-    background-color: #ff4444;
-    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
-}
-
-.notification.success {
-    background-color: #00C851;
-    box-shadow: 0 4px 12px rgba(0, 200, 81, 0.3);
-}
-
-/* Add style for the message span */
-#notification-message {
-    flex-grow: 1;
-}
+/* ::contentReference[oaicite:0]{index=0} */
