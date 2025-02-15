@@ -64,12 +64,21 @@ type Post struct {
 	Likes     int       `json:"likes"`
 	Title     string    `json:"title"`
 	Dislikes  int       `json:"dislikes"`
-	Comments  string    `json:"comments"`
+	CommentsCount  int   `json:"comments_count"`
+	Comments  []string `json:"comments"`
 	Content   string    `json:"content"`
 	User_uuid string    `json:"user_uuid"`
 	Post_id   int       `json:"post_id"`
 	Owner         string
 	OwnerInitials string
+}
+
+type Comment struct{
+	CreatedAt time.Time `json:"created_at"`
+	Likes     int       `json:"likes"`
+	Dislikes  int       `json:"dislikes"`
+	Content   string    `json:"content"`
+
 }
 
 // Initials interface defines the method for generating initials

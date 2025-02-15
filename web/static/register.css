@@ -109,3 +109,56 @@ body {
 .Registration-form input:invalid {
     border-color: rgba(255, 0, 0, 0.5);
 }
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1em;
+    transform: translateX(150%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.closebtn {
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-right: 5px;
+}
+
+.closebtn:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.notification.error {
+    background-color: #ff4444;
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+}
+
+.notification.success {
+    background-color: #00C851;
+    box-shadow: 0 4px 12px rgba(0, 200, 81, 0.3);
+}
+
+#notification-message {
+    flex-grow: 1;
+}

@@ -10,11 +10,20 @@ const postForm = document.querySelector(".post-form");
 const hamburgerIcon = document.querySelector(".hamburger-icon");
 const likebutton = document.querySelectorAll(".like-btn");
 const dislikebutton = document.querySelectorAll(".dislike-btn");
+const comments = document.querySelectorAll(".comments-section");
+const commentform = document.querySelectorAll(".comment-form");
 
 let currentFilter = "allPosts";
 let currentCategory = "all";
 let posts = [];
 let route = "/posts";
+
+commentform.forEach((form) => {
+  form.addEventListener("submit", (e) => {
+    // e.preventDefault();
+    commentform.reset();
+  });
+});
 
 postsContainer.addEventListener("click", (e) => {
   if (e.target.classList.contains("like-btn")) {
@@ -25,14 +34,10 @@ postsContainer.addEventListener("click", (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: postId }),
     })
-      // .then(response => response.json())
       .then(() => {
         fetchPosts(route);
       })
-      .catch(
-        (error) => console.error(error)
-        // alert('You have already liked this post')
-      );
+      .catch((error) => console.error(error));
   }
 
   if (e.target.classList.contains("dislike-btn")) {
@@ -44,118 +49,124 @@ postsContainer.addEventListener("click", (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: postId }), // Ensure userId is defined
     })
-      // .then(response => response.json())
-      // .then(data => console.log(data))
-      .then(() => {
-        fetchPosts(route);
-      })
-      .catch(
-        (error) => console.error(error)
-        // alert('You have already disliked this post')
-      );
+      .then(() => fetchPosts(route))
+      .catch((error) => console.error(error));
   }
 });
 
 postForm.addEventListener("submit", (e) => {
   alert("Post submitted successfully!");
-  // e.preventDefault();
-  // fetchPosts();
-  // postForm.reset()
 });
 
 // State
-
 function fetchPosts(route) {
-    // Check if we're in development mode or if route is for mock data
-    if (route === '/posts' || route === '/myPosts' || route === '/favorites') {
-        // Use mock data
-        mockFetchPosts()
-            .then(data => {
-                let filteredData = data;
-                
-                // Filter posts based on route
-                if (route === '/myPosts') {
-                    filteredData = data.filter(post => post.author === 'User1'); // Simulate current user's posts
-                } else if (route === '/favorites') {
-                    filteredData = data.filter(post => post.likes > 50); // Simulate liked posts
-                }
-                
-                displayPosts(filteredData, currentCategory);
-            })
-            .catch(error => {
-                console.error("Error fetching posts:", error);
-            });
-    } else {
-        // Use real API for other routes
-        fetch(route)
-            .then(response => response.json())
-            .then(data => {
-                displayPosts(data, currentCategory);
-            })
-            .catch(error => {
-                console.error("Error fetching posts:", error);
-            });
-    }
+  console.log("here", route);
+  fetch(route)
+    .then((response) => response.json())
+    .then((data) => {
+      displayPosts(data, currentCategory);
+    })
+    .catch((error) => {
+      console.error("Error fetching posts:", error);
+    });
 }
 
 function displayPosts(posts, category) {
-    let filteredPosts = posts;
-    
-    // Filter by category if specified
-    if (category && category !== 'all') {
-        filteredPosts = posts.filter(post => post.category === category);
+  let filteredPosts = [];
+  if (category === "all") {
+    filteredPosts = posts;
+  } else {
+    if (posts !== null) {
+      filteredPosts = posts.filter((post) => post.category === category);
     }
-    
-    if (!filteredPosts || filteredPosts.length === 0) {
-        postsContainer.innerHTML = `
-            <article class="post">
-                <div class="post-header">
-                    <span class="post-date">NO Date</span>
-                </div>
-                <h2 class="post-title">No posts available</h2>
-                <p class="post-content">No posts to display</p>
-                <div class="post-footer">
-                    <span class="post-author"></span>
-                </div>
-            </article>`;
-        return;
-    }
-
+  }
+  if (filteredPosts === null || !posts || filteredPosts.length === 0) {
+    postsContainer.innerHTML = `<article class="post">
+    <div class="post-header">
+    <span class="post-date">NO Date</span>
+    </div>
+    <h2 class="post-title">No posts available</h2>
+    <p class="post-content">No posts to display</p>
+     <div class="post-footer">
+        <span class="post-author"></span>
+      </div>
+    </article>`;
+  } else {
     postsContainer.innerHTML = filteredPosts
-        .map(post => `
-            <article class="post">
-                <div class="post-header">
-                    <span class="post-date">${new Date(post.created_at).toLocaleDateString()}</span>
-                </div>
-                <h2 class="post-category">${post.category}</h2>
-                <h2 class="post-title">${post.title}</h2>
-                <p class="post-content">${post.content}</p>
-                <div class="post-footer">
-                    <div class="post-metadata">
-                        <span class="post-author">By ${post.author}</span>
-                    </div>
-                    <div class="post-actions">
-                        <button class="action-btn like-btn" data-post-id=${post.post_id}>
-                            👍 ${post.likes}
-                        </button>
-                        <button class="action-btn dislike-btn" data-post-id=${post.post_id}>
-                            👎 ${post.dislikes}
-                        </button>
-                    </div>
-                </div>
-            </article>
-        `)
-        .join("");
+      .map(
+        (post) => `
+      <article class="post">
+      <div class="post-header"></div>
+      <h2 class="post-category">${post.category}</h2>
+      <h2 class="post-title">${post.title}</h2>
+      <p class="post-content">${post.content}</p>
+      <div class="post-footer">
+        <div class="post-actions">
+          <button class="action-btn like-btn" data-post-id="${post.post_id}">
+            👍${post.likes}
+          </button>
+          <button class="action-btn dislike-btn" data-post-id="${post.post_id}">
+            👎${post.dislikes}
+          </button>
+          <button class="comments-toggle" data-post-id="${post.post_id}">
+            💬 Comments (${post.comments ? post.comments.length : 0})
+          </button>
+        </div>
+        <div class="comments-section" id="comments-${post.post_id}">
+          ${
+            post.comments
+              ? post.comments
+                  .map(
+                    (comment) => `
+          <div class="comment">
+            <p>${comment}</p>
+          </div>
+          `
+                  )
+                  .join("")
+              : ""
+          }
+
+          <form
+            class="comment-form"
+            data-post-id="${post.post_id}"
+            action="/addcomment"
+            method="post"
+          >
+            <input type="hidden" name="post_id" value="${post.post_id}" />
+            <input
+              type="text"
+              name="add-comment"
+              class="comment-input"
+              placeholder="Add a comment..."
+              required
+            />
+            <button type="submit" class="comment-submit">Comment</button>
+          </form>
+        </div>
+      </div>
+    </article>
+       `
+      )
+      .join("");
+  }
+
+  // Add comments toggle functionality
+  document.querySelectorAll(".comments-toggle").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const postId = btn.dataset.postId;
+      const commentsSection = document.getElementById(`comments-${postId}`);
+      commentsSection.classList.toggle("active");
+      fetch("/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ post_id: postId }),
+      }).catch((error) => console.error(error));
+    });
+  });
 }
 
-function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  sidebar.classList.toggle("open");
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    fetchPosts("/posts");
-});
+document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 
 // Create Post Modal
 createPostBtn.addEventListener("click", () => {
@@ -166,84 +177,11 @@ closeModal.addEventListener("click", () => {
   modal.classList.remove("active");
 });
 
-// Add this event listener when the modal is opened
-document.addEventListener('keydown', function(event) {
-  if (event.key === 'Escape') {
-      const modal = document.querySelector('.close-modal');
-      if (modal && modal.classList.contains('active')) {
-          modal.classList.remove('active');
-      }
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) {
+    modal.classList.remove("active");
   }
-}); 
-
-// modal.addEventListener('click', (e) => {
-//   if (e.target === modal) {
-//     modal.classList.remove('active');
-//   }
-// });
-
-//   posts.unshift(newPost);
-//   modal.classList.remove('active');
-//   postForm.reset();
-//   filterPosts();
-// });
-
-// <button class="comments-toggle" data-post-id="${post.id}">
-//   💬 Comments (${post.comments.length})
-// </button>
-//     <div class="comments-section" id="comments-${post.id}">
-//       ${post.comments.map(comment => `
-//         <div class="comment">
-//           <strong>${comment.author}</strong>
-//           <p>${comment.content}</p>
-//           <small>${comment.date}</small>
-//         </div>
-//       `).join('')}
-//       <form class="comment-form" data-post-id="${post.id}">
-//         <input type="text" class="comment-input" placeholder="Add a comment..." required>
-//         <button type="submit" class="comment-submit">Comment</button>
-//       </form>
-//     </div>
-//   </article>
-// `).join('');
-
-// // Add comments toggle functionality
-// document.querySelectorAll('.comments-toggle').forEach(btn => {
-//   btn.addEventListener('click', (e) => {
-//     const postId = btn.dataset.postId;
-//     const commentsSection = document.getElementById(`comments-${postId}`);
-//     commentsSection.classList.toggle('active');
-//   });
-// });
-// }
-
-// function handleLike(btn) {
-//   const postId = parseInt(btn.dataset.id);
-//   const post = posts.find(p => p.id === postId);
-//   if (post) {
-//     if (post.disliked) {
-//       post.disliked = false;
-//       post.dislikes--;
-//     }
-//     post.liked = !post.liked;
-//     post.likes += post.liked ? 1 : -1;
-//     filterPosts();
-//   }
-// }
-
-// function handleDislike(btn) {
-//   const postId = parseInt(btn.dataset.id);
-//   const post = posts.find(p => p.id === postId);
-//   if (post) {
-//     if (post.liked) {
-//       post.liked = false;
-//       post.likes--;
-//     }
-//     post.disliked = !post.disliked;
-//     post.dislikes += post.disliked ? 1 : -1;
-//     filterPosts();
-//   }
-// }
+});
 
 // Event listeners for filters
 filterBtns.forEach((btn) => {
@@ -276,40 +214,43 @@ categoryFilter.addEventListener("change", (e) => {
 });
 
 // Theme Toggle Functionality
-document.addEventListener('DOMContentLoaded', () => {
-    const themeToggle = document.getElementById('theme-toggle');
-    
-    // Check for saved theme preference, default to light if none
-    const savedTheme = localStorage.getItem('theme') || 'light-theme';
-    document.body.classList.toggle('light-theme', savedTheme === 'light-theme');
-    
-    // Ensure light theme is applied by default
-    if (!localStorage.getItem('theme')) {
-        document.body.classList.add('light-theme');
-        localStorage.setItem('theme', 'light-theme');
-    }
-    
-    // Update icon visibility based on current theme
+document.addEventListener("DOMContentLoaded", () => {
+  const themeToggle = document.getElementById("theme-toggle");
+
+  // Check for saved theme preference, default to light if none
+  const savedTheme = localStorage.getItem("theme") || "light-theme";
+  document.body.classList.toggle("light-theme", savedTheme === "light-theme");
+
+  // Ensure light theme is applied by default
+  if (!localStorage.getItem("theme")) {
+    document.body.classList.add("light-theme");
+    localStorage.setItem("theme", "light-theme");
+  }
+
+  // Update icon visibility based on current theme
+  updateThemeIcon();
+
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("light-theme");
     updateThemeIcon();
-    
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-theme');
-        updateThemeIcon();
-        
-        // Save theme preference
-        const currentTheme = document.body.classList.contains('light-theme') ? 'light-theme' : 'dark-theme';
-        localStorage.setItem('theme', currentTheme);
-    });
+
+    // Save theme preference
+    const currentTheme = document.body.classList.contains("light-theme")
+      ? "light-theme"
+      : "dark-theme";
+    localStorage.setItem("theme", currentTheme);
+  });
 });
 
 // Function to update theme icon
 function updateThemeIcon() {
-    const sunIcon = document.querySelector('.sun');
-    const moonIcon = document.querySelector('.moon');
-    const isLightTheme = document.body.classList.contains('light-theme');
-    
-    // Show moon in light theme (to switch to dark)
-    // Show sun in dark theme (to switch to light)
-    sunIcon.style.display = isLightTheme ? 'none' : 'block';
-    moonIcon.style.display = isLightTheme ? 'block' : 'none';
+  const sunIcon = document.querySelector(".sun");
+  const moonIcon = document.querySelector(".moon");
+  const isLightTheme = document.body.classList.contains("light-theme");
+
+  // Show moon in light theme (to switch to dark)
+  // Show sun in dark theme (to switch to light)
+  sunIcon.style.display = isLightTheme ? "none" : "block";
+  moonIcon.style.display = isLightTheme ? "block" : "none";
 }
+

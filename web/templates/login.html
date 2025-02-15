@@ -8,9 +8,14 @@
     <link rel="stylesheet" href="/static/login.css">
 </head>
 <body>
+    <div id="notification" class="notification">
+        <span class="closebtn" onclick="closeNotification()">&times;</span>
+        <span id="notification-message"></span>
+    </div>
+    
     <section>
     <div class="login-box">
-        <form action="/logging" method="post">
+        <form id="loginForm" method="post">
             <h2>Login</h2>
             <div class="input-box">
                 <input type="email" name="email" required>
@@ -34,5 +39,6 @@
         </form>
     </div>
 </section>
+<script src="/web/scripts/login.js"></script>
 </body>
 </html>

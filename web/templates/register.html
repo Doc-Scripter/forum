@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="/static/register.css">
 </head>
 <body>
+    <div id="notification" class="notification">
+        <span class="closebtn" onclick="closeNotification()">&times;</span>
+        <span id="notification-message"></span>
+    </div>
     <div class="Registration-form">
         <h1>Registration</h1>
         <form action="/registration" method="post">
@@ -20,5 +24,57 @@
             <div><span>Already have an account?</span><a href="/login">login</a></div>
         </form>
     </div>
+
+    <script>
+        function closeNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+        }
+
+        function showNotification(message, type = 'error') {
+            const notification = document.getElementById('notification');
+            const messageSpan = document.getElementById('notification-message');
+            messageSpan.textContent = message;
+            notification.className = `notification ${type}`;
+            
+            // Force a reflow
+            notification.offsetHeight;
+            
+            // Show notification
+            notification.classList.add('show');
+
+            // Hide notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Add form validation and submission handling
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(errorData || 'Registration failed');
+                }
+
+                // If successful, show success message and redirect
+                showNotification('Registration successful!', 'success');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+            } catch (error) {
+                showNotification(error.message);
+            }
+        });
+    </script>
 </body>
 </html>

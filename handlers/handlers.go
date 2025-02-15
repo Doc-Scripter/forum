@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
 	"text/template"
 
 	e "forum/Error"
@@ -80,7 +79,6 @@ func getUserDetails(w http.ResponseWriter, r *http.Request) m.ProfileData {
 
 	query := `
 		SELECT  username, email , uuid  FROM users WHERE id = ?`
-
 
 	err = d.Db.QueryRow(query, userID).Scan(&Profile.Username, &Profile.Email, &Profile.Uuid)
 	if err != nil {
@@ -161,7 +159,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
-	
 	if r.Method != http.MethodGet {
 		ErrorPage(nil, m.ErrorsData.InternalError, w, r)
 		return
@@ -185,17 +182,46 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
-
-		var likeCount, dislikeCount int
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", &eachPost.Post_id).Scan(&likeCount)
+		commentsCount := 0
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", eachPost.Post_id).Scan(&commentsCount)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("unable ro query comments", err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
+		defer rows.Close()
+
+		eachPost.CommentsCount = commentsCount
+
+		rows, err := d.Db.Query(`SELECT content FROM comments WHERE post_id = ?`, eachPost.Post_id)
+		if err != nil {
+			fmt.Println("unable to query comments", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
+		var comments []string
+		for rows.Next() {
+			comment := ""
+			rows.Scan(&comment)
+			comments = append(comments, comment)
+		}
+
+		eachPost.Comments = comments
+
+		var likeCount, dislikeCount int
+
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", &eachPost.Post_id).Scan(&likeCount)
+		if err != nil {
+			fmt.Println("unable to query likes and dislikes", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", &eachPost.Post_id).Scan(&dislikeCount)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("unable to query likes and dislikes", err)
+
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -207,6 +233,9 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	postsJson, err := json.Marshal(posts)
 	if err != nil {
+		fmt.Println("unable to marshal", err)
+
+		// http.Error(w, "could not marshal posts", http.StatusInternalServerError)
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -229,7 +258,6 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 	title := r.FormValue("title")
 
-
 	_, err := d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid) VALUES ($1, $2, $3 ,$4)", category, content, title, Profile.Uuid)
 	if err != nil {
 		fmt.Println("could not insert posts", err)
@@ -249,9 +277,6 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
-	
-	
-
 	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
@@ -442,7 +467,7 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var likeCount, dislikeCount int
-		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND post_id = ?",  eachPost.Post_id).Scan(&likeCount)
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND post_id = ?", eachPost.Post_id).Scan(&likeCount)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "could not get like count", http.StatusInternalServerError)
@@ -540,78 +565,142 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(postsJson)
 }
 
-func PostHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-
-	// Get post_id from URL query parameter
-	postID := r.URL.Query().Get("id")
-	if postID == "" {
-		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
-		return
-	}
-
-	// Query for post details
-	var post m.Post
-	query := `
-		SELECT p.title, p.content, p.category, p.created_at, p.post_id, u.username 
-		FROM posts p
-		JOIN users u ON p.user_uuid = u.uuid
-		WHERE p.post_id = ?`
 	
-	err := d.Db.QueryRow(query, postID).Scan(
-		&post.Title,
-		&post.Content,
-		&post.Category,
-		&post.CreatedAt,
-		&post.Post_id,
-		&post.Owner,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ErrorPage(err, m.ErrorsData.PageNotFound, w, r)
-		} else {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		}
-		return
-	}
+	Profile := getUserDetails(w, r)
+	
+	r.ParseForm()
+	comment := r.FormValue("add-comment")
+	post_id := r.FormValue("post_id")
 
-	// Get like/dislike counts
-	err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", postID).Scan(&post.Likes)
+	_, err := d.Db.Exec("INSERT INTO comments (user_uuid,post_id,content) VALUES (?,?,?)", Profile.Uuid, post_id, comment)
 	if err != nil {
+		fmt.Println("could not insert comment", err)
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
-
-	err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", postID).Scan(&post.Dislikes)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
-
-	// Generate owner initials
-	post.OwnerInitials = strings.ToUpper(string(post.Owner[0]))
-	if len(post.Owner) > 1 {
-		for i := 1; i < len(post.Owner); i++ {
-			if post.Owner[i-1] == ' ' {
-				post.OwnerInitials += string(post.Owner[i])
-				break
-			}
-		}
-	}
-
-	// Parse and execute template
-	tmpl, err := template.ParseFiles("./web/templates/post.html")
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
-
-	if err = tmpl.Execute(w, post); err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+	// r.Method = http.MethodGet
+	// PostsHandler(w, r)
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
+
+func CommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+
+	str, _ := io.ReadAll(r.Body)
+	var postID struct {
+		Post_id string `json:"post_id"`
+	}
+	fmt.Println(string(str))
+	err := json.Unmarshal(str, &postID)
+	if err != nil {
+		fmt.Println("could not unmarshal post id")
+		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+
+	rows, err := d.Db.Query(`SELECT created_at,likes,dislikes,content FROM comments WHERE post_id=?`, postID.Post_id)
+	if err != nil {
+		fmt.Println("could not query comments", err)
+		http.Error(w, "could not get like count", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var comments []m.Comment
+	for rows.Next() {
+		var eachComment m.Comment
+		rows.Scan(&eachComment.CreatedAt, &eachComment.Likes, &eachComment.Dislikes, &eachComment.Content)
+		comments = append(comments, eachComment)
+	}
+	commentsJson, err := json.Marshal(comments)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "could not get like count", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(commentsJson)
+}
+
+// func PostHandler(w http.ResponseWriter, r *http.Request) {
+// 	if r.Method != http.MethodGet {
+// 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+// 		return
+// 	}
+
+// 	// Get post_id from URL query parameter
+// 	postID := r.URL.Query().Get("id")
+// 	if postID == "" {
+// 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+// 		return
+// 	}
+
+// 	// Query for post details
+// 	var post m.Post
+// 	query := `
+// 		SELECT p.title, p.content, p.category, p.created_at, p.post_id, u.username 
+// 		FROM posts p
+// 		JOIN users u ON p.user_uuid = u.uuid
+// 		WHERE p.post_id = ?`
+	
+// 	err := d.Db.QueryRow(query, postID).Scan(
+// 		&post.Title,
+// 		&post.Content,
+// 		&post.Category,
+// 		&post.CreatedAt,
+// 		&post.Post_id,
+// 		&post.Owner,
+// 	)
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			ErrorPage(err, m.ErrorsData.PageNotFound, w, r)
+// 		} else {
+// 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+// 		}
+// 		return
+// 	}
+
+// 	// Get like/dislike counts
+// 	err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", postID).Scan(&post.Likes)
+// 	if err != nil {
+// 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+// 		return
+// 	}
+
+// 	err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", postID).Scan(&post.Dislikes)
+// 	if err != nil {
+// 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+// 		return
+// 	}
+
+// 	// Generate owner initials
+// 	post.OwnerInitials = strings.ToUpper(string(post.Owner[0]))
+// 	if len(post.Owner) > 1 {
+// 		for i := 1; i < len(post.Owner); i++ {
+// 			if post.Owner[i-1] == ' ' {
+// 				post.OwnerInitials += string(post.Owner[i])
+// 				break
+// 			}
+// 		}
+// 	}
+
+// 	// Parse and execute template
+// 	tmpl, err := template.ParseFiles("./web/templates/post.html")
+// 	if err != nil {
+// 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+// 		return
+// 	}
+
+// 	if err = tmpl.Execute(w, post); err != nil {
+// 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+// 		return
+// 	}
+// }
 
