@@ -25,6 +25,7 @@ commentform.forEach((form) => {
   });
 });
 
+
 postsContainer.addEventListener("click", (e) => {
   if (e.target.classList.contains("like-btn")) {
     console.log("like button clicked");
@@ -41,6 +42,8 @@ postsContainer.addEventListener("click", (e) => {
         (error) => console.error(error)
       );
   }
+
+ 
 
   if (e.target.classList.contains("dislike-btn")) {
     console.log("dislike button clicked");
@@ -60,7 +63,6 @@ postsContainer.addEventListener("click", (e) => {
 
 postForm.addEventListener("submit", (e) => {
   alert("Post submitted successfully!");
-  e.preventDefault();
 });
 
 // State
@@ -75,6 +77,7 @@ function fetchPosts(route) {
     .catch((error) => {
       console.error("Error fetching posts:", error);
     });
+   
 }
 
 function displayPosts(posts, category) {
@@ -174,9 +177,11 @@ function displayPosts(posts, category) {
 document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 
 // Create Post Modal
+
 createPostBtn.addEventListener("click", () => {
   modal.classList.add("active");
 });
+
 
 closeModal.addEventListener("click", () => {
   modal.classList.remove("active");
@@ -191,6 +196,7 @@ modal.addEventListener("click", (e) => {
 // }
 
 // Event listeners for filters
+
 filterBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
     filterBtns.forEach((b) => b.classList.remove("active"));
