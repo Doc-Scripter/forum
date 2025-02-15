@@ -24,6 +24,13 @@ body {
   color: var(--text-color);
   max-width: 100%;
   max-height: 100%;
+  width: 100%;
+  min-height: 100vh;
+}
+
+body.no-scroll {
+  overflow: hidden;
+  padding-right: var(--scrollbar-width, 0px); /* Prevents content shift */
 }
 
 .logout-div {
@@ -32,19 +39,23 @@ body {
 }
 
 .filters {
-  padding: 1rem 2rem;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background-color: rgba(133, 174, 244, 0.15);
   border-radius: 45px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .filter-options {
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .filter-btn {
@@ -67,19 +78,22 @@ body {
 
 .posts-container {
   padding: 2rem;
-  display: grid;
-  gap: 1rem;
-  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 800px;
   margin: 0 auto;
 }
 
 .post {
+  width: 100%;
+  margin-bottom: 0;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   color: white;
 }
@@ -400,9 +414,8 @@ footer {
   background-position: center center;
   background-size: cover;
   opacity: 1;
-  position: absolute;
-  top: 88px;
-  left: 21px;
+  position: relative;
+  margin: 20px auto;
   overflow: hidden;
 }
 .profile-backg {
@@ -410,34 +423,29 @@ footer {
   height: 95px;
   background: rgba(255, 255, 255, 1);
   opacity: 1;
-  position: absolute;
-  top: 0px;
-  left: 59px;
+  position: relative;
+  margin: 0 auto;
   border-radius: 50%;
 }
 .user-Name {
-  width: 99px;
-  color: rgba(0, 0, 0, 1);
-  position: absolute;
-  top: 111px;
-  left: 59px;
+  width: 100%;
+  color: var(--text-color);
+  position: relative;
+  text-align: center;
+  margin-top: 15px;
   font-family: Inknut Antiqua;
   font-weight: SemiBold;
   font-size: 28px;
-  opacity: 1;
-  text-align: left;
 }
 .user-email {
-  width: 252px;
-  color: rgba(0, 0, 0, 1);
-  position: absolute;
-  top: 157px;
-  left: 0px;
+  width: 100%;
+  color: var(--text-color);
+  position: relative;
+  text-align: center;
+  margin-top: 10px;
   font-family: Inknut Antiqua;
   font-weight: SemiBold;
   font-size: 20px;
-  opacity: 1;
-  text-align: left;
 }
 .profile-Name {
   width: 70px;
@@ -518,11 +526,10 @@ footer {
 
 .header {
   display: flex;
-  padding: 15px;
-  /* max-width: 99.5%; */
+  padding: 15px 5%;
+  flex-wrap: wrap;
+  gap: 10px;
   margin: 5px;
-  /* border-top-left-radius: 19px; */
-  /* border-top-right-radius: 19px; */
   border-radius: 40px;
   color: white;
   font-size: 24px;
@@ -579,10 +586,14 @@ h1 {
   right: -300px;
   width: 250px;
   height: 100%;
-  background: #e3f2fd;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2);
   transition: right 0.3s ease-in-out;
   padding: 20px;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 9999;
 }
 
 .sidebar.open {
@@ -688,6 +699,8 @@ textarea {
   display: flex;
   justify-content: space-around;
   margin: 40px 0;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .stat-item {
@@ -719,6 +732,7 @@ textarea {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   margin-top: 40px;
+  padding: 10px;
 }
 
 .feature-card {
@@ -892,7 +906,10 @@ body.light-theme .create-post-btn:hover::before {
 
 /* Add these new light theme overrides */
 body.light-theme .post-category {
-    color: white;  /* Ensure category labels remain visible */
+    color: white;
+    border: 2px solid #1e4f8f; /* Added deep blue border */
+    background: var(--primary-gradient);
+    box-shadow: 0 2px 4px rgba(30, 79, 143, 0.2); /* Added subtle shadow */
 }
 
 body.light-theme select,
@@ -902,11 +919,21 @@ body.light-theme option {
 }
 
 body.light-theme .filter-btn {
-    color: #333333;  /* Darker text for filter buttons */
+    color: #333333;
+    border: 2px solid #3674B5; /* Added blue border */
+    background: rgba(133, 174, 244, 0.1); /* Lighter background */
+}
+
+body.light-theme .filter-btn:hover {
+    background: rgba(133, 174, 244, 0.2);
+    border-color: #1e4f8f; /* Darker border on hover */
 }
 
 body.light-theme .filter-btn.active {
-    color: white;  /* White text for active filter buttons */
+    color: white;
+    background: var(--primary-gradient);
+    border: 2px solid #1e4f8f; /* Darker border for active state */
+    box-shadow: 0 2px 4px rgba(30, 79, 143, 0.2); /* Subtle shadow for depth */
 }
 
 body.light-theme .post-metadata {
@@ -931,4 +958,135 @@ body.light-theme .post-form textarea,
 body.light-theme .post-form select {
     color: #333333;  /* Darker text for form inputs */
     background: white;  /* Light background */
+}
+
+/* Light theme specific override for sidebar */
+body.light-theme .sidebar {
+    background: rgba(255, 255, 255, 0.7);
+    border-left: 1px solid rgba(54, 116, 181, 0.2);
+    z-index: 9999;
+}
+
+/* Media Queries */
+@media screen and (max-width: 1200px) {
+    .posts-container {
+        margin: 0 auto 0 10%;
+    }
+}
+
+@media screen and (max-width: 868px) {
+    .posts-container {
+        margin: 0 auto;
+        padding: 1rem;
+        max-width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .posts-container {
+        padding: 0.5rem;
+    }
+    
+    .post {
+        border-radius: 8px;
+        margin: 0 5px;
+    }
+}
+
+/* Responsive form elements */
+.post-form input,
+.post-form textarea,
+.post-form select {
+    width: 100%;
+    padding: 8px;
+    font-size: 16px; /* Better for mobile */
+}
+
+/* Responsive profile section */
+.profile-details {
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 1rem;
+    top: 0;
+    left: 0;
+}
+
+.profile-backg {
+    position: relative;
+    margin: 0 auto;
+}
+
+.user-Name,
+.user-email {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    left: 0;
+    top: 10px;
+}
+
+/* Responsive landing page */
+.landing-container {
+    padding: 20px;
+}
+
+.stats-container {
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.features-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+/* Responsive modal */
+@media screen and (max-height: 600px) {
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+    .post:hover {
+        transform: none;
+    }
+
+    .action-btn {
+        padding: 12px 20px; /* Larger touch targets */
+    }
+}
+
+/* High-resolution screens */
+@media screen and (min-width: 1920px) {
+    .posts-container {
+        max-width: 1600px;
+    }
+
+    .post-title {
+        font-size: 1.4rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .create-post-btn,
+    .action-btn,
+    .sidebar,
+    .filters {
+        display: none;
+    }
+
+    .post {
+        break-inside: avoid;
+        border: 1px solid #000;
+    }
+}
+
+html {
+    scrollbar-gutter: stable;
 }
