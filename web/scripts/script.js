@@ -34,13 +34,11 @@ postsContainer.addEventListener("click", (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: postId }),
     })
-      // .then(response => response.json())
       .then(() => {
         fetchPosts(route);
       })
       .catch(
         (error) => console.error(error)
-        // alert('You have already liked this post')
       );
   }
 
@@ -53,14 +51,9 @@ postsContainer.addEventListener("click", (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: postId }), // Ensure userId is defined
     })
-      // .then(response => response.json())
-      // .then(data => console.log(data))
-      .then(() => {
-        fetchPosts(route);
-      })
-      .catch(
-        (error) => console.error(error)
-        // alert('You have already disliked this post')
+   
+      .then(() => fetchPosts(route))
+      .catch((error) => console.error(error)
       );
   }
 });
