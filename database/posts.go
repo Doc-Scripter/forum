@@ -12,6 +12,7 @@ func CreatePostsTable(db *sql.DB) error {
 		user_uuid TEXT NOT NULL,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
+        comments INTEGER DEFAULT 0,
         category  TEXT NOT NULL,
 		likes INTEGER DEFAULT 0,
         dislikes INTEGER DEFAULT 0,
