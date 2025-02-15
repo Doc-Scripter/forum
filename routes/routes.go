@@ -23,6 +23,10 @@ func Routers() (*http.ServeMux, error) {
     mux.HandleFunc("/home", handler.HomePage)
 	mux.HandleFunc("/likes", handler.LikePostHandler)
 	mux.HandleFunc("/dislikes", handler.DislikePostHandler)
+
+	mux.HandleFunc("/likesComment", handler.LikeCommentHandler)
+	mux.HandleFunc("/dislikesComment", handler.DislikeCommentHandler)
+
 	mux.HandleFunc("/addcomment", handler.AddCommentHandler)
 	mux.HandleFunc("/comments", handler.CommentHandler)
 
