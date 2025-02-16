@@ -31,7 +31,7 @@ commentform.forEach((form) => {
 
 postsContainer.addEventListener("click", (e) => {
   if (e.target.classList.contains("like-btn")) {
-    console.log("like button clicked");
+    console.log("post like button clicked");
     const postId = e.target.dataset.postId;
     fetch("/likes", {
       method: "POST",
@@ -83,6 +83,24 @@ function fetchPosts(route) {
    
 }
 
+function fetchComments(element,commentId){
+  fetch("/comments",{
+    method:"POST",
+    content:"application/json",
+    body:JSON.stringify({comment_id:commentId})
+
+  }
+  )
+  .then((response) => response.json())
+  .then((data) => {
+    displayComments(data, element);
+  })
+  .catch((error) => {
+    console.error("Error fetching comments:", error);
+  });
+ 
+}
+
 function displayPosts(posts, category) {
   let filteredPosts = [];
   if (category === "all") {
@@ -120,26 +138,13 @@ function displayPosts(posts, category) {
           <button class="action-btn dislike-btn" data-post-id="${post.post_id}">
             👎${post.dislikes}
           </button>
+          </div>
           <button class="comments-toggle" data-post-id="${post.post_id}">
             💬 Comments (${post.comments ? post.comments.length : 0})
           </button>
-        </div>
         <div class="comments-section" id="comments-${post.post_id}">
-          ${post.comments ? post.comments.map(comment => `
-          <div class="comment">
-            <p>${comment.content}</p>
-
+          
           </div>
-          <div class="comment-actions">
-          <button class="action-btn like-btn" data-comment-id="${comment.comment_id}">
-            👍${comment.likes}
-          </button>
-          <button class="action-btn dislike-btn" data-comment-id="${comment.post_id}">
-            👎${comment.dislikes}
-          </button>
-          </div>
-          `).join('') : ''}
-
 
           <form
             class="comment-form"
@@ -157,7 +162,6 @@ function displayPosts(posts, category) {
             />
             <button type="submit" class="comment-submit">Comment</button>
           </form>
-        </div>
       </div>
     </article>
        `
@@ -178,7 +182,11 @@ function displayPosts(posts, category) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ post_id: postId }),
       })
+      .then((res) => res.json())
+      .then((data) => {
 
+       displayComments(data,commentsSection)
+      })
         .catch(
           (error) => console.error(error)
         );
@@ -186,20 +194,33 @@ function displayPosts(posts, category) {
   });
 }
 
+function displayComments(comments,element){
+  element.innerHTML=comments.map((comment)=>`
+  <div class="comment"><p>${comment.content}</p></div>
+    <div class="comment-actions">
+    <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
+      👍${comment.likes}
+      </button>
+      <button class="comment dislikeBtn" data-comment-id="${comment.post_id}">
+      👎${comment.dislikes}
+      </button>
+     </div>
+    `).join(``)
+    attachCommentActionListeners(element);
+}
 
-document.querySelectorAll(".comment-actions").forEach((btn)=>{
+function attachCommentActionListeners(container) {
+container.querySelectorAll(".comment-actions").forEach((btn)=>{
   btn.addEventListener("click",(e)=>{
-    if (e.target.classList.contains("like-btn")) {
-      console.log("like button clicked");
+    if (e.target.classList.contains("likeBtn")) {
       const commentId = e.target.dataset.commentId;
+      console.log("comment like button clicked comment id:",commentId)
       fetch("/likesComment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ comment_Id:commentId }),
       })
-        .then(() => {
-          fetchPosts(route);
-        })
+        .then(()=>fetchComments(container,commentId))
         .catch(
           (error) => console.error(error)
         );
@@ -208,7 +229,8 @@ document.querySelectorAll(".comment-actions").forEach((btn)=>{
   
   
   
-    if (e.target.classList.contains("dislike-btn")) {
+    if (e.target.classList.contains("dislikeBtn")) {
+      // e.stopPropagation();
       console.log("dislike button clicked");
   
       const commentId = e.target.dataset.commentId;
@@ -218,13 +240,13 @@ document.querySelectorAll(".comment-actions").forEach((btn)=>{
         body: JSON.stringify({ comment_id:commentId }), // Ensure userId is defined
       })
      
-        .then(() => fetchPosts(route))
+        .then(() => fetchComments(container,commentId))
         .catch((error) => console.error(error)
         );
     }
   });
   })
-
+}
 
 document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 

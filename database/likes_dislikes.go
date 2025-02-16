@@ -10,8 +10,8 @@ func CreateLikesDislikesTable(db *sql.DB) error {
 	query := `
 	CREATE TABLE IF NOT EXISTS likes_dislikes (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		post_id INTEGER  NOT NULL ,
-		comment_id INTEGER NOT NULL,
+		post_id INTEGER ,
+		comment_id INTEGER ,
 		user_uuid TEXT NOT NULL,
 		like_dislike TEXT NOT NULL DEFAULT '' ,
 		FOREIGN KEY (user_uuid) REFERENCES users(uuid)
