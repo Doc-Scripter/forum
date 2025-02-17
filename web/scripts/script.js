@@ -243,13 +243,11 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Function to update theme icon
-function updateThemeIcon() {
+function updateThemeIcon() {  
   const sunIcon = document.querySelector(".sun");
   const moonIcon = document.querySelector(".moon");
   const isLightTheme = document.body.classList.contains("light-theme");
 
-  // Show moon in light theme (to switch to dark)
-  // Show sun in dark theme (to switch to light)
   sunIcon.style.display = isLightTheme ? "none" : "block";
   moonIcon.style.display = isLightTheme ? "block" : "none";
 }
