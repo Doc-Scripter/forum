@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"text/template"
 
 	e "forum/Error"
@@ -177,17 +178,17 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		eachPost.CommentsCount = commentsCount
 
-		rows, err := d.Db.Query(`SELECT content FROM comments WHERE post_id = ?`, eachPost.Post_id)
+		rows, err := d.Db.Query(`SELECT content,likes,dislikes FROM comments WHERE post_id = ?`, eachPost.Post_id)
 		if err != nil {
 			fmt.Println("unable to query comments", err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 
-		var comments []string
+		var comments []m.Comment
 		for rows.Next() {
-			comment := ""
-			rows.Scan(&comment)
+			var comment m.Comment
+			rows.Scan(&comment.Content, &comment.Likes, &comment.Dislikes)
 			comments = append(comments, comment)
 		}
 
@@ -597,36 +598,298 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	str, _ := io.ReadAll(r.Body)
-	var postID struct {
-		Post_id string `json:"post_id"`
+	if strings.Contains(string(str), "post_id") {
+
+		var postID struct {
+			Post_id string `json:"post_id"`
+		}
+		fmt.Println(string(str))
+		err := json.Unmarshal(str, &postID)
+		if err != nil {
+			fmt.Println("could not unmarshal post id")
+			ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+			return
+		}
+
+		rows, err := d.Db.Query(`SELECT comment_id, created_at, content FROM comments WHERE post_id=?`, postID.Post_id)
+		if err != nil {
+			fmt.Println("could not query comments", err)
+			http.Error(w, "could not get like count", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		var comments []m.Comment
+		for rows.Next() {
+			var eachComment m.Comment
+			rows.Scan(&eachComment.Comment_id, &eachComment.CreatedAt, &eachComment.Content)
+			eachComment.Post_id = postID.Post_id
+			var likeCount, dislikeCount int
+			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND comment_id = ?", eachComment.Comment_id).Scan(&likeCount)
+			if err != nil {
+				fmt.Println(err)
+				http.Error(w, "could not get like count", http.StatusInternalServerError)
+				return
+			}
+			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ?", eachComment.Comment_id).Scan(&dislikeCount)
+			if err != nil {
+				fmt.Println(err)
+				http.Error(w, "could not get dislike count", http.StatusInternalServerError)
+				return
+			}
+
+			eachComment.Likes = likeCount
+			eachComment.Dislikes = dislikeCount
+
+			comments = append(comments, eachComment)
+		}
+		commentsJson, err := json.Marshal(comments)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "could not get like count", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(commentsJson)
+	} else {
+		var commentID struct {
+			Comment_Id string `json:"comment_id"`
+		}
+		fmt.Println(string(str))
+		err := json.Unmarshal(str, &commentID)
+		fmt.Println("debugging mode:==>", commentID.Comment_Id, "<=====")
+		if err != nil {
+			fmt.Println("could not unmarshal post id")
+			ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+			return
+		}
+		postID := ""
+		err = d.Db.QueryRow(`SELECT post_id FROM  comments WHERE comment_id=?`, commentID.Comment_Id).Scan(&postID)
+		fmt.Println("post id=", postID) // found!
+		if err != nil {
+			fmt.Println("could not query comments", err)
+			http.Error(w, "could not query comments", http.StatusInternalServerError)
+			return
+		}
+		rows, err := d.Db.Query(`SELECT comment_id,created_at,content FROM comments WHERE post_id=?`, postID)
+		if err != nil {
+			fmt.Println("could not query comments", err)
+			http.Error(w, "could not get like count", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		var comments []m.Comment
+		for rows.Next() {
+			var eachComment m.Comment
+			rows.Scan(&eachComment.Comment_id, &eachComment.CreatedAt, &eachComment.Content)
+			eachComment.Post_id = postID
+
+			var likeCount, dislikeCount int
+			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND comment_id = ?", eachComment.Comment_id).Scan(&likeCount)
+			if err != nil {
+				fmt.Println(err)
+				http.Error(w, "could not get like count", http.StatusInternalServerError)
+				return
+			}
+			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ?", eachComment.Comment_id).Scan(&dislikeCount)
+			if err != nil {
+				fmt.Println(err)
+				http.Error(w, "could not get dislike count", http.StatusInternalServerError)
+				return
+			}
+
+			eachComment.Likes = likeCount
+			eachComment.Dislikes = dislikeCount
+			comments = append(comments, eachComment)
+		}
+		commentsJson, err := json.Marshal(comments)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "could not get like count", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(commentsJson)
+	}
+}
+
+func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+	err, Profile := getUserDetails(w, r)
+	if err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	}
+
+	str, _ := io.ReadAll(r.Body)
+	var commentId struct {
+		Comment_Id string `json:"comment_id"`
 	}
 	fmt.Println(string(str))
-	err := json.Unmarshal(str, &postID)
+	err = json.Unmarshal(str, &commentId)
 	if err != nil {
-		fmt.Println("could not unmarshal post id")
+		fmt.Println("could not unmarshal comment id")
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
 		return
 	}
 
-	rows, err := d.Db.Query(`SELECT created_at,likes,dislikes,content FROM comments WHERE post_id=?`, postID.Post_id)
-	if err != nil {
-		fmt.Println("could not query comments", err)
-		http.Error(w, "could not get like count", http.StatusInternalServerError)
+	// Check if the user has already liked or disliked the post
+	var likeDislike string
+	// check if liked
+	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+
+	if err == sql.ErrNoRows {
+		fmt.Println("He hasn't liked it!")
+		// if not liked check if disliked
+		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				// check if the post exists
+				err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+				if err == sql.ErrNoRows {
+
+					fmt.Println("had not liked it")
+					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,comment_id,user_uuid) VALUES ('like',?,?)", commentId.Comment_Id, Profile.Uuid)
+					if err != nil {
+						fmt.Println("Failed to like comment", err)
+						http.Error(w, "Failed to like comment", http.StatusInternalServerError)
+						return
+					}
+				} else {
+					fmt.Println("had not liked it")
+					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+					if err != nil {
+						fmt.Println("Failed to like comment", err)
+						http.Error(w, "Failed to like comment", http.StatusInternalServerError)
+						return
+					}
+				}
+
+				// If the user hasn't liked or disliked the post, insert a new like
+				fmt.Println("has liked it")
+
+			} else {
+
+				fmt.Println("Failed to query comment", err)
+				ErrorPage(err, m.ErrorsData.InternalError, w, r)
+				return
+			}
+		}
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+		if err != nil {
+			fmt.Println("Failed to like comment", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
+	} else if err != nil {
+
+		fmt.Println("Failed to check if user has liked comment", err)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
-	}
-	defer rows.Close()
-	var comments []m.Comment
-	for rows.Next() {
-		var eachComment m.Comment
-		rows.Scan(&eachComment.CreatedAt, &eachComment.Likes, &eachComment.Dislikes, &eachComment.Content)
-		comments = append(comments, eachComment)
-	}
-	commentsJson, err := json.Marshal(comments)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "could not get like count", http.StatusInternalServerError)
-		return
+	} else if likeDislike == "like" {
+
+		// If the user has already liked the post, minus the like
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+		if err != nil {
+			fmt.Println("Failed to minus like", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(commentsJson)
+	w.WriteHeader(http.StatusOK)
+}
+
+func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+	err, Profile := getUserDetails(w, r)
+	if err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	}
+
+	str, _ := io.ReadAll(r.Body)
+	var commentId struct {
+		Comment_Id string `json:"comment_id"`
+	}
+	fmt.Println(string(str))
+	err = json.Unmarshal(str, &commentId)
+	if err != nil {
+		fmt.Println("could not unmarshal comment id")
+		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+
+	// Check if the user has already liked or disliked the post
+	var likeDislike string
+	// check if liked
+	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+
+	if err == sql.ErrNoRows {
+		fmt.Println("He hasn't liked it!")
+		// if not liked check if disliked
+		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				// check if the post exists
+				err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+				if err == sql.ErrNoRows {
+
+					fmt.Println("had not disliked it")
+					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,comment_id,user_uuid) VALUES ('dislike',?,?)", commentId.Comment_Id, Profile.Uuid)
+					if err != nil {
+						fmt.Println("Failed to like comment", err)
+						http.Error(w, "Failed to like comment", http.StatusInternalServerError)
+						return
+					}
+				} else {
+					fmt.Println("had not disliked it")
+					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+					if err != nil {
+						fmt.Println("Failed to dislike comment", err)
+						http.Error(w, "Failed to dislike comment", http.StatusInternalServerError)
+						return
+					}
+				}
+
+				// If the user hasn't liked or disliked the post, insert a new like
+				fmt.Println("has disliked it")
+
+			} else {
+
+				fmt.Println("Failed to query comment", err)
+				ErrorPage(err, m.ErrorsData.InternalError, w, r)
+				return
+			}
+		}
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+		if err != nil {
+			fmt.Println("Failed to dislike comment", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
+	} else if err != nil {
+
+		fmt.Println("Failed to check if user has disliked comment", err)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	} else if likeDislike == "dislike" {
+
+		// If the user has already liked the post, minus the like
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+		if err != nil {
+			fmt.Println("Failed to minus like", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }

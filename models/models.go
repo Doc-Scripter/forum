@@ -56,6 +56,7 @@ var ErrorsData = Errors{
 }
 
 
+
 type Post struct {
 	CreatedAt time.Time `json:"created_at"`
 	Category  string    `json:"category"`
@@ -63,13 +64,15 @@ type Post struct {
 	Title     string    `json:"title"`
 	Dislikes  int       `json:"dislikes"`
 	CommentsCount  int   `json:"comments_count"`
-	Comments  []string `json:"comments"`
+	Comments  []Comment `json:"comments"`
 	Content   string    `json:"content"`
 	User_uuid string    `json:"user_uuid"`
 	Post_id   int       `json:"post_id"`
 }
 
 type Comment struct{
+	Comment_id int `json:"comment_id"`
+	Post_id string `json:"post_id"`
 	CreatedAt time.Time `json:"created_at"`
 	Likes     int       `json:"likes"`
 	Dislikes  int       `json:"dislikes"`
