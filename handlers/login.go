@@ -4,7 +4,7 @@ import (
 	"time"
 	"net/http"
 	"database/sql"
-	"fmt"
+	// "fmt"
 
 	d "forum/database"
 	"github.com/gofrs/uuid"
