@@ -715,18 +715,14 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-	err, Profile := getUserDetails(w, r)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+	Profile := getUserDetails(w, r)
 
 	str, _ := io.ReadAll(r.Body)
 	var commentId struct {
 		Comment_Id string `json:"comment_id"`
 	}
 	fmt.Println(string(str))
-	err = json.Unmarshal(str, &commentId)
+	err := json.Unmarshal(str, &commentId)
 	if err != nil {
 		fmt.Println("could not unmarshal comment id")
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
@@ -806,18 +802,14 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-	err, Profile := getUserDetails(w, r)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+	Profile := getUserDetails(w, r)
 
 	str, _ := io.ReadAll(r.Body)
 	var commentId struct {
 		Comment_Id string `json:"comment_id"`
 	}
 	fmt.Println(string(str))
-	err = json.Unmarshal(str, &commentId)
+	err := json.Unmarshal(str, &commentId)
 	if err != nil {
 		fmt.Println("could not unmarshal comment id")
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
