@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Content</title>
+    <link href="https://fonts.googleapis.com/css?family=Inknut+Antiqua&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+        .post-container {
+            max-width: 800px;
+            margin: 2em auto;
+            padding: 2em;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1em;
+            padding-bottom: 1em;
+            border-bottom: 1px solid #eee;
+        }
+
+        .post-title {
+            font-family: 'Inknut Antiqua', serif;
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0.5em;
+            color: #666;
+        }
+
+        .close-button:hover {
+            color: #333;
+        }
+
+        .post-metadata {
+            display: flex;
+            gap: 1em;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 1em;
+        }
+
+        .post-owner {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        .owner-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #4a90e2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .post-content {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .category-label {
+            display: inline-block;
+            padding: 0.3em 0.8em;
+            background-color: #4a90e2;
+            color: white;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="post-container">
+        <div class="post-header">
+            <h1 class="post-title">{{.Title}}</h1>
+            <button class="close-button" onclick="window.location.href='/'">&times;</button>
+        </div>
+        
+        <div class="post-metadata">
+            <div class="post-owner">
+                <div class="owner-avatar">{{.OwnerInitials}}</div>
+                <span>{{.Owner}}</span>
+            </div>
+            <span>{{.CreatedAt.Format "Jan 02, 2006 15:04"}}</span>
+            <span class="category-label">{{.Category}}</span>
+        </div>
+
+        <div class="post-content">
+            {{.Content}}
+        </div>
+    </div>
+</body>
+</html>

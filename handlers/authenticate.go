@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
-	"regexp"
 	"time"
-
+	"regexp"
+	"net/http"
+	"database/sql"
+	
+	
 	d "forum/database"
-
 	"golang.org/x/crypto/bcrypt"
 )
 

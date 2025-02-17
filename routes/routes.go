@@ -19,6 +19,7 @@ func Routers() (*http.ServeMux, error) {
 	mux.HandleFunc("/logging", handler.AuthenticateUserCredentialsLogin)
 	// mux.Handle("/logging", handler.AuthMiddleware(http.HandlerFunc(handler.AuthenticateUserCredentialsLogin)))
 	mux.HandleFunc("/posts", handler.PostsHandler)
+	// mux.HandleFunc("/post", handler.PostHandler)
 	mux.HandleFunc("/create-post", handler.CreatePostsHandler)
     mux.HandleFunc("/home", handler.HomePage)
 	mux.HandleFunc("/likes", handler.LikePostHandler)

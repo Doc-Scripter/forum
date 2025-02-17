@@ -3,63 +3,16 @@ const postsContainer = document.querySelector(".posts-container");
 const filterBtns = document.querySelectorAll(".filter-btn");
 const categoryFilter = document.getElementById("category-filter");
 const menuContent = document.querySelector(".menu-content");
-const createPostBtn = document.querySelector(".create-post-btn");
-const modal = document.querySelector(".modal");
-const closeModal = document.querySelector(".close-modal");
-const postForm = document.querySelector(".post-form");
-const hamburgerIcon = document.querySelector(".hamburger-icon");
-const likebutton = document.querySelectorAll(".like-btn");
-const dislikebutton = document.querySelectorAll(".dislike-btn");
-const comments = document.querySelector(".comments-section");
-// const commentActions = document.querySelector(".comment-actions");
-
-
-const commentform = document.querySelectorAll(".comment-form");
+const comments = document.querySelectorAll(".comments-section");
 
 let currentFilter = "allPosts";
 let currentCategory = "all";
 let posts = [];
 let route = "/posts";
 
-commentform.forEach((form) => {
-  form.addEventListener("submit", (e) => {
-    // e.preventDefault();
-    commentform.reset();
-  });
-});
 
-postsContainer.addEventListener("click", (e) => {
-  if (e.target.classList.contains("like-btn")) {
-    console.log("post like button clicked");
-    const postId = e.target.dataset.postId;
-    fetch("/likes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ post_id: postId }),
-    })
-      .then(() => {
-        fetchPosts(route);
-      })
-      .catch((error) => console.error(error));
-  }
 
-  if (e.target.classList.contains("dislike-btn")) {
-    console.log("dislike button clicked");
 
-    const postId = e.target.dataset.postId;
-    fetch("/dislikes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ post_id: postId }), // Ensure userId is defined
-    })
-      .then(() => fetchPosts(route))
-      .catch((error) => console.error(error));
-  }
-});
-
-postForm.addEventListener("submit", (e) => {
-  alert("Post submitted successfully!");
-});
 
 // State
 function fetchPosts(route) {
@@ -72,28 +25,6 @@ function fetchPosts(route) {
     .catch((error) => {
       console.error("Error fetching posts:", error);
     });
-   
-}
-
-function fetchComments(element,commentId){
-  fetch("/comments",{
-    method:"POST",
-    content:"application/json",
-    body:JSON.stringify({comment_id:commentId})
-    
-  }
-)
-.then((response) => response.json()
-
-)
-.then((data) => {
-  console.log(data)
-  displayComments(data, element);
-})
-  .catch((error) => {
-    console.error("Error fetching comments:", error);
-  });
- 
 }
 
 function displayPosts(posts, category) {
@@ -133,19 +64,30 @@ function displayPosts(posts, category) {
           <button class="action-btn dislike-btn" data-post-id="${post.post_id}">
             👎${post.dislikes}
           </button>
-          </div>
           <button class="comments-toggle" data-post-id="${post.post_id}">
             💬 Comments (${post.comments ? post.comments.length : 0})
           </button>
+        </div>
         <div class="comments-section" id="comments-${post.post_id}">
-          
+          ${
+            post.comments
+              ? post.comments
+                  .map(
+                    (comment) => `
+          <div class="comment">
+            <p>${comment}</p>
           </div>
+          `
+                  )
+                  .join("")
+              : ""
+          }
 
           <form
             class="comment-form"
             data-post-id="${post.post_id}"
-            action="/addcomment"
-            method="post"
+            action="/register"
+            method="get"
           >
             <input type="hidden" name="post_id" value="${post.post_id}" />
             <input
@@ -157,6 +99,7 @@ function displayPosts(posts, category) {
             />
             <button type="submit" class="comment-submit">Comment</button>
           </form>
+        </div>
       </div>
     </article>
        `
@@ -174,89 +117,13 @@ function displayPosts(posts, category) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ post_id: postId }),
-      })
-      .then((res) => res.json())
-      .then((data) => {
-
-       displayComments(data,commentsSection)
-      })
-        .catch(
-          (error) => console.error(error)
-        );
+      }).catch((error) => console.error(error));
     });
   });
 }
 
-function displayComments(comments,element){ 
-  element.innerHTML=comments.map((comment)=>`
-  <div class="comment"><p>${comment.content}</p></div>
-    <div class="comment-actions">
-    <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
-      👍${comment.likes}
-      </button>
-      <button class="comment dislikeBtn" data-comment-id="${comment.comment_id}">
-      👎${comment.dislikes}
-      </button>
-     </div>
-    `).join(``)
-    attachCommentActionListeners(element);
-}
-
-function attachCommentActionListeners(container) {
-container.querySelectorAll(".comment-actions").forEach((btn)=>{
-  btn.addEventListener("click",(e)=>{
-    if (e.target.classList.contains("likeBtn")) {
-      const commentId = e.target.dataset.commentId;
-      console.log("comment like button clicked comment id:",commentId)
-      fetch("/likesComment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comment_Id:commentId }),
-      })
-        .then(()=>fetchComments(container,commentId))
-        .catch(
-          (error) => console.error(error)
-        );
-      }
-   
-  
-  
-  
-    if (e.target.classList.contains("dislikeBtn")) {
-      // e.stopPropagation();
-      console.log("dislike button clicked");
-  
-      const commentId = e.target.dataset.commentId;
-      fetch("/dislikesComment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comment_id:commentId }), // Ensure userId is defined
-      })
-     
-        .then(() => fetchComments(container,commentId))
-        .catch((error) => console.error(error)
-        );
-    }
-  });
-  })
-}
-
 document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 
-// Create Post Modal
-createPostBtn.addEventListener("click", () => {
-  modal.classList.add("active");
-});
-
-closeModal.addEventListener("click", () => {
-  modal.classList.remove("active");
-});
-
-modal.addEventListener("click", (e) => {
-  if (e.target === modal) {
-    modal.classList.remove("active");
-  }
-});
 
 // Event listeners for filters
 filterBtns.forEach((btn) => {
@@ -318,11 +185,13 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Function to update theme icon
-function updateThemeIcon() {  
+function updateThemeIcon() {
   const sunIcon = document.querySelector(".sun");
   const moonIcon = document.querySelector(".moon");
   const isLightTheme = document.body.classList.contains("light-theme");
 
+  // Show moon in light theme (to switch to dark)
+  // Show sun in dark theme (to switch to light)
   sunIcon.style.display = isLightTheme ? "none" : "block";
   moonIcon.style.display = isLightTheme ? "block" : "none";
 }
