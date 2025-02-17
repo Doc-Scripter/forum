@@ -65,8 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formData = new FormData(e.target);
                 const response = await fetch('/logging', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(formData)
                 });
+                console.log(formData);
 
                 const errorMessage = await response.text();
 

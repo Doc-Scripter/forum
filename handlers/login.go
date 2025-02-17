@@ -4,6 +4,7 @@ import (
 	"time"
 	"net/http"
 	"database/sql"
+	"fmt"
 
 	d "forum/database"
 	"github.com/gofrs/uuid"
@@ -22,15 +23,22 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse both URL-encoded form data and multipart form data
 	err := r.ParseForm()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Unable to process login request"))
 		return
 	}
-
+	
+	// Log the raw form data for debugging
+	// fmt.Printf("Form data received: %+v\n", r.Form)
+	
 	email := r.FormValue("email")
 	password := r.FormValue("password")
+
+	// Log the extracted values
+	// fmt.Printf("Extracted email: %s, password: %s\n", email, password)
 
 	// Validate input
 	if email == "" || password == "" {
