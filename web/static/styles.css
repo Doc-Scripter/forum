@@ -156,6 +156,17 @@ body.no-scroll {
   align-items: center;
 }
 
+.comment {
+  cursor: default; /* prevent highlighting */
+}
+
+.comment-actions {
+  display: block; /* ensure block-level element */
+}
+
+.action-btn-container {
+  display: flex; /* optional: display buttons horizontally */
+}
 .action-btn {
   display: flex;
   align-items: center;
