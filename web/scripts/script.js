@@ -88,13 +88,16 @@ function fetchComments(element,commentId){
     method:"POST",
     content:"application/json",
     body:JSON.stringify({comment_id:commentId})
-
+    
   }
-  )
-  .then((response) => response.json())
-  .then((data) => {
-    displayComments(data, element);
-  })
+)
+.then((response) => response.json()
+
+)
+.then((data) => {
+  console.log(data)
+  displayComments(data, element);
+})
   .catch((error) => {
     console.error("Error fetching comments:", error);
   });
@@ -194,14 +197,14 @@ function displayPosts(posts, category) {
   });
 }
 
-function displayComments(comments,element){
+function displayComments(comments,element){ 
   element.innerHTML=comments.map((comment)=>`
   <div class="comment"><p>${comment.content}</p></div>
     <div class="comment-actions">
     <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
       👍${comment.likes}
       </button>
-      <button class="comment dislikeBtn" data-comment-id="${comment.post_id}">
+      <button class="comment dislikeBtn" data-comment-id="${comment.comment_id}">
       👎${comment.dislikes}
       </button>
      </div>
