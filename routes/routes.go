@@ -35,6 +35,7 @@ func Routers() (*http.ServeMux, error) {
 	mux.HandleFunc("/register", handler.Register)
 	mux.HandleFunc("/registration", handler.RegisterUser)
 	mux.HandleFunc("/logout", handler.LogoutUser)
+	mux.HandleFunc("/upload", handler.UploadHandler)
 
 	return mux, nil
 }

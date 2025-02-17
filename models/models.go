@@ -76,3 +76,11 @@ type Comment struct{
 	Content   string    `json:"content"`
 
 }
+type Image struct {
+    ID        int64     `json:"id"`
+    UserID    int64     `json:"user_id"`
+    PostID    int64     `json:"post_id,omitempty"`
+    Filename  string    `json:"filename"`
+    Path      string    `json:"path"`
+    CreatedAt time.Time `json:"created_at"`
+}

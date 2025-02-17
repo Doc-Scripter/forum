@@ -1,11 +1,16 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	d "forum/database"
@@ -68,4 +73,28 @@ func ValidateSession(r *http.Request) (bool, string) {
 
 	fmt.Println("Session valid for user:", userID)
 	return true, userID
+}
+
+func validateFileType(file multipart.File) bool {
+	// Read the first 512 bytes to detect content type
+	buffer := make([]byte, 512)
+	_, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return false
+	}
+
+	// Reset the file pointer
+	file.Seek(0, 0)
+
+	// Get content type and check if it's allowed
+	contentType := http.DetectContentType(buffer)
+	return strings.Contains(allowedTypes, contentType)
+}
+
+func generateFileName() (string, error) {
+	bytes := make([]byte, 16)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }
