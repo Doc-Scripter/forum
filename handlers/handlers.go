@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"text/template"
+	"html"
 
 	e "forum/Error"
 
@@ -263,7 +264,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.Form)
 	category := combineCategory(r.Form["category"])
 	fmt.Println(category)
-	content := r.FormValue("content")
+	content := html.EscapeString(r.FormValue("content"))
 	title := r.FormValue("title")
 
 	_, err := d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid) VALUES ($1, $2, $3 ,$4)", category, content, title, Profile.Uuid)
