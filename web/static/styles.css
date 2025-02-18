@@ -391,6 +391,8 @@ body.light-theme .comment {
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
+  display: grid;
+  align-content: center;
 }
 
 .create-post-btn::before {
@@ -699,7 +701,8 @@ footer {
 
 .header {
   display: flex;
-  padding: 15px 5%;
+  /* padding: 15px 5%; */
+  padding: 1rem 2rem;
   flex-wrap: wrap;
   gap: 10px;
   margin: 5px;
@@ -1031,7 +1034,8 @@ body.light-theme {
 body.light-theme .header {
   background: var(--primary-gradient);
   color: white;
-  padding: 15px 5%;
+  padding: 1rem 2rem;
+  /* padding: 15px 5%; */
 }
 
 /* Light Theme Background */
