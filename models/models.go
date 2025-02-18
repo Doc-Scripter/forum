@@ -1,9 +1,9 @@
 package models
 
 import (
-	"time"
-	"strings"
 	"net/http"
+	"strings"
+	"time"
 )
 
 type ProfileData struct {
@@ -114,9 +114,9 @@ func (p *ProfileData) GenerateInitials() string {
 }
 
 type Image struct {
-    ID        int64     `json:"id"`
-    UserID    int64     `json:"user_id"`
-    PostID    int64     `json:"post_id,omitempty"`
+    ImageID   string     `json:"image_id"`
+    UserID    string     `json:"user_id"`
+    PostID    string     `json:"post_id"`
     Filename  string    `json:"filename"`
     Path      string    `json:"path"`
     CreatedAt time.Time `json:"created_at"`
