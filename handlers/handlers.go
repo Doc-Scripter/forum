@@ -244,18 +244,25 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(postsJson)
 }
 
+func combineCategory(category []string) string{
+
+	return strings.Join(category, ", ")
+}
+
+
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	Profile := getUserDetails(w, r)
 
 	if r.Method != http.MethodPost {
-		// http.Error(w, "method not allowed", http.StatusBadRequest)
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-	fmt.Println("creating post")
+
 	r.ParseForm()
-	category := r.FormValue("category")
+	fmt.Println(r.Form)
+	category := combineCategory(r.Form["category"])
+	fmt.Println(category)
 	content := r.FormValue("content")
 	title := r.FormValue("title")
 
@@ -603,6 +610,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println(string(str))
 		err := json.Unmarshal(str, &postID)
+		fmt.Println("the post id====>post_id: ", postID)
 		if err != nil {
 			fmt.Println("could not unmarshal post id")
 			ErrorPage(err, m.ErrorsData.BadRequest, w, r)

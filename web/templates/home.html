@@ -50,7 +50,7 @@
       <div class="profile">
         <div class="avatar" id="profile-Name">{{.Initials}}</div>
         <p class="username" id="username">{{.Username}}</p>
-        <p class="email">{{.Email}}</p>
+        <!-- <p class="email">{{.Email}}</p>  for privacy--> 
       </div>
       <div class="logout-div">
 
@@ -77,7 +77,7 @@
           <h2 style="font-family: 'Inkut Antiqua'">Create New Post</h2>
           <button class="close-modal"></button>
         </div>
-        <form class="post-form" action="/create-post" method="POST">
+        <!-- <form class="post-form" action="/create-post" method="POST">
           <textarea
             name="title"
             placeholder="Post Title"
@@ -107,9 +107,54 @@
           <button type="submit" style="font-family: 'Inkut Antiqua'">
             Create Post
           </button>
+        </form> -->
+        <form class="post-form" action="/create-post" method="POST">
+          <textarea name="title" placeholder="Post Title" required rows="1"></textarea>
+        
+          <textarea name="content" placeholder="Post Content" required rows="5"></textarea>
+        
+          <!-- <p>Select up to 3 categories:</p> -->
+          <div class="checkbox-group">
+            <label class="category-option"><input type="checkbox" name="category" value="tech"> Technology</label>
+            <label class="category-option"><input type="checkbox" name="category" value="health"> Health</label>
+            <label class="category-option"><input type="checkbox" name="category" value="games"> Games</label>
+            <label class="category-option"><input type="checkbox" name="category" value="religion"> Religion</label>
+            <label class="category-option"><input type="checkbox" name="category" value="math"> Math</label>
+            <label class="category-option"><input type="checkbox" name="category" value="education"> Education</label>
+            <label class="category-option"><input type="checkbox" name="category" value="science"> Science</label>
+            <label class="category-option"><input type="checkbox" name="category" value="politics"> Politics</label>
+            <label class="category-option"><input type="checkbox" name="category" value="fashion"> Fashion</label>
+            <label class="category-option"><input type="checkbox" name="category" value="lifestyle"> Lifestyle</label>
+            <label class="category-option"><input type="checkbox" name="category" value="sports"> Sports</label>
+          </div>
+        
+          <button type="submit" style="font-family: 'Inkut Antiqua'">Create Post</button>
         </form>
+        
       </div>
     </div>
+    <!-- <script>
+      document.addEventListener("DOMContentLoaded", function () {
+  const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]');
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      let checkedCount = document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked').length;
+
+      if (checkedCount >= 3) {
+        // Disable unchecked checkboxes
+        checkboxes.forEach(cb => {
+          if (!cb.checked) cb.disabled = true;
+        });
+      } else {
+        // Re-enable all checkboxes when selections are less than 3
+        checkboxes.forEach(cb => cb.disabled = false);
+      }
+    });
+  });
+});
+
+    </script> -->
     
     <!-- <script src="/web/scripts/generatePosts.js"></script> -->
     <script src="/web/scripts/script.js"></script>

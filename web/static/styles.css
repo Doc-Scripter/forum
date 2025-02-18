@@ -1295,3 +1295,43 @@ html {
     scrollbar-gutter: stable;
 }
 
+
+
+/*=========checkboxes addition===========*/
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px; 
+  max-width: 600px; /* Increased max-width for more space */
+  margin: 0 auto; /* Center the grid */
+}
+
+.checkbox-group label {
+  display: grid;
+  align-items: center;
+  gap: 8px; /*Slightly increased gap*/
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px; /* Added padding for better visual appearance */
+  border: 1px solid #ccc; /* Added a subtle border for each checkbox */
+  border-radius: 4px; /* Rounded corners */
+  background-color: #f9f9f9; /* Subtle background color */
+  align-content: center;
+  justify-content: center;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1.2); 
+}
+
+.checkbox-group input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  display: none;
+}
+
+.checkbox-group label:hover {
+  background-color: green;
+  color: white;
+}
