@@ -77,7 +77,7 @@
           <h2 style="font-family: 'Inkut Antiqua'">Create New Post</h2>
           <button class="close-modal">&times;</button>
         </div>
-        <form class="post-form" action="/create-post" method="POST">
+        <form class="post-form" action="/create-post" method="POST"  enctype="multipart/form-data">
           <textarea
             name="title"
             placeholder="Post Title"
@@ -104,6 +104,13 @@
             <option value="lifestyle">Lifestyle</option>
             <option value="sports">Sports</option>
           </select>
+
+          <!-- Image Upload Field -->
+          <div class="image-upload">
+            <label for="image">Upload Image</label>
+            <input type="file" name="image" id="image" accept="image/*" >
+            <div id="image-preview"></div>
+          </div> 
           <button type="submit" style="font-family: 'Inkut Antiqua'">
             Create Post
           </button>
@@ -114,5 +121,6 @@
     <!-- <script src="/web/scripts/generatePosts.js"></script> -->
     <script src="/web/scripts/script.js"></script>
     <script src="/web/scripts/sidebar.js"></script>
+    <script src="/web/scripts/image.js"></script>
   </body>
 </html>
