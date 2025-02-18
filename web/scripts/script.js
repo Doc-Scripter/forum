@@ -112,7 +112,7 @@ function displayPosts(posts, category) {
     </div>
     <h2 class="post-title">No posts available</h2>
     <p class="post-content">No posts to display</p>
-     <div class="post-footer">
+      <div class="post-footer">
         <span class="post-author"></span>
       </div>
     </article>`;
@@ -135,8 +135,9 @@ function displayPosts(posts, category) {
           </button>
           </div>
           <button class="comments-toggle" data-post-id="${post.post_id}">
-            💬 Comments (${post.comments ? post.comments.length : 0})
+            💬 ${post.comments?.length === 1 ? `${post.comments.length} Comment` : `${post.comments?.length || 0} Comments`}
           </button>
+
         <div class="comments-section" id="comments-${post.post_id}">
           
           </div>
