@@ -41,9 +41,7 @@ func StartDbConnection() error {
 	if err = CreateCommentsTable(Db); err != nil {
 		fmt.Println("Could not create comments table: ", err)
 	}
-	if err = CreateImageTable(Db); err != nil {
-		fmt.Println("Could not create image table")
-	}
+	
 	fmt.Println("Connected to SQLite database successfully!")
 	return nil
 }

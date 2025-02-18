@@ -7,10 +7,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
 	"os"
 	"path/filepath"
-	"strconv"
+	"strings"
 	"text/template"
 
 	e "forum/Error"
@@ -43,7 +42,6 @@ func ErrorPage(Error error, ErrorData m.ErrorData, w http.ResponseWriter, r *htt
 
 // serve the login form
 func LandingPage(w http.ResponseWriter, r *http.Request) {
-
 	if bl, _ := ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
@@ -95,15 +93,14 @@ func getUserDetails(w http.ResponseWriter, r *http.Request) m.ProfileData {
 		e.LogError(err)
 		return m.ProfileData{}
 	}
-	
+
 	// Generate and set the initials
 	Profile.Initials = Profile.GenerateInitials()
-	
+
 	return Profile
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
-
 	if bl, _ := ValidateSession(r); !bl {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -115,8 +112,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	Profile := getUserDetails(w, r)
-	
-	
+
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -149,7 +145,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 // serve the registration form
 func Register(w http.ResponseWriter, r *http.Request) {
-
 	if bl, _ := ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	}
@@ -254,7 +249,6 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
-
 	Profile := getUserDetails(w, r)
 
 	if r.Method != http.MethodPost {
@@ -262,26 +256,83 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
+
 	fmt.Println("creating post")
 	r.ParseForm()
+	fmt.Println("this is the form--> ", r.Form)
 	category := r.FormValue("category")
 	content := r.FormValue("content")
 	title := r.FormValue("title")
 
-	_, err := d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid) VALUES ($1, $2, $3 ,$4)", category, content, title, Profile.Uuid)
+	// Parse multipart form
+	r.ParseMultipartForm(maxUploadSize)
+	file, handler, err := r.FormFile("image")
+	fmt.Printf("Error: %v and this is the file: %v\n", err, file)
 	if err != nil {
+		http.Error(w, "Error retrieving file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Validate file size
+	if handler.Size > maxUploadSize {
+		http.Error(w, "File too large", http.StatusBadRequest)
+		return
+	}
+
+	// Validate file type
+	if !validateFileType(file) {
+		http.Error(w, "Invalid file type", http.StatusBadRequest)
+		return
+	}
+
+	// Generate unique filename
+	fileName, err := generateFileName()
+	if err != nil {
+		http.Error(w, "Error processing file", http.StatusInternalServerError)
+		return
+	}
+
+	// Add original file extension
+	fileName = fileName + filepath.Ext(handler.Filename)
+
+	fmt.Println("filename: ", fileName)
+	// Create uploads directory if it doesn't exist
+	if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
+		http.Error(w, "Error processing file", http.StatusInternalServerError)
+		return
+	}
+
+	// Create new file
+	filePath := filepath.Join(uploadsDir, fileName)
+	dst, err := os.Create(filePath)
+	if err != nil {
+		http.Error(w, "Error saving file", http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+
+	// Copy file contents
+	if _, err := io.Copy(dst, file); err != nil {
+		http.Error(w, "Error saving file", http.StatusInternalServerError)
+		return
+	}
+
+	// Save to database
+	img := &m.Image{
+		Filename: handler.Filename,
+		Path:     filePath,
+	}
+
+	_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid ,filename,filepath) VALUES ($1, $2, $3, $4, $5, $6)", category, content, title, Profile.Uuid, img.Filename, img.Path)
+	if err != nil {
+		os.Remove(filePath)
 		fmt.Println("could not insert posts", err)
 		// http.Error(w, "could not insert post", http.StatusInternalServerError)
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-	// Update the post like count
-	// _, err = Db.Exec("UPDATE posts SET post_id = post_id + 1 ")
-	// if err != nil {
-	// 	fmt.Println("Failed to update post count: ",err)
-	// 	http.Error(w, "Failed to update post count", http.StatusInternalServerError)
-	// 	return
-	// }
+
 	fmt.Println("Post created")
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
@@ -378,7 +429,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	Profile := getUserDetails(w, r)
-	
+
 	str, _ := io.ReadAll(r.Body)
 	var postID struct {
 		Post_id string `json:"post_id"`
@@ -459,7 +510,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 	Profile := getUserDetails(w, r)
-	
+
 	rows, err := d.Db.Query("SELECT title,content,category,post_id FROM posts WHERE user_uuid = ? ", Profile.Uuid)
 	if err != nil {
 		fmt.Println("unable to query my posts", err)
@@ -507,9 +558,8 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
-
 	Profile := getUserDetails(w, r)
-	
+
 	likedRows, err := d.Db.Query("SELECT post_id FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", Profile.Uuid)
 	if err != nil {
 		fmt.Println("unable to query my posts", err)
@@ -580,9 +630,9 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-	
+
 	Profile := getUserDetails(w, r)
-	
+
 	r.ParseForm()
 	comment := r.FormValue("add-comment")
 	post_id := r.FormValue("post_id")
@@ -618,134 +668,116 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-	rows, err := d.Db.Query(`SELECT created_at,likes,dislikes,content FROM comments WHERE post_id=?`, postID.Post_id)
-	if err != nil {
-		fmt.Println("could not query comments", err)
-		http.Error(w, "could not get like count", http.StatusInternalServerError)
-		return
+		rows, err := d.Db.Query(`SELECT created_at,likes,dislikes,content FROM comments WHERE post_id=?`, postID.Post_id)
+		if err != nil {
+			fmt.Println("could not query comments", err)
+			http.Error(w, "could not get like count", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		var comments []m.Comment
+		for rows.Next() {
+			var eachComment m.Comment
+			rows.Scan(&eachComment.CreatedAt, &eachComment.Likes, &eachComment.Dislikes, &eachComment.Content)
+			comments = append(comments, eachComment)
+		}
+		commentsJson, err := json.Marshal(comments)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "could not get like count", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(commentsJson)
 	}
-	defer rows.Close()
-	var comments []m.Comment
-	for rows.Next() {
-		var eachComment m.Comment
-		rows.Scan(&eachComment.CreatedAt, &eachComment.Likes, &eachComment.Dislikes, &eachComment.Content)
-		comments = append(comments, eachComment)
-	}
-	commentsJson, err := json.Marshal(comments)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "could not get like count", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(commentsJson)
-}
-}
-
-// SaveImage saves image information to the database
-func SaveImage(db *sql.DB, img *m.Image) error {
-	query := `INSERT INTO images (user_id, post_id, filename, path) 
-              VALUES (?, ?, ?, ?)`
-
-	result, err := db.Exec(query, img.UserID, img.PostID, img.Filename, img.Path)
-	if err != nil {
-		return err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	img.ID = id
-	return nil
 }
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
-	// Check if user is authenticated
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	isValid, userIDStr := ValidateSession(r)
-	if !isValid {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
+	// fmt.Println("uploaded")
+	// // Check if user is authenticated
+	// if r.Method != http.MethodPost {
+	// 	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	// 	return
+	// }
+	// isValid, userIDStr := ValidateSession(r)
+	// if !isValid {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
 
-	// Convert userID from string to int64
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusInternalServerError)
-		return
-	}
-	// Parse multipart form
-	r.ParseMultipartForm(maxUploadSize)
-	file, handler, err := r.FormFile("image")
-	if err != nil {
-		http.Error(w, "Error retrieving file", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
+	// // Convert userID from string to int64
+	// userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	// if err != nil {
+	// 	http.Error(w, "Invalid user ID", http.StatusInternalServerError)
+	// 	return
+	// }
+	// // Parse multipart form
+	// r.ParseMultipartForm(maxUploadSize)
+	// file, handler, err := r.FormFile("image")
+	// if err != nil {
+	// 	http.Error(w, "Error retrieving file", http.StatusBadRequest)
+	// 	return
+	// }
+	// defer file.Close()
 
-	// Validate file size
-	if handler.Size > maxUploadSize {
-		http.Error(w, "File too large", http.StatusBadRequest)
-		return
-	}
+	// // Validate file size
+	// if handler.Size > maxUploadSize {
+	// 	http.Error(w, "File too large", http.StatusBadRequest)
+	// 	return
+	// }
 
-	// Validate file type
-	if !validateFileType(file) {
-		http.Error(w, "Invalid file type", http.StatusBadRequest)
-		return
-	}
+	// // Validate file type
+	// if !validateFileType(file) {
+	// 	http.Error(w, "Invalid file type", http.StatusBadRequest)
+	// 	return
+	// }
 
-	// Generate unique filename
-	fileName, err := generateFileName()
-	if err != nil {
-		http.Error(w, "Error processing file", http.StatusInternalServerError)
-		return
-	}
+	// // Generate unique filename
+	// fileName, err := generateFileName()
+	// if err != nil {
+	// 	http.Error(w, "Error processing file", http.StatusInternalServerError)
+	// 	return
+	// }
 
-	// Add original file extension
-	fileName = fileName + filepath.Ext(handler.Filename)
+	// // Add original file extension
+	// fileName = fileName + filepath.Ext(handler.Filename)
 
-	// Create uploads directory if it doesn't exist
-	if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
-		http.Error(w, "Error processing file", http.StatusInternalServerError)
-		return
-	}
+	// // Create uploads directory if it doesn't exist
+	// if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
+	// 	http.Error(w, "Error processing file", http.StatusInternalServerError)
+	// 	return
+	// }
 
-	// Create new file
-	filePath := filepath.Join(uploadsDir, fileName)
-	dst, err := os.Create(filePath)
-	if err != nil {
-		http.Error(w, "Error saving file", http.StatusInternalServerError)
-		return
-	}
-	defer dst.Close()
+	// // Create new file
+	// filePath := filepath.Join(uploadsDir, fileName)
+	// dst, err := os.Create(filePath)
+	// if err != nil {
+	// 	http.Error(w, "Error saving file", http.StatusInternalServerError)
+	// 	return
+	// }
+	// defer dst.Close()
 
-	// Copy file contents
-	if _, err := io.Copy(dst, file); err != nil {
-		http.Error(w, "Error saving file", http.StatusInternalServerError)
-		return
-	}
+	// // Copy file contents
+	// if _, err := io.Copy(dst, file); err != nil {
+	// 	http.Error(w, "Error saving file", http.StatusInternalServerError)
+	// 	return
+	// }
 
-	// Save to database
-	img := &m.Image{
-		UserID:   userID,
-		Filename: handler.Filename,
-		Path:     filePath,
-	}
+	// // Save to database
+	// img := &m.Image{
+	// 	UserID:   userID,
+	// 	Filename: handler.Filename,
+	// 	Path:     filePath,
+	// }
 
-	if err := SaveImage(d.Db, img); err != nil {
-		// Clean up file if database save fails
-		os.Remove(filePath)
-		http.Error(w, "Error saving file info", http.StatusInternalServerError)
-		return
-	}
+	// if err := SaveImage(d.Db, img); err != nil {
+	// 	// Clean up file if database save fails
+	// 	os.Remove(filePath)
+	// 	http.Error(w, "Error saving file info", http.StatusInternalServerError)
+	// 	return
+	// }
 
-	// Return success response
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"id":%d,"path":"%s"}`, img.ID, img.Path)
+	// // Return success response
+	// w.WriteHeader(http.StatusOK)
+	// fmt.Fprintf(w, `{"id":%d,"path":"%s"}`, img.ID, img.Path)
 }
