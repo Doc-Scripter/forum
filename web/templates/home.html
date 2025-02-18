@@ -46,7 +46,7 @@
     </div>
 
     <div class="sidebar glass-effect" id="sidebar">
-      <button class="close-btn" onclick="toggleSidebar()">×</button>
+      <button class="close-btn" onclick="toggleSidebar()"></button>
       <div class="profile">
         <div class="avatar" id="profile-Name">{{.Initials}}</div>
         <p class="username" id="username">{{.Username}}</p>
@@ -75,7 +75,7 @@
       <div class="modal-content glass-effect">
         <div class="modal-header">
           <h2 style="font-family: 'Inkut Antiqua'">Create New Post</h2>
-          <button class="close-modal">&times;</button>
+          <button class="close-modal"></button>
         </div>
         <form class="post-form" action="/create-post" method="POST">
           <textarea

@@ -115,6 +115,15 @@ body.no-scroll {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+body.light-theme .post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(62, 103, 236, 0.87);
+}
+
 .post-title {
   font-size: 1.25rem;
   font-weight: bold;
@@ -232,6 +241,18 @@ body.no-scroll {
   flex-wrap: wrap; /* Allows wrapping on small screens */
   gap: 10px; /* Adds spacing when wrapped */
 }
+
+body.light-theme .post-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(62, 103, 236, 0.87);
+  flex-wrap: wrap; /* Allows wrapping on small screens */
+  gap: 10px; /* Adds spacing when wrapped */
+}
+
 
 /* 📱 Mobile (≤ 600px) */
 @media screen and (max-width: 600px) {
@@ -424,12 +445,6 @@ body.light-theme .comment {
   margin-bottom: 1rem;
 }
 
-.close-modal {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
 
 .post-form {
   display: flex;
@@ -457,10 +472,38 @@ body.light-theme .comment {
 .close-modal {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 24px; /* Make it a bit larger */
   cursor: pointer;
-  float: right;
+  color: red; /* Default color */
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
 }
+
+/* Add the "X" icon */
+.close-modal::before {
+  content: "✖"; /* Unicode for 'X' */
+  font-weight: bold;
+  font-size: 24px;
+  color: red; /* Default X color */
+  transition: all 0.3s ease;
+}
+
+/* Hover effect: circular border, red background, white "X" */
+.close-modal:hover {
+  background: red;
+  border-radius: 50%; /* Circular shape */
+  color: white; /* Change icon color */
+}
+
+.close-modal:hover::before {
+  color: white; /* White X */
+}
+
 
 footer {
   background-color: #333;
@@ -737,11 +780,38 @@ h1 {
 .close-btn {
   background: none;
   border: none;
-  font-size: 24px;
-  font-family: Inkut Antiqua;
+  font-size: 24px; /* Make it a bit larger */
   cursor: pointer;
-  float: right;
+  color: red; /* Default color */
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
 }
+
+/* Add the "X" icon */
+.close-btn::before {
+  content: "✖"; /* Unicode for 'X' */
+  font-weight: bold;
+  font-size: 24px;
+  color: red; /* Default X color */
+  transition: all 0.3s ease;
+}
+
+/* Hover effect: circular border, red background, white "X" */
+.close-btn:hover {
+  background: red;
+  border-radius: 50%; /* Circular shape */
+  color: white; /* Change icon color */
+}
+
+.close-btn:hover::before {
+  color: white; /* White X */
+}
+
 
 .profile {
   text-align: center;
@@ -961,7 +1031,7 @@ body.light-theme {
 body.light-theme .header {
   background: var(--primary-gradient);
   color: white;
-  padding: 1rem 2rem;
+  padding: 15px 5%;
 }
 
 /* Light Theme Background */
