@@ -1,18 +1,20 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
-	"time"
-	"regexp"
 	"mime/multipart"
 	"net/http"
-	"database/sql"
+	"regexp"
 	"strings"
-	
-	
+	"time"
+
 	d "forum/database"
+
 	"golang.org/x/crypto/bcrypt"
 )
 

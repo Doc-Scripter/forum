@@ -640,6 +640,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(commentsJson)
 }
+}
 
 // SaveImage saves image information to the database
 func SaveImage(db *sql.DB, img *m.Image) error {
