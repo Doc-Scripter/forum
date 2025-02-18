@@ -3,59 +3,76 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Forum UI</title>
+    <title>Forum</title>
     <link
       href="https://fonts.googleapis.com/css?family=Inknut+Antiqua&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="../static/styles.css" />
   </head>
 
-  <body>
-    <div class="header">
+  <body class="gradient-background light-theme">
+    <div class="header glass-effect">
       <h1>FORUM</h1>
       <div class="user-icon" onclick="toggleSidebar()">
-        <img src="/static/images/profile.png" alt="User" />
+        <img src="/static/images/profile.png" alt="User" class="glass-effect" />
       </div>
     </div>
 
-    <div class="filters">
-      <button class="filter-btn active" data-filter="allPosts">
-        All Posts
-      </button>
-      <button class="filter-btn" data-filter="created">My Posts</button>
-      <button class="filter-btn" data-filter="liked">Favorites</button>
-      <select id="category-filter">
-        <option value="all">All Categories</option>
-        <option value="tech">Technology</option>
+    <div class="filters glass-effect">
+      <div class="filter-options">
+        <button class="filter-btn active glass-btn" data-filter="allPosts">All Posts</button>
+        <button class="filter-btn glass-btn" data-filter="created">My Posts</button>
+        <button class="filter-btn glass-btn" data-filter="liked">Favorites</button>
+        <select id="category-filter" class="glass-select">
+          <option value="all">All Categories</option>
+          <option value="tech">Technology</option>
           <option value="health">Health</option>
-          <option value="math">Games</option>
-          <option value="Religion">Religion</option>
-          <option value="Education">Education</option>
-          <option value="Politics">Politics</option>
-          <option value="Fashion">Fashion</option>
-          <option value="Lifestyle">Lifestyle</option>
-          <option value="Sports">Sports</option>
-      </select>
+          <option value="math">Math</option>
+          <option value="games">Games</option>
+              <option value="science">Science</option>
+              <option value="religion">Religion</option>
+          <option value="education">Education</option>
+          <option value="politics">Politics</option>
+          <option value="fashion">Fashion</option>
+          <option value="lifestyle">Lifestyle</option>
+          <option value="sports">Sports</option>
+        </select>
+      </div>
+      <button id="theme-toggle" class="theme-toggle glass-btn">
+        <span class="moon">🌙</span>
+        <span class="sun">☀️</span>
+      </button>
     </div>
 
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar glass-effect" id="sidebar">
       <button class="close-btn" onclick="toggleSidebar()">×</button>
       <div class="profile">
-        <div class="avatar" id="profile-Name"></div>
+        <div class="avatar" id="profile-Name">{{.Initials}}</div>
         <p class="username" id="username">{{.Username}}</p>
         <p class="email">{{.Email}}</p>
       </div>
+      <div class="logout-div">
+
+        <button 
+        class="logout-btn" 
+        onclick="window.location.href='/logout'"
+        onmouseover="this.style.transform='translateY(-5px)'"
+        onmouseout="this.style.transform='translateY(0)'"
+        >
+        Logout
+      </button>
+    </div>
     </div>
 
     <main class="posts-container">
       <!-- Posts will be dynamically inserted here -->
     </main>
 
-    <button class="create-post-btn">+</button>
+    <button class="create-post-btn glass-effect"></button>
 
     <div class="modal">
-      <div class="modal-content">
+      <div class="modal-content glass-effect">
         <div class="modal-header">
           <h2 style="font-family: 'Inkut Antiqua'">Create New Post</h2>
           <button class="close-modal">&times;</button>
@@ -77,13 +94,15 @@
           <select name="category" required>
             <option value="tech">Technology</option>
             <option value="health">Health</option>
-            <option value="math">Games</option>
-            <option value="Religion">Religion</option>
-            <option value="Education">Education</option>
-            <option value="Politics">Politics</option>
-            <option value="Fashion">Fashion</option>
-            <option value="Lifestyle">Lifestyle</option>
-            <option value="Sports">Sports</option>
+            <option value="games">Games</option>
+            <option value="religion">Religion</option>
+              <option value="math">Math</option>
+              <option value="education">Education</option>
+              <option value="science">Science</option>
+            <option value="politics">Politics</option>
+            <option value="fashion">Fashion</option>
+            <option value="lifestyle">Lifestyle</option>
+            <option value="sports">Sports</option>
           </select>
           <button type="submit" style="font-family: 'Inkut Antiqua'">
             Create Post
@@ -92,7 +111,8 @@
       </div>
     </div>
     
+    <!-- <script src="/web/scripts/generatePosts.js"></script> -->
     <script src="/web/scripts/script.js"></script>
-  
+    <script src="/web/scripts/sidebar.js"></script>
   </body>
 </html>

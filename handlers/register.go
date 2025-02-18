@@ -29,16 +29,27 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse form and log the raw data
 	if err := r.ParseForm(); err != nil {
+		fmt.Println("Error parsing form:", err)
 		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
 		return
 	}
+
+	// Log the raw form data
+	fmt.Printf("Raw form data: %+v\n", r.Form)
 
 	user := User{
 		Username: r.FormValue("username"),
 		Email:    r.FormValue("email"),
 		Password: r.FormValue("password"),
 	}
+
+	// Log the extracted user data
+	fmt.Printf("Extracted user data - Username: %s, Email: %s, Password: [REDACTED]\n", 
+		user.Username, user.Email)
+
+	fmt.Println("Username:"+user.Username+" Email:"+user.Email+" Password:"+user.Password)
 
 	// Validate input fields
 	if user.Username == "" || user.Email == "" || user.Password == "" {

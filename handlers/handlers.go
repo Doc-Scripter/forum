@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -32,46 +33,49 @@ func ErrorPage(Error error, ErrorData m.ErrorData, w http.ResponseWriter, r *htt
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		e.LogError(err)
+		return
 	}
 	if err = tmpl.Execute(w, ErrorData); err != nil {
 		e.LogError(err)
+		return
 	}
 }
 
 // serve the login form
 func LandingPage(w http.ResponseWriter, r *http.Request) {
+
 	if bl, _ := ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
-	} else if !bl {
+		return
+	}
 
-		if r.Method != http.MethodGet {
-			ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
-			return
-		}
-		tmpl, err := template.ParseFiles("./web/templates/index.html")
-		errD := m.ErrorsData.InternalError
-		if err != nil {
-			ErrorPage(err, errD, w, r)
-			return
-		}
+	if r.Method != http.MethodGet {
+		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+	tmpl, err := template.ParseFiles("./web/templates/index.html")
+	errD := m.ErrorsData.InternalError
+	if err != nil {
+		ErrorPage(err, errD, w, r)
+		return
+	}
 
-		if err = tmpl.Execute(w, nil); err != nil {
-			ErrorPage(err, errD, w, r)
-			return
-		}
+	if err = tmpl.Execute(w, nil); err != nil {
+		ErrorPage(err, errD, w, r)
+		return
 	}
 }
 
 // serve the Homepage
 
-func getUserDetails(w http.ResponseWriter, r *http.Request) (error, m.ProfileData) {
+func getUserDetails(w http.ResponseWriter, r *http.Request) m.ProfileData {
 	var Profile m.ProfileData
 
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		fmt.Println("Profile Section: No session cookie found:", err)
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return err, Profile
+		return m.ProfileData{}
 	}
 
 	var userID string
@@ -79,7 +83,8 @@ func getUserDetails(w http.ResponseWriter, r *http.Request) (error, m.ProfileDat
 	err = d.Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
 	if err != nil {
 		fmt.Println("Session not found in DB:", err)
-		return err, Profile
+		e.LogError(err)
+		return m.ProfileData{}
 	}
 
 	query := `
@@ -87,22 +92,31 @@ func getUserDetails(w http.ResponseWriter, r *http.Request) (error, m.ProfileDat
 
 	err = d.Db.QueryRow(query, userID).Scan(&Profile.Username, &Profile.Email, &Profile.Uuid)
 	if err != nil {
-		return err, Profile
+		e.LogError(err)
+		return m.ProfileData{}
 	}
-	return nil, Profile
+	
+	// Generate and set the initials
+	Profile.Initials = Profile.GenerateInitials()
+	
+	return Profile
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
+
+	if bl, _ := ValidateSession(r); !bl {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
 	if r.Method != http.MethodGet {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
 
-	err, Profile := getUserDetails(w, r)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+	Profile := getUserDetails(w, r)
+	
+	
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -120,22 +134,25 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if bl, _ := ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
-	} else if !bl {
+	}
 
-		tmpl, err := template.ParseFiles("./web/templates/login.html")
-		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
-			return
-		}
-		if err = tmpl.Execute(w, nil); err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
-			return
-		}
+	tmpl, err := template.ParseFiles("./web/templates/login.html")
+	if err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	}
+	if err = tmpl.Execute(w, nil); err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
 	}
 }
 
 // serve the registration form
 func Register(w http.ResponseWriter, r *http.Request) {
+
+	if bl, _ := ValidateSession(r); bl {
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
+	}
 	if r.Method != http.MethodGet {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
@@ -186,17 +203,17 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		eachPost.CommentsCount = commentsCount
 
-		rows, err := d.Db.Query(`SELECT content FROM comments WHERE post_id = ?`, eachPost.Post_id)
+		rows, err := d.Db.Query(`SELECT content,likes,dislikes FROM comments WHERE post_id = ?`, eachPost.Post_id)
 		if err != nil {
 			fmt.Println("unable to query comments", err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 
-		var comments []string
+		var comments []m.Comment
 		for rows.Next() {
-			comment := ""
-			rows.Scan(&comment)
+			var comment m.Comment
+			rows.Scan(&comment.Content, &comment.Likes, &comment.Dislikes)
 			comments = append(comments, comment)
 		}
 
@@ -237,11 +254,8 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
-	err, Profile := getUserDetails(w, r)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+
+	Profile := getUserDetails(w, r)
 
 	if r.Method != http.MethodPost {
 		// http.Error(w, "method not allowed", http.StatusBadRequest)
@@ -254,8 +268,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 	title := r.FormValue("title")
 
-	_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid) VALUES ($1, $2, $3 ,$4)", category, content, title, Profile.Uuid)
-	fmt.Println(Profile.Uuid)
+	_, err := d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid) VALUES ($1, $2, $3 ,$4)", category, content, title, Profile.Uuid)
 	if err != nil {
 		fmt.Println("could not insert posts", err)
 		// http.Error(w, "could not insert post", http.StatusInternalServerError)
@@ -278,18 +291,14 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-	err, Profile := getUserDetails(w, r)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+	Profile := getUserDetails(w, r)
 
 	str, _ := io.ReadAll(r.Body)
 	var postID struct {
 		Post_id string `json:"post_id"`
 	}
 	fmt.Println(string(str))
-	err = json.Unmarshal(str, &postID)
+	err := json.Unmarshal(str, &postID)
 	if err != nil {
 		fmt.Println("could not unmarshal post id")
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
@@ -368,17 +377,14 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-	err, Profile := getUserDetails(w, r)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+	Profile := getUserDetails(w, r)
+	
 	str, _ := io.ReadAll(r.Body)
 	var postID struct {
 		Post_id string `json:"post_id"`
 	}
 	fmt.Println(string(str))
-	err = json.Unmarshal(str, &postID)
+	err := json.Unmarshal(str, &postID)
 	if err != nil {
 		fmt.Println("could not unmarshal post id")
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
@@ -452,11 +458,8 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func MyPostHandler(w http.ResponseWriter, r *http.Request) {
-	err, Profile := getUserDetails(w, r)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+	Profile := getUserDetails(w, r)
+	
 	rows, err := d.Db.Query("SELECT title,content,category,post_id FROM posts WHERE user_uuid = ? ", Profile.Uuid)
 	if err != nil {
 		fmt.Println("unable to query my posts", err)
@@ -504,11 +507,9 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
-	err, Profile := getUserDetails(w, r)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+
+	Profile := getUserDetails(w, r)
+	
 	likedRows, err := d.Db.Query("SELECT post_id FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", Profile.Uuid)
 	if err != nil {
 		fmt.Println("unable to query my posts", err)
@@ -579,16 +580,14 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
-	err, Profile := getUserDetails(w, r)
-	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return
-	}
+	
+	Profile := getUserDetails(w, r)
+	
 	r.ParseForm()
 	comment := r.FormValue("add-comment")
 	post_id := r.FormValue("post_id")
 
-	_, err = d.Db.Exec("INSERT INTO comments (user_uuid,post_id,content) VALUES (?,?,?)", Profile.Uuid, post_id, comment)
+	_, err := d.Db.Exec("INSERT INTO comments (user_uuid,post_id,content) VALUES (?,?,?)", Profile.Uuid, post_id, comment)
 	if err != nil {
 		fmt.Println("could not insert comment", err)
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -606,16 +605,18 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	str, _ := io.ReadAll(r.Body)
-	var postID struct {
-		Post_id string `json:"post_id"`
-	}
-	fmt.Println(string(str))
-	err := json.Unmarshal(str, &postID)
-	if err != nil {
-		fmt.Println("could not unmarshal post id")
-		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
-		return
-	}
+	if strings.Contains(string(str), "post_id") {
+
+		var postID struct {
+			Post_id string `json:"post_id"`
+		}
+		fmt.Println(string(str))
+		err := json.Unmarshal(str, &postID)
+		if err != nil {
+			fmt.Println("could not unmarshal post id")
+			ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+			return
+		}
 
 	rows, err := d.Db.Query(`SELECT created_at,likes,dislikes,content FROM comments WHERE post_id=?`, postID.Post_id)
 	if err != nil {
