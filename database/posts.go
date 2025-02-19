@@ -2,10 +2,15 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func CreatePostsTable(db *sql.DB) error {
+	if db == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
 	query := `
     CREATE TABLE IF NOT EXISTS posts (
         post_id INTEGER  PRIMARY KEY AUTOINCREMENT DEFAULT 0,
