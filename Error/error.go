@@ -15,7 +15,7 @@ func init() {
     }
 
 
-    ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+    ErrorLogger = log.New(file, "[ERROR]: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func LogError(err error) {
