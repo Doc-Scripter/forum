@@ -126,12 +126,19 @@ func (p *Post)Seperate_Categories() Post{
 		categories []string
 	)
 
-    err := d.Db.QueryRow("SELECT category FROM posts WHERE post_id =?", p.Post_id).Scan(&combined_categories)
+    row, err := d.Db.Query("SELECT category FROM posts")
     if err != nil {
 		e.LogError(err)
         return *p
     }
-	categories = strings.Split(combined_categories, ", ")
-    p.Categories = categories
+	for row.Next() {
+		err = row.Scan(&combined_categories)
+		if err != nil {
+			e.LogError(err)
+			return Post{}
+		}
+		categories = strings.Split(combined_categories, ", ")
+		p.Categories = categories
+	}
     return *p
 }
