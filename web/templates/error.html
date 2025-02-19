@@ -4,26 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Error {{.Code}}</title>
-    <link rel="stylesheet" href="static/error.css">
-    <link rel="stylesheet" href="static/home.css">
+    <link rel="stylesheet" href="/static/error.css">
 </head>
 <body>
-
     <header>
         <div class="logo">Forum</div>
-        <div class="hamburger-menu">
-          <div class="hamburger-icon">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      </header>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            🌙
+        </button>
+    </header>
 
     <div class="error-container">
         <h1>{{.Code}}</h1>
         <p>Oops! {{.Msg}}</p>
-        <button onclick="location='/'" class="home-link">Return to Homepage</button>
+        <button onclick="location.href='/'" class="home-link">Return to Homepage</button>
     </div>
+
+    <script>
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            document.querySelector('.theme-toggle').innerHTML = '☀️';
+        }
+
+        // Theme toggle function
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                themeToggle.innerHTML = '🌙';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-theme');
+                themeToggle.innerHTML = '☀️';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+    </script>
 </body>
 </html>
