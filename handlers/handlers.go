@@ -246,6 +246,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
+	// fmt.Println("It's Javascript's problem!!")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(postsJson)
 }
@@ -466,7 +467,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 	Profile := getUserDetails(w, r)
 	
-	rows, err := d.Db.Query("SELECT title,content,category,post_id FROM posts WHERE user_uuid = ? ", Profile.Uuid)
+	rows, err := d.Db.Query("SELECT title,content,post_id FROM posts WHERE user_uuid = ? ", Profile.Uuid)
 	if err != nil {
 		fmt.Println("unable to query my posts", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -476,7 +477,8 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 	var posts []m.Post
 	for rows.Next() {
 		var eachPost m.Post
-		err = rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Category, &eachPost.Post_id)
+		err = rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Post_id)
+		eachPost.Seperate_Categories()
 		if err != nil {
 			fmt.Println(fmt.Println("unable to scan my posts", err))
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -533,7 +535,7 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		Postrows, err := d.Db.Query("SELECT category, likes, dislikes, title, content, post_id FROM posts WHERE post_id = ?", postID)
+		Postrows, err := d.Db.Query("SELECT likes, dislikes, title, content, post_id FROM posts WHERE post_id = ?", postID)
 		if err != nil {
 			fmt.Println("unable to query my posts", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -543,7 +545,8 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 
 		for Postrows.Next() {
 
-			err = Postrows.Scan(&eachPost.Category, &eachPost.Likes, &eachPost.Dislikes, &eachPost.Title, &eachPost.Content, &eachPost.Post_id)
+			err = Postrows.Scan(&eachPost.Likes, &eachPost.Dislikes, &eachPost.Title, &eachPost.Content, &eachPost.Post_id)
+			eachPost.Seperate_Categories()
 			if err != nil {
 				fmt.Println(fmt.Println("unable to scan my posts", err))
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -599,8 +602,6 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
-	// r.Method = http.MethodGet
-	// PostsHandler(w, r)
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
@@ -618,7 +619,6 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println(string(str))
 		err := json.Unmarshal(str, &postID)
-		fmt.Println("the post id====>post_id: ", postID)
 		if err != nil {
 			fmt.Println("could not unmarshal post id")
 			ErrorPage(err, m.ErrorsData.BadRequest, w, r)
