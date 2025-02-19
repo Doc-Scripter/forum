@@ -18,6 +18,7 @@ func init() {
     ErrorLogger = log.New(file, "[ERROR]: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
+// ===== This function will take an error err and display ot in the app.log file found in the home directory ====
 func LogError(err error) {
     if err != nil {
         ErrorLogger.Println(err)
