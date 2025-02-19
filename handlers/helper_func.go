@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"strings"
 	"regexp"
 	"net/http"
 	"database/sql"
 	
 	
+	m "forum/models"
+	e "forum/Error"
 	d "forum/database"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -70,4 +73,47 @@ func ValidateSession(r *http.Request) (bool, string) {
 
 	fmt.Println("Session valid for user:", userID)
 	return true, userID
+}
+
+
+// ==== The function will take  a response writer w and a request r, for displaying errors when encountered. The function returns a struct of a user model ====
+func GetUserDetails(w http.ResponseWriter, r *http.Request) m.ProfileData {
+	
+	var (
+		Profile m.ProfileData
+		userID string
+	)
+	
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		fmt.Println("Profile Section: No session cookie found:", err)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return m.ProfileData{}
+	}
+
+	err = d.Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
+	if err != nil {
+		fmt.Println("Session not found in DB:", err)
+		e.LogError(err)
+		return m.ProfileData{}
+	}
+
+	query := `
+		SELECT  username, email , uuid  FROM users WHERE id = ?`
+
+	err = d.Db.QueryRow(query, userID).Scan(&Profile.Username, &Profile.Email, &Profile.Uuid)
+	if err != nil {
+		e.LogError(err)
+		return m.ProfileData{}
+	}
+	
+	Profile.Initials = Profile.GenerateInitials()
+	
+	return Profile
+}
+
+//=====The function to make all the categories as a string to be stored into the database===========
+func CombineCategory(category []string) string{
+
+	return strings.Join(category, ", ")
 }
