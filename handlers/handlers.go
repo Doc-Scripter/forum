@@ -20,7 +20,7 @@ import (
 
 const (
 	maxUploadSize = 10 << 20 // 10MB
-	uploadsDir    = "./uploads"
+	uploadsDir    = "./web/uploads"
 	allowedTypes  = "image/jpeg,image/png,image/gif"
 )
 
@@ -168,7 +168,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.InternalError, w, r)
 		return
 	}
-	rows, err := d.Db.Query("SELECT category,title,content,created_at,post_id FROM posts")
+	rows, err := d.Db.Query("SELECT category,title,content,created_at,post_id,filename,filepath FROM posts")
 	if err != nil {
 		fmt.Println(err)
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -181,7 +181,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var eachPost m.Post
 		// var comments sql.NullString
-		err := rows.Scan(&eachPost.Category, &eachPost.Title, &eachPost.Content, &eachPost.CreatedAt, &eachPost.Post_id)
+		err := rows.Scan(&eachPost.Category, &eachPost.Title, &eachPost.Content, &eachPost.CreatedAt, &eachPost.Post_id, &eachPost.Filename, &eachPost.Filepath)
 		if err != nil {
 			fmt.Println(err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -236,6 +236,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		posts = append(posts, eachPost)
 	}
+	fmt.Println(posts[0])
 	postsJson, err := json.Marshal(posts)
 	if err != nil {
 		fmt.Println("unable to marshal", err)
@@ -252,81 +253,98 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	Profile := getUserDetails(w, r)
 
 	if r.Method != http.MethodPost {
-		// http.Error(w, "method not allowed", http.StatusBadRequest)
 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 		return
 	}
 
 	fmt.Println("creating post")
-	r.ParseForm()
+
+	// Parse form with multipart support. This is needed when an image is provided.
+	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
+		// If parsing fails, attempt a standard form parse which may work if no file is present.
+		fmt.Println("ParseMultipartForm error:", err)
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+	}
+
 	fmt.Println("this is the form--> ", r.Form)
 	category := r.FormValue("category")
 	content := r.FormValue("content")
 	title := r.FormValue("title")
+	var img m.Image
 
-	// Parse multipart form
-	r.ParseMultipartForm(maxUploadSize)
+	// Attempt to retrieve the file. If no image is uploaded, proceed without processing.
 	file, handler, err := r.FormFile("image")
-	fmt.Printf("Error: %v and this is the file: %v\n", err, file)
 	if err != nil {
-		http.Error(w, "Error retrieving file", http.StatusBadRequest)
-		return
+		// Check if error is due to missing file.
+		if err == http.ErrMissingFile {
+			fmt.Println("No image uploaded, continuing without image")
+			// Leave img fields as empty
+			img.Filename = ""
+			img.Path = ""
+		} else {
+			http.Error(w, "Error retrieving file", http.StatusBadRequest)
+			return
+		}
+	} else {
+
+		defer file.Close()
+
+		// Validate file size
+		if handler.Size > maxUploadSize {
+			http.Error(w, "File too large", http.StatusBadRequest)
+			return
+		}
+
+		// Validate file type
+		if !validateFileType(file) {
+			http.Error(w, "Invalid file type", http.StatusBadRequest)
+			return
+		}
+
+		// Generate unique filename
+		fileName, err := generateFileName()
+		if err != nil {
+			http.Error(w, "Error processing file", http.StatusInternalServerError)
+			return
+		}
+
+		// Add original file extension
+		fileName = fileName + filepath.Ext(handler.Filename)
+
+		fmt.Println("filename: ", fileName)
+		// Create uploads directory if it doesn't exist
+		if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
+			http.Error(w, "Error processing file", http.StatusInternalServerError)
+			return
+		}
+
+		// Create new file
+		filePath := filepath.Join(uploadsDir, fileName)
+		dst, err := os.Create(filePath)
+		if err != nil {
+			http.Error(w, "Error saving file", http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
+
+		// Copy file contents
+		if _, err := io.Copy(dst, file); err != nil {
+			http.Error(w, "Error saving file", http.StatusInternalServerError)
+			return
+		}
+
+		modifyFilename := strings.Fields((handler.Filename))
+
+		// Save to database
+		img.Path = strings.Join(modifyFilename, "_")
+		img.Path = filePath
 	}
-	defer file.Close()
-
-	// Validate file size
-	if handler.Size > maxUploadSize {
-		http.Error(w, "File too large", http.StatusBadRequest)
-		return
-	}
-
-	// Validate file type
-	if !validateFileType(file) {
-		http.Error(w, "Invalid file type", http.StatusBadRequest)
-		return
-	}
-
-	// Generate unique filename
-	fileName, err := generateFileName()
-	if err != nil {
-		http.Error(w, "Error processing file", http.StatusInternalServerError)
-		return
-	}
-
-	// Add original file extension
-	fileName = fileName + filepath.Ext(handler.Filename)
-
-	fmt.Println("filename: ", fileName)
-	// Create uploads directory if it doesn't exist
-	if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
-		http.Error(w, "Error processing file", http.StatusInternalServerError)
-		return
-	}
-
-	// Create new file
-	filePath := filepath.Join(uploadsDir, fileName)
-	dst, err := os.Create(filePath)
-	if err != nil {
-		http.Error(w, "Error saving file", http.StatusInternalServerError)
-		return
-	}
-	defer dst.Close()
-
-	// Copy file contents
-	if _, err := io.Copy(dst, file); err != nil {
-		http.Error(w, "Error saving file", http.StatusInternalServerError)
-		return
-	}
-
-	// Save to database
-	img := &m.Image{
-		Filename: handler.Filename,
-		Path:     filePath,
-	}
-
 	_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid ,filename,filepath) VALUES ($1, $2, $3, $4, $5, $6)", category, content, title, Profile.Uuid, img.Filename, img.Path)
 	if err != nil {
-		os.Remove(filePath)
+		os.Remove(img.Path)
 		fmt.Println("could not insert posts", err)
 		// http.Error(w, "could not insert post", http.StatusInternalServerError)
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
@@ -334,6 +352,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("Post created")
+	fmt.Println(r.Method)
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
@@ -692,92 +711,30 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UploadHandler(w http.ResponseWriter, r *http.Request) {
-	// fmt.Println("uploaded")
-	// // Check if user is authenticated
-	// if r.Method != http.MethodPost {
-	// 	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	// 	return
-	// }
-	// isValid, userIDStr := ValidateSession(r)
-	// if !isValid {
-	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	// 	return
-	// }
+func ImageHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Here")
+	// Get the image file path from the request URL
+	imagePath := "web/uploads/" + r.URL.Path[len("/image/web/uploads/"):]
 
-	// // Convert userID from string to int64
-	// userID, err := strconv.ParseInt(userIDStr, 10, 64)
-	// if err != nil {
-	// 	http.Error(w, "Invalid user ID", http.StatusInternalServerError)
-	// 	return
-	// }
-	// // Parse multipart form
-	// r.ParseMultipartForm(maxUploadSize)
-	// file, handler, err := r.FormFile("image")
-	// if err != nil {
-	// 	http.Error(w, "Error retrieving file", http.StatusBadRequest)
-	// 	return
-	// }
-	// defer file.Close()
+	// Open the image file
+	file, err := os.Open(imagePath)
+	if err != nil {
+		http.Error(w, "Failed to open image file", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
 
-	// // Validate file size
-	// if handler.Size > maxUploadSize {
-	// 	http.Error(w, "File too large", http.StatusBadRequest)
-	// 	return
-	// }
+	// Get the file info
+	fileInfo, err := file.Stat()
+	if err != nil {
+		http.Error(w, "Failed to get file info", http.StatusInternalServerError)
+		return
+	}
 
-	// // Validate file type
-	// if !validateFileType(file) {
-	// 	http.Error(w, "Invalid file type", http.StatusBadRequest)
-	// 	return
-	// }
+	// Set the content type and disposition
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Content-Disposition", "inline; filename="+fileInfo.Name())
 
-	// // Generate unique filename
-	// fileName, err := generateFileName()
-	// if err != nil {
-	// 	http.Error(w, "Error processing file", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// // Add original file extension
-	// fileName = fileName + filepath.Ext(handler.Filename)
-
-	// // Create uploads directory if it doesn't exist
-	// if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
-	// 	http.Error(w, "Error processing file", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// // Create new file
-	// filePath := filepath.Join(uploadsDir, fileName)
-	// dst, err := os.Create(filePath)
-	// if err != nil {
-	// 	http.Error(w, "Error saving file", http.StatusInternalServerError)
-	// 	return
-	// }
-	// defer dst.Close()
-
-	// // Copy file contents
-	// if _, err := io.Copy(dst, file); err != nil {
-	// 	http.Error(w, "Error saving file", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// // Save to database
-	// img := &m.Image{
-	// 	UserID:   userID,
-	// 	Filename: handler.Filename,
-	// 	Path:     filePath,
-	// }
-
-	// if err := SaveImage(d.Db, img); err != nil {
-	// 	// Clean up file if database save fails
-	// 	os.Remove(filePath)
-	// 	http.Error(w, "Error saving file info", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// // Return success response
-	// w.WriteHeader(http.StatusOK)
-	// fmt.Fprintf(w, `{"id":%d,"path":"%s"}`, img.ID, img.Path)
+	// Write the image file to the response
+	http.ServeFile(w, r, imagePath)
 }

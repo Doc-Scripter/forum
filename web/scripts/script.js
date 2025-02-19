@@ -67,6 +67,7 @@ function fetchPosts(route) {
   fetch(route)
     .then((response) => response.json())
     .then((data) => {
+      console.log(data)
       displayPosts(data, currentCategory);
     })
     .catch((error) => {
@@ -125,6 +126,8 @@ function displayPosts(posts, category) {
       <h2 class="post-category">${post.category}</h2>
       <h2 class="post-title">${post.title}</h2>
       <p class="post-content">${post.content}</p>
+      ${post.filepath? `<img src="/image/${post.filepath}" alt="${post.filename}">`:``}
+
       <div class="post-footer">
         <div class="post-actions">
           <button class="action-btn like-btn" data-post-id="${post.post_id}">

@@ -70,6 +70,8 @@ type Post struct {
 	Content   string    `json:"content"`
 	User_uuid string    `json:"user_uuid"`
 	Post_id   int       `json:"post_id"`
+	Filepath string     `json:"filepath"`
+	Filename string  `json:"filename"`
 	Owner         string
 	OwnerInitials string
 }
