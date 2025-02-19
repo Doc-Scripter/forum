@@ -2,11 +2,17 @@ package database
 
 import (
 	"database/sql"
-
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 )
 
+
+
 func CreateLikesDislikesTable(db *sql.DB) error {
+	if db == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
 	query := `
 	CREATE TABLE IF NOT EXISTS likes_dislikes (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
