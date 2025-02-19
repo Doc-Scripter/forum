@@ -52,7 +52,7 @@ var ErrorsData = Errors{
 	},
 
 	MethodNotAllowed: ErrorData{
-		Msg:  "The HTTP method you used is not allowed for this route",
+		Msg:  "The HTTP method used is not accessible",
 		Code: http.StatusMethodNotAllowed,
 	},
 }
