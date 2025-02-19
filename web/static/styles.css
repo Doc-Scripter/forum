@@ -96,6 +96,9 @@ body.no-scroll {
   padding: 1.5rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   color: white;
+  display: grid;
+  right: 5px;
+  position: relative;
 }
 
 .post:hover {
@@ -110,6 +113,15 @@ body.no-scroll {
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.light-theme .post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(62, 103, 236, 0.87);
 }
 
 .post-title {
@@ -130,7 +142,90 @@ body.no-scroll {
   margin-top: 0;
 }
 
-.post-content {
+.post-content {/* Responsive Comment Section Styles */
+.comments-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comment {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.comment-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.8rem;
+  border-radius: 8px;
+  color: white;
+}
+
+.comment-submit {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.comment-submit:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive adjustments for smaller screens */
+@media screen and (max-width: 768px) {
+  .comment {
+    padding: 0.8rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .comment-form {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .comment-input {
+    padding: 0.6rem;
+  }
+
+  .comment-submit {
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .comment {
+    padding: 0.6rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .comment-form {
+    gap: 0.6rem;
+  }
+
+  .comment-input {
+    padding: 0.5rem;
+  }
+
+  .comment-submit {
+    padding: 0.5rem 1rem;
+  }
+}
   color: var(--secondary-text);
   line-height: 1.6;
   margin: 1rem 0;
@@ -143,7 +238,44 @@ body.no-scroll {
   margin-top: 1rem;
   padding-top: 0.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap; /* Allows wrapping on small screens */
+  gap: 10px; /* Adds spacing when wrapped */
 }
+
+body.light-theme .post-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(62, 103, 236, 0.87);
+  flex-wrap: wrap; /* Allows wrapping on small screens */
+  gap: 10px; /* Adds spacing when wrapped */
+}
+
+
+/* 📱 Mobile (≤ 600px) */
+@media screen and (max-width: 600px) {
+  .post-footer {
+    flex-direction: column; /* Stack elements vertically */
+    align-items: flex-start;
+    gap: 0.5rem; /* Reduce spacing */
+  }
+}
+
+/* 📱 Small Screens (≤ 400px) */
+@media screen and (max-width: 400px) {
+  .post-footer {
+    padding-top: 0.3rem;
+    gap: 0.3rem;
+  }
+
+  .post-footer button {
+    font-size: 14px; /* Slightly smaller buttons */
+    padding: 6px 10px;
+  }
+}
+
 
 .post-metadata {
   font-size: 0.9rem;
@@ -259,6 +391,8 @@ body.light-theme .comment {
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
+  display: grid;
+  align-content: center;
 }
 
 .create-post-btn::before {
@@ -313,12 +447,6 @@ body.light-theme .comment {
   margin-bottom: 1rem;
 }
 
-.close-modal {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
 
 .post-form {
   display: flex;
@@ -346,10 +474,38 @@ body.light-theme .comment {
 .close-modal {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 24px; /* Make it a bit larger */
   cursor: pointer;
-  float: right;
+  color: red; /* Default color */
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
 }
+
+/* Add the "X" icon */
+.close-modal::before {
+  content: "✖"; /* Unicode for 'X' */
+  font-weight: bold;
+  font-size: 24px;
+  color: red; /* Default X color */
+  transition: all 0.3s ease;
+}
+
+/* Hover effect: circular border, red background, white "X" */
+.close-modal:hover {
+  background: red;
+  border-radius: 50%; /* Circular shape */
+  color: white; /* Change icon color */
+}
+
+.close-modal:hover::before {
+  color: white; /* White X */
+}
+
 
 footer {
   background-color: #333;
@@ -545,7 +701,8 @@ footer {
 
 .header {
   display: flex;
-  padding: 15px 5%;
+  /* padding: 15px 5%; */
+  padding: 1rem 2rem;
   flex-wrap: wrap;
   gap: 10px;
   margin: 5px;
@@ -626,11 +783,38 @@ h1 {
 .close-btn {
   background: none;
   border: none;
-  font-size: 24px;
-  font-family: Inkut Antiqua;
+  font-size: 24px; /* Make it a bit larger */
   cursor: pointer;
-  float: right;
+  color: red; /* Default color */
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
 }
+
+/* Add the "X" icon */
+.close-btn::before {
+  content: "✖"; /* Unicode for 'X' */
+  font-weight: bold;
+  font-size: 24px;
+  color: red; /* Default X color */
+  transition: all 0.3s ease;
+}
+
+/* Hover effect: circular border, red background, white "X" */
+.close-btn:hover {
+  background: red;
+  border-radius: 50%; /* Circular shape */
+  color: white; /* Change icon color */
+}
+
+.close-btn:hover::before {
+  color: white; /* White X */
+}
+
 
 .profile {
   text-align: center;
@@ -851,6 +1035,7 @@ body.light-theme .header {
   background: var(--primary-gradient);
   color: white;
   padding: 1rem 2rem;
+  /* padding: 15px 5%; */
 }
 
 /* Light Theme Background */
@@ -1108,4 +1293,45 @@ body.light-theme .sidebar {
 
 html {
     scrollbar-gutter: stable;
+}
+
+
+
+/*=========checkboxes addition===========*/
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px; 
+  max-width: 600px; /* Increased max-width for more space */
+  margin: 0 auto; /* Center the grid */
+}
+
+.checkbox-group label {
+  display: grid;
+  align-items: center;
+  gap: 8px; /*Slightly increased gap*/
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px; /* Added padding for better visual appearance */
+  border: 1px solid #ccc; /* Added a subtle border for each checkbox */
+  border-radius: 4px; /* Rounded corners */
+  background-color: #f9f9f9; /* Subtle background color */
+  align-content: center;
+  justify-content: center;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1.2); 
+}
+
+.checkbox-group input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  display: none;
+}
+
+.checkbox-group label:hover {
+  background-color: green;
+  color: white;
 }

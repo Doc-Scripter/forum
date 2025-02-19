@@ -96,6 +96,29 @@ function fetchComments(element,commentId){
  
 }
 
+//============The function that splits the string coming from the backend and displays them in different labels of a post============
+function createCategoryElements(categoryString) {
+  if (!categoryString) {
+    return ""; // Handle null, undefined, and empty strings
+  }
+
+  const categories = categoryString.split(',').map(cat => cat.trim()).filter(cat => cat.length > 0); // Split, trim whitespace, and remove empty strings
+
+  if (categories.length === 0) {
+    return ""; // Handle cases where there are no categories after splitting/trimming
+  }
+
+  let html = '<div class="category-container">';
+
+  categories.forEach(category => {
+    html += `<h2 class="post-category"> ${category} </h2>`;
+  });
+
+  html += '</div>';
+  return html;
+}
+
+//===============This function will display the posts=================
 function displayPosts(posts, category) {
   let filteredPosts = [];
   if (category === "all") {
@@ -112,7 +135,7 @@ function displayPosts(posts, category) {
     </div>
     <h2 class="post-title">No posts available</h2>
     <p class="post-content">No posts to display</p>
-     <div class="post-footer">
+      <div class="post-footer">
         <span class="post-author"></span>
       </div>
     </article>`;
@@ -122,7 +145,7 @@ function displayPosts(posts, category) {
         (post) => `
       <article class="post">
       <div class="post-header"></div>
-      <h2 class="post-category">${post.category}</h2>
+        <div> ${createCategoryElements(post.category)} </div>
       <h2 class="post-title">${post.title}</h2>
       <p class="post-content">${post.content}</p>
       <div class="post-footer">
@@ -135,11 +158,12 @@ function displayPosts(posts, category) {
           </button>
           </div>
           <button class="comments-toggle" data-post-id="${post.post_id}">
-            💬 Comments (${post.comments ? post.comments.length : 0})
+            💬 ${post.comments?.length === 1 ? `${post.comments.length} Comment` : `${post.comments?.length || 0} Comments`}
           </button>
+        </div>
         <div class="comments-section" id="comments-${post.post_id}">
-          
-          </div>
+        
+        </div>
 
           <form
             class="comment-form"
@@ -159,12 +183,12 @@ function displayPosts(posts, category) {
           </form>
       </div>
     </article>
-       `
+      `
       )
       .join("");
   }
 
-  // Add comments toggle functionality
+  //=================Add comments toggle functionality===================
   document.querySelectorAll(".comments-toggle").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const postId = btn.dataset.postId;
@@ -178,7 +202,7 @@ function displayPosts(posts, category) {
       .then((res) => res.json())
       .then((data) => {
 
-       displayComments(data,commentsSection)
+        displayComments(data,commentsSection)
       })
         .catch(
           (error) => console.error(error)
@@ -187,6 +211,7 @@ function displayPosts(posts, category) {
   });
 }
 
+//=======================Function to display the comments=======================
 function displayComments(comments,element){ 
   element.innerHTML=comments.map((comment)=>`
   <div class="comment"><p>${comment.content}</p></div>
@@ -197,11 +222,12 @@ function displayComments(comments,element){
       <button class="comment dislikeBtn" data-comment-id="${comment.comment_id}">
       👎${comment.dislikes}
       </button>
-     </div>
+      </div>
     `).join(``)
     attachCommentActionListeners(element);
 }
 
+//==========================comment actions====================
 function attachCommentActionListeners(container) {
 container.querySelectorAll(".comment-actions").forEach((btn)=>{
   btn.addEventListener("click",(e)=>{
@@ -218,7 +244,7 @@ container.querySelectorAll(".comment-actions").forEach((btn)=>{
           (error) => console.error(error)
         );
       }
-   
+  
   
   
   
@@ -288,7 +314,7 @@ categoryFilter.addEventListener("change", (e) => {
   fetchPosts(route);
 });
 
-// Theme Toggle Functionality
+//===================Theme Toggle Functionality====================
 document.addEventListener("DOMContentLoaded", () => {
   const themeToggle = document.getElementById("theme-toggle");
 
@@ -327,3 +353,44 @@ function updateThemeIcon() {
   moonIcon.style.display = isLightTheme ? "block" : "none";
 }
 
+
+//===========for the checkboxes===================
+const checkboxGroup = document.querySelector(".checkbox-group");
+const myDivs = document.querySelectorAll(".category-option");
+
+// Default style
+myDivs.forEach((div) => {
+    div.style.backgroundColor = "#ccc";
+    div.style.color = "#000";
+});
+
+// Hover style
+// myDivs.forEach((div) => {
+//     div.addEventListener("mouseover", function() {
+//         if (!div.classList.contains("checked")) {
+//             div.style.backgroundColor = "green";
+//             div.style.color = "#fff";
+//         }
+//     });
+// });
+
+// Check style
+checkboxGroup.addEventListener("change", function() {
+    const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")].length;
+
+    myDivs.forEach((div) => {
+        if (div.querySelector("input").checked) {
+            div.classList.add("checked");
+            div.style.backgroundColor = "green";
+            div.style.color = "#fff";
+        } else {
+            // if (checkedCount >= 3) {
+            //     div.style.backgroundColor = "#f00"; // Red
+            //     div.style.color = "#fff";
+            // } else {
+                div.style.backgroundColor = "#ccc";
+                div.style.color = "#000";
+            // }
+        }
+    });
+});
