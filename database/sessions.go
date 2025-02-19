@@ -1,11 +1,18 @@
 package database
 
 import (
+    "fmt"
     "database/sql"
     _ "github.com/mattn/go-sqlite3"
 )
 
 func CreateSessionsTable(db *sql.DB) error {
+
+    if db == nil {
+        defer db.Close()
+        return fmt.Errorf("nil database connection")
+    }
+
     query := `
     CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,7 +21,9 @@ func CreateSessionsTable(db *sql.DB) error {
         expires_at DATETIME NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );`
-    
-	_, err := db.Exec(query)
-	return err
+
+	if _, err := db.Exec(query); err != nil {
+        return err
+    }
+	return nil
 }

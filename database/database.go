@@ -9,7 +9,7 @@ import (
 
 var Db *sql.DB
 
-// ============Starting the connection to the database=============
+// ==== This function will starting the connection to the database=============
 func StartDbConnection() error {
 	var err error
 
@@ -24,24 +24,24 @@ func StartDbConnection() error {
 	}
 
 	if err = CreateUsersTable(Db); err != nil {
-		fmt.Println("Could not create User table: ", err)
+		return err
 	}
 
 	if err = CreateLikesDislikesTable(Db); err != nil {
-		fmt.Println("Could not create Likes and Dislikes table: ", err)
+		return err
 	}
 
 	if err = CreateSessionsTable(Db); err != nil {
-		fmt.Println("Could not create sessions table: %", err)
+		return err
 	}
 
 	if err = CreatePostsTable(Db); err != nil {
-		fmt.Println("Could not create posts table: ", err)
+		return err
 	}
 	if err = CreateCommentsTable(Db); err != nil {
-		fmt.Println("Could not create comments table: ", err)
+		return err
 	}
 
-	fmt.Println("Connected to SQLite database successfully!")
+	fmt.Println("Connected to the SQLite database!")
 	return nil
 }

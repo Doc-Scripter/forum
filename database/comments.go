@@ -1,11 +1,17 @@
 package database
 
 import (
+    "fmt"
     "database/sql"
     _ "github.com/mattn/go-sqlite3"
 )
 
 func CreateCommentsTable(db *sql.DB) error {
+
+    if db == nil {
+        defer db.Close()
+        return fmt.Errorf("nil database connection")
+    }
 
     query := `
     CREATE TABLE IF NOT EXISTS comments (
@@ -22,7 +28,7 @@ func CreateCommentsTable(db *sql.DB) error {
     );`
 
     if _, err := db.Exec(query); err != nil {
-		return err
+        return err
 	}
 	return  nil
 }
