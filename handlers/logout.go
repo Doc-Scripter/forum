@@ -43,5 +43,5 @@ func ProtectedHandler(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Expires", "0")
 
     // Your protected content logic here
-    w.Write([]byte("This is protected content."))
+    w.Write([]byte("This is protected content."))//I will have a deeper look at this later
 }
