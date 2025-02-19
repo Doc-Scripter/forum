@@ -20,7 +20,7 @@ func IsValidEmail(email string) bool {
 	return re.MatchString(email)
 }
 
-// =============Check if a username or email already exists in the database==========
+// ===== Check if a username or email (credential) already exists in a database db =====
 func credentialExists(db *sql.DB, credential string) bool {
 	query := `SELECT COUNT(*) FROM users WHERE username = ? OR email = ?`
 	var count int
@@ -42,7 +42,9 @@ func (u *User) HashPassword() error {
 	return nil
 }
 
-// ==================ValidateSession checks if a session token is valid=========
+/*=== ValidateSession checks if a session token is valid. The function takes a pointer to the request
+and returns a boolean value and a user_ID of type string based on the session_token found in the 
+cookie present in the header, within the request =====*/
 func ValidateSession(r *http.Request) (bool, string) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
