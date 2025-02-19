@@ -96,27 +96,27 @@ function fetchComments(element,commentId){
  
 }
 
-//============The function that splits the string coming from the backend and displays them in different labels of a post============
-function createCategoryElements(categoryString) {
-  if (!categoryString) {
-    return ""; // Handle null, undefined, and empty strings
-  }
-
-  const categories = categoryString.split(',').map(cat => cat.trim()).filter(cat => cat.length > 0); // Split, trim whitespace, and remove empty strings
-
-  if (categories.length === 0) {
-    return ""; // Handle cases where there are no categories after splitting/trimming
+//=================Function to create HTML for categories from an array============
+function createCategoryElements(categories) {
+  if (!Array.isArray(categories) || categories.length === 0) {
+    return "";
   }
 
   let html = '<div class="category-container">';
 
   categories.forEach(category => {
-    html += `<h2 class="post-category"> ${category} </h2>`;
+    const trimmedCategory = category.trim();
+
+    if (trimmedCategory.length > 0) {
+      html += `<h2 class="post-category">${trimmedCategory}</h2>`;
+    }
   });
 
   html += '</div>';
+
   return html;
 }
+
 
 //===============This function will display the posts=================
 function displayPosts(posts, category) {
