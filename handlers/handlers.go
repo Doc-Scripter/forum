@@ -165,7 +165,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.InternalError, w, r)
 		return
 	}
-	rows, err := d.Db.Query("SELECT category,title,content,created_at,post_id FROM posts")
+	rows, err := d.Db.Query("SELECT title,content,created_at,post_id FROM posts")
 	if err != nil {
 		fmt.Println(err)
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -176,9 +176,13 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var posts []m.Post
 	for rows.Next() {
-		var eachPost m.Post
-		// var comments sql.NullString
-		err := rows.Scan(&eachPost.Category, &eachPost.Title, &eachPost.Content, &eachPost.CreatedAt, &eachPost.Post_id)
+		
+		var (
+			eachPost m.Post
+		)
+
+		err := rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.CreatedAt, &eachPost.Post_id)
+		eachPost.Seperate_Categories()
 		if err != nil {
 			fmt.Println(err)
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -220,6 +224,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", &eachPost.Post_id).Scan(&dislikeCount)
 		if err != nil {
 			fmt.Println("unable to query likes and dislikes", err)
@@ -245,6 +250,8 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(postsJson)
 }
 
+
+//=====The function to make all the categories as a string to be stored into the database===========
 func combineCategory(category []string) string{
 
 	return strings.Join(category, ", ")
@@ -671,7 +678,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		postID := ""
 		err = d.Db.QueryRow(`SELECT post_id FROM  comments WHERE comment_id=?`, commentID.Comment_Id).Scan(&postID)
-		fmt.Println("post id=", postID) // found!
+		fmt.Println("post id=", postID)
 		if err != nil {
 			fmt.Println("could not query comments", err)
 			http.Error(w, "could not query comments", http.StatusInternalServerError)

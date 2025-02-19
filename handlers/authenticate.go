@@ -5,11 +5,13 @@ import (
 	"log"
 	"time"
 	"regexp"
+	"strings"
 	"net/http"
 	"database/sql"
 	
 	
 	d "forum/database"
+	m "forum/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -68,4 +70,22 @@ func ValidateSession(r *http.Request) (bool, string) {
 
 	fmt.Println("Session valid for user:", userID)
 	return true, userID
+}
+
+
+// ===========The function will pack the categories as a slice of strings from the database==========
+func (p *m.Post)Seperate_Categories() m.Post{
+	var (
+		combined_categories string
+		categories []string
+	)
+
+    err := d.Db.QueryRow("SELECT category FROM posts WHERE post_id =?", p.Post_id).Scan(&combined_categories)
+    if err != nil {
+        fmt.Println("unable to query categories", err)
+        return *p
+    }
+	categories = strings.Split(combined_categories, ", ")
+    p.Category = categories
+    return *p
 }

@@ -4,6 +4,8 @@ import (
 	"time"
 	"strings"
 	"net/http"
+	d "forum/database"
+	e "forum/Error"
 )
 
 type ProfileData struct {
@@ -61,7 +63,7 @@ var ErrorsData = Errors{
 
 type Post struct {
 	CreatedAt time.Time `json:"created_at"`
-	Category  string    `json:"category"`
+	Categories  []string    `json:"category"`
 	Likes     int       `json:"likes"`
 	Title     string    `json:"title"`
 	Dislikes  int       `json:"dislikes"`
@@ -113,3 +115,23 @@ func (p *ProfileData) GenerateInitials() string {
 	return strings.ToUpper(firstInitial)
 }
 
+type Category_Process interface {
+	Seperate_Categories() string
+}
+
+// ===========The function will pack the categories as a slice of strings from the database==========
+func (p *Post)Seperate_Categories() Post{
+	var (
+		combined_categories string
+		categories []string
+	)
+
+    err := d.Db.QueryRow("SELECT category FROM posts WHERE post_id =?", p.Post_id).Scan(&combined_categories)
+    if err != nil {
+		e.LogError(err)
+        return *p
+    }
+	categories = strings.Split(combined_categories, ", ")
+    p.Categories = categories
+    return *p
+}
