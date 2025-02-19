@@ -7,8 +7,10 @@ import (
 	// "fmt"
 
 	d "forum/database"
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid"// the google package is also allowed
 	"golang.org/x/crypto/bcrypt"
+	e "forum/Error"
+	m "forum/models"
 )
 
 func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
@@ -18,8 +20,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid request method"))
+		ErrorPage(nil, m.ErrorsData.MethodNotAllowed , w, r)
 		return
 	}
 
@@ -28,17 +29,13 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Unable to process login request"))
+		e.LogError(err)
+		// ErrorPage(err, m.ErrorsData.InternalError , w, r)
 		return
 	}
 	
-	// Log the raw form data for debugging
-	// fmt.Printf("Form data received: %+v\n", r.Form)
-	
 	email := r.FormValue("email")
 	password := r.FormValue("password")
-
-	// Log the extracted values
-	// fmt.Printf("Extracted email: %s, password: %s\n", email, password)
 
 	// Validate input
 	if email == "" || password == "" {
