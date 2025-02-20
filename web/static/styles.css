@@ -85,7 +85,7 @@ body.no-scroll {
 
 .post {
   width: 100%;
-  margin-bottom: 0;
+  margin-bottom: 2rem; /* Add gap between posts */
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
