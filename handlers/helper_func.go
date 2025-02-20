@@ -51,7 +51,7 @@ cookie present in the header, within the request =====*/
 func ValidateSession(r *http.Request) (bool, string) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		fmt.Println("No session cookie found")
+		e.LogError(fmt.Errorf("no session cookie found"))
 		return false, ""
 	}
 
@@ -62,16 +62,16 @@ func ValidateSession(r *http.Request) (bool, string) {
 
 	err = d.Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID, &expiresAt)
 	if err != nil {
-		fmt.Println("Session not found in DB:", err)
+		e.LogError(err)
 		return false, ""
 	}
 
 	if time.Now().After(expiresAt) {
-		fmt.Println("Session expired")
+		e.LogError(fmt.Errorf("session expired"))
 		return false, ""
 	}
 
-	fmt.Println("Session valid for user:", userID)
+	e.LogError(fmt.Errorf(fmt.Sprintf("session valid for user: %s", userID)))
 	return true, userID
 }
 
@@ -86,14 +86,14 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) m.ProfileData {
 	
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		fmt.Println("Profile Section: No session cookie found:", err)
+		e.LogError(fmt.Errorf(fmt.Sprintf("Profile Section: No session cookie found: %v",  err)))
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return m.ProfileData{}
 	}
 
 	err = d.Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
 	if err != nil {
-		fmt.Println("Session not found in DB:", err)
+		e.LogError(fmt.Errorf(fmt.Sprintf("Session not found in DB: %v",  err)))
 		e.LogError(err)
 		return m.ProfileData{}
 	}

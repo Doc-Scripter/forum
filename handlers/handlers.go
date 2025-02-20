@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"io"
-	"fmt"
 	"html"
 	"strings"
 	"net/http"
@@ -218,7 +217,6 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	
 	err := json.Unmarshal(str, &postID)
 	if err != nil {
-		fmt.Println("could not unmarshal post id")
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
 		return
 	}
@@ -342,7 +340,6 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 	
 	likedRows, err := d.Db.Query("SELECT post_id FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", Profile.Uuid)
 	if err != nil {
-		fmt.Println("unable to query my posts", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -436,7 +433,6 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		var postID struct {
 			Post_id string `json:"post_id"`
 		}
-		fmt.Println(string(str))
 		err := json.Unmarshal(str, &postID)
 		if err != nil {
 			ErrorPage(err, m.ErrorsData.BadRequest, w, r)
@@ -660,7 +656,6 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 				return
 					}
 				} else {
-					fmt.Println("had not disliked it")
 					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
 					if err != nil {
 						ErrorPage(err, m.ErrorsData.InternalError, w, r)
