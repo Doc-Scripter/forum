@@ -56,6 +56,14 @@ postsContainer.addEventListener("click", (e) => {
 });
 
 postForm.addEventListener("submit", (e) => {
+  const checkedCategories = document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked');
+  
+  if (checkedCategories.length === 0) {
+    e.preventDefault(); // Prevent form submission
+    alert("Please select at least one category before submitting.");
+    return;
+  }
+  
   alert("Post submitted successfully!");
 });
 
@@ -369,22 +377,29 @@ myDivs.forEach((div) => {
 // });
 
 // Check style
-checkboxGroup.addEventListener("change", function() {
-    const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")].length;
+function updateRequiredText() {
+  const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")].length;
+  const requiredText = document.querySelector(".categories-required");
+  if (checkedCount === 0) {
+    requiredText.style.color = "#ff0000";
+  } else {
+    requiredText.style.color = "#008000";
+  }
+}
 
-    myDivs.forEach((div) => {
-        if (div.querySelector("input").checked) {
-            div.classList.add("checked");
-            div.style.backgroundColor = "green";
-            div.style.color = "#fff";
-        } else {
-            // if (checkedCount >= 3) {
-            //     div.style.backgroundColor = "#f00"; // Red
-            //     div.style.color = "#fff";
-            // } else {
-                div.style.backgroundColor = "#ccc";
-                div.style.color = "#000";
-            // }
-        }
-    });
+checkboxGroup.addEventListener("change", function() {
+  const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")].length;
+
+  myDivs.forEach((div) => {
+    if (div.querySelector("input").checked) {
+      div.classList.add("checked");
+      div.style.backgroundColor = "green";
+      div.style.color = "#fff";
+    } else {
+      div.style.backgroundColor = "#ccc";
+      div.style.color = "#000";
+    }
+  });
+  
+  updateRequiredText();
 });
