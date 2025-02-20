@@ -54,6 +54,33 @@ postsContainer.addEventListener("click", (e) => {
 });
 
 postForm.addEventListener("submit", (e) => {
+  const checkedCategories = document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked');
+  const titleInput = postForm.querySelector('textarea[name="title"]');
+  const contentInput = postForm.querySelector('textarea[name="content"]');
+  
+  // Trim whitespace and check if inputs are empty
+  if (titleInput.value.trim() === '') {
+    e.preventDefault();
+    alert("Post title cannot be empty");
+    return;
+  }
+  
+  if (contentInput.value.trim() === '') {
+    e.preventDefault();
+    alert("Post content cannot be empty");
+    return;
+  }
+  
+  if (checkedCategories.length === 0) {
+    e.preventDefault();
+    alert("Please select at least one category before submitting.");
+    return;
+  }
+  
+  // Update the actual input values with trimmed content
+  titleInput.value = titleInput.value.trim();
+  contentInput.value = contentInput.value.trim();
+  
   alert("Post submitted successfully!");
 });
 
@@ -106,6 +133,16 @@ function createCategoryElements(categories) {
   return html;
 }
 
+// Helper function to escape HTML
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 //===============This function will display the posts=================
 function displayPosts(posts, category) {
   let filteredPosts = [];
@@ -132,24 +169,23 @@ function displayPosts(posts, category) {
       .map(
         (post) => `
       <article class="post">
-      <div class="post-header"></div>
-        <div> ${createCategoryElements(post.category)} </div>
-      <h2 class="post-title">${post.title}</h2>
-      <p class="post-content">${post.content}</p>
-      ${
-        post.filepath
-          ? `<img src="/image/${post.filepath}" alt="${post.filename}">`
-          : ``
-      }
-
-      <div class="post-footer">
-        <div class="post-actions">
-          <button class="action-btn like-btn" data-post-id="${post.post_id}">
-            👍${post.likes}
-          </button>
-          <button class="action-btn dislike-btn" data-post-id="${post.post_id}">
-            👎${post.dislikes}
-          </button>
+        <div class="post-header"></div>
+        <div>${createCategoryElements(post.category)}</div>
+        <h2 class="post-title">${escapeHtml(post.title)}</h2>
+        <p class="post-content">${escapeHtml(post.content)}</p>
+        ${post.filepath ? 
+          `<div class="post-image-container">
+            <img src="/image/${post.filepath}" alt="${escapeHtml(post.filename)}" class="post-image">
+           </div>` 
+          : ``}
+        <div class="post-footer">
+          <div class="post-actions">
+            <button class="action-btn like-btn" data-post-id="${post.post_id}">
+              👍${post.likes}
+            </button>
+            <button class="action-btn dislike-btn" data-post-id="${post.post_id}">
+              👎${post.dislikes}
+            </button>
           </div>
           <button class="comments-toggle" data-post-id="${post.post_id}">
             💬 ${
@@ -160,28 +196,34 @@ function displayPosts(posts, category) {
           </button>
         </div>
         <div class="comments-section" id="comments-${post.post_id}">
-        
+          ${post.comments ? post.comments.map(comment => `
+            <div class="comment">
+              <p>${escapeHtml(comment.content)}</p>
+              <div class="comment-actions">
+                <button class="comment likeBtn">👍 ${comment.likes}</button>
+                <button class="comment dislikeBtn">👎 ${comment.dislikes}</button>
+              </div>
+            </div>
+          `).join('') : ''}
         </div>
-
-          <form
-            class="comment-form"
-            data-post-id="${post.post_id}"
-            action="/addcomment"
-            method="post"
-          >
-            <input type="hidden" name="post_id" value="${post.post_id}" />
-            <input
-              type="text"
-              name="add-comment"
-              class="comment-input"
-              placeholder="Add a comment..."
-              required
-            />
-            <button type="submit" class="comment-submit">Comment</button>
-          </form>
-      </div>
-    </article>
-      `
+        <form
+          class="comment-form"
+          data-post-id="${post.post_id}"
+          action="/addcomment"
+          method="post"
+          onsubmit="return validateComment(event)"
+        >
+          <input type="hidden" name="post_id" value="${post.post_id}" />
+          <input
+            type="text"
+            name="add-comment"
+            class="comment-input"
+            placeholder="Add a comment..."
+            required
+          />
+          <button type="submit" class="comment-submit">Comment</button>
+        </form>
+      </article>`
       )
       .join("");
   }
@@ -191,17 +233,28 @@ function displayPosts(posts, category) {
     btn.addEventListener("click", (e) => {
       const postId = btn.dataset.postId;
       const commentsSection = document.getElementById(`comments-${postId}`);
-      commentsSection.classList.toggle("active");
-      fetch("/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ post_id: postId }),
-      })
+      
+      // Toggle the active class
+      if (commentsSection.classList.contains("active")) {
+        // If comments are showing, hide them
+        commentsSection.classList.remove("active");
+        commentsSection.style.display = "none";
+      } else {
+        // If comments are hidden, show them and fetch
+        commentsSection.classList.add("active");
+        commentsSection.style.display = "block";
+        
+        fetch("/comments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ post_id: postId }),
+        })
         .then((res) => res.json())
         .then((data) => {
           displayComments(data, commentsSection);
         })
         .catch((error) => console.error(error));
+      }
     });
   });
 }
@@ -354,20 +407,19 @@ myDivs.forEach((div) => {
   div.style.color = "#000";
 });
 
-// Hover style
-// myDivs.forEach((div) => {
-//     div.addEventListener("mouseover", function() {
-//         if (!div.classList.contains("checked")) {
-//             div.style.backgroundColor = "green";
-//             div.style.color = "#fff";
-//         }
-//     });
-// });
-
 // Check style
-checkboxGroup.addEventListener("change", function () {
-  const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")]
-    .length;
+function updateRequiredText() {
+  const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")].length;
+  const requiredText = document.querySelector(".categories-required");
+  if (checkedCount === 0) {
+    requiredText.style.color = "#ff0000";
+  } else {
+    requiredText.style.color = "#008000";
+  }
+}
+
+checkboxGroup.addEventListener("change", function() {
+  const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")].length;
 
   myDivs.forEach((div) => {
     if (div.querySelector("input").checked) {
@@ -375,13 +427,44 @@ checkboxGroup.addEventListener("change", function () {
       div.style.backgroundColor = "green";
       div.style.color = "#fff";
     } else {
-      // if (checkedCount >= 3) {
-      //     div.style.backgroundColor = "#f00"; // Red
-      //     div.style.color = "#fff";
-      // } else {
       div.style.backgroundColor = "#ccc";
       div.style.color = "#000";
-      // }
     }
   });
+  
+  updateRequiredText();
 });
+
+// Add validation for comment forms
+document.querySelectorAll('.comment-form').forEach(form => {
+  form.addEventListener('submit', (e) => {
+    const commentInput = form.querySelector('.comment-input');
+    
+    if (commentInput.value.trim() === '') {
+      e.preventDefault();
+      alert("Comment cannot be empty");
+      return;
+    }
+    
+    // Update the actual input value with trimmed content
+    commentInput.value = commentInput.value.trim();
+  });
+});
+
+// Add this validation function
+function validateComment(event) {
+  const form = event.target;
+  const commentInput = form.querySelector('.comment-input');
+  
+  if (commentInput.value.trim() === '') {
+    event.preventDefault();
+    alert("Comment cannot be empty or contain only whitespace");
+    commentInput.value = ''; // Clear the input
+    commentInput.focus(); // Return focus to the input
+    return false;
+  }
+  
+  // Update the input value with trimmed content before submission
+  commentInput.value = commentInput.value.trim();
+  return true;
+}
