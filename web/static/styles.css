@@ -77,13 +77,10 @@ body.no-scroll {
 }
 
 .posts-container {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  width: 100%;
-  max-width: 800px;
+  width: 60%; /* 3/5 of screen width */
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem;
 }
 
 .post {
@@ -1159,27 +1156,29 @@ body.light-theme .sidebar {
 /* Media Queries */
 @media screen and (max-width: 1200px) {
     .posts-container {
-        margin: 0 auto 0 10%;
+        width: 75%;
     }
 }
 
-@media screen and (max-width: 868px) {
+@media screen and (max-width: 768px) {
     .posts-container {
-        margin: 0 auto;
-        padding: 1rem;
-        max-width: 100%;
+        width: 90%;
     }
+  
+  .post-image-container {
+    width: 80%;
+  }
 }
 
 @media screen and (max-width: 480px) {
     .posts-container {
-        padding: 0.5rem;
+        width: 95%;
+        padding: 1rem;
     }
-    
-    .post {
-        border-radius: 8px;
-        margin: 0 5px;
-    }
+  
+  .post-image-container {
+    width: 90%;
+  }
 }
 
 /* Responsive form elements */
@@ -1339,5 +1338,60 @@ html {
     font-size: 12px;
     padding: 6px 8px;
     min-height: 36px;
+  }
+}
+
+/* Post Image Styling */
+.post-image-container {
+  width: 66.67%; /* 2/3 of post width */
+  margin: 15px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  aspect-ratio: 4/5; /* Makes height slightly longer than width */
+}
+
+.post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Changed from contain to cover for better aspect ratio handling */
+  border-radius: 8px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+/* Optional: Add hover effect */
+.post-image-container:hover .post-image {
+    transform: scale(1.02);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1200px) {
+  .posts-container {
+    width: 75%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .posts-container {
+    width: 90%;
+  }
+  
+  .post-image-container {
+    width: 80%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .posts-container {
+    width: 95%;
+    padding: 1rem;
+  }
+  
+  .post-image-container {
+    width: 90%;
   }
 }

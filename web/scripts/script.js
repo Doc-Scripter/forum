@@ -167,49 +167,47 @@ function displayPosts(posts, category) {
       .map(
         (post) => `
       <article class="post">
-      <div class="post-header"></div>
-        <div> ${createCategoryElements(post.category)} </div>
-      <h2 class="post-title">${post.title}</h2>
-      <p class="post-content">${post.content}</p>
-      ${post.filepath? `<img src="/image/${post.filepath}" alt="${post.filename}">`:``}
-
-      <div class="post-footer">
-        <div class="post-actions">
-          <button class="action-btn like-btn" data-post-id="${post.post_id}">
-            👍${post.likes}
-          </button>
-          <button class="action-btn dislike-btn" data-post-id="${post.post_id}">
-            👎${post.dislikes}
-          </button>
+        <div class="post-header"></div>
+        <div>${createCategoryElements(post.category)}</div>
+        <h2 class="post-title">${post.title}</h2>
+        <p class="post-content">${post.content}</p>
+        ${post.filepath ? 
+          `<div class="post-image-container">
+            <img src="/image/${post.filepath}" alt="${post.filename}" class="post-image">
+           </div>` 
+          : ``}
+        <div class="post-footer">
+          <div class="post-actions">
+            <button class="action-btn like-btn" data-post-id="${post.post_id}">
+              👍${post.likes}
+            </button>
+            <button class="action-btn dislike-btn" data-post-id="${post.post_id}">
+              👎${post.dislikes}
+            </button>
           </div>
           <button class="comments-toggle" data-post-id="${post.post_id}">
             💬 ${post.comments?.length === 1 ? `${post.comments.length} Comment` : `${post.comments?.length || 0} Comments`}
           </button>
         </div>
-        <div class="comments-section" id="comments-${post.post_id}">
-        
-        </div>
-
-          <form
-            class="comment-form"
-            data-post-id="${post.post_id}"
-            action="/addcomment"
-            method="post"
-            onsubmit="return validateComment(event)"
-          >
-            <input type="hidden" name="post_id" value="${post.post_id}" />
-            <input
-              type="text"
-              name="add-comment"
-              class="comment-input"
-              placeholder="Add a comment..."
-              required
-            />
-            <button type="submit" class="comment-submit">Comment</button>
-          </form>
-      </div>
-    </article>
-      `
+        <div class="comments-section" id="comments-${post.post_id}"></div>
+        <form
+          class="comment-form"
+          data-post-id="${post.post_id}"
+          action="/addcomment"
+          method="post"
+          onsubmit="return validateComment(event)"
+        >
+          <input type="hidden" name="post_id" value="${post.post_id}" />
+          <input
+            type="text"
+            name="add-comment"
+            class="comment-input"
+            placeholder="Add a comment..."
+            required
+          />
+          <button type="submit" class="comment-submit">Comment</button>
+        </form>
+      </article>`
       )
       .join("");
   }
