@@ -195,6 +195,7 @@ function displayPosts(posts, category) {
             data-post-id="${post.post_id}"
             action="/addcomment"
             method="post"
+            onsubmit="return validateComment(event)"
           >
             <input type="hidden" name="post_id" value="${post.post_id}" />
             <input
@@ -385,16 +386,6 @@ myDivs.forEach((div) => {
     div.style.color = "#000";
 });
 
-// Hover style
-// myDivs.forEach((div) => {
-//     div.addEventListener("mouseover", function() {
-//         if (!div.classList.contains("checked")) {
-//             div.style.backgroundColor = "green";
-//             div.style.color = "#fff";
-//         }
-//     });
-// });
-
 // Check style
 function updateRequiredText() {
   const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")].length;
@@ -438,3 +429,21 @@ document.querySelectorAll('.comment-form').forEach(form => {
     commentInput.value = commentInput.value.trim();
   });
 });
+
+// Add this validation function
+function validateComment(event) {
+  const form = event.target;
+  const commentInput = form.querySelector('.comment-input');
+  
+  if (commentInput.value.trim() === '') {
+    event.preventDefault();
+    alert("Comment cannot be empty or contain only whitespace");
+    commentInput.value = ''; // Clear the input
+    commentInput.focus(); // Return focus to the input
+    return false;
+  }
+  
+  // Update the input value with trimmed content before submission
+  commentInput.value = commentInput.value.trim();
+  return true;
+}
