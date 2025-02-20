@@ -150,7 +150,7 @@ function displayPosts(posts, category) {
     filteredPosts = posts;
   } else {
     if (posts !== null) {
-      filteredPosts = posts.filter((post) => post.category === category);
+      filteredPosts = posts.filter((post) => post.category.includes(category));
     }
   }
   if (filteredPosts === null || !posts || filteredPosts.length === 0) {
