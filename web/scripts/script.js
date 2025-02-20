@@ -57,12 +57,31 @@ postsContainer.addEventListener("click", (e) => {
 
 postForm.addEventListener("submit", (e) => {
   const checkedCategories = document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked');
+  const titleInput = postForm.querySelector('textarea[name="title"]');
+  const contentInput = postForm.querySelector('textarea[name="content"]');
+  
+  // Trim whitespace and check if inputs are empty
+  if (titleInput.value.trim() === '') {
+    e.preventDefault();
+    alert("Post title cannot be empty");
+    return;
+  }
+  
+  if (contentInput.value.trim() === '') {
+    e.preventDefault();
+    alert("Post content cannot be empty");
+    return;
+  }
   
   if (checkedCategories.length === 0) {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
     alert("Please select at least one category before submitting.");
     return;
   }
+  
+  // Update the actual input values with trimmed content
+  titleInput.value = titleInput.value.trim();
+  contentInput.value = contentInput.value.trim();
   
   alert("Post submitted successfully!");
 });
@@ -402,4 +421,20 @@ checkboxGroup.addEventListener("change", function() {
   });
   
   updateRequiredText();
+});
+
+// Add validation for comment forms
+document.querySelectorAll('.comment-form').forEach(form => {
+  form.addEventListener('submit', (e) => {
+    const commentInput = form.querySelector('.comment-input');
+    
+    if (commentInput.value.trim() === '') {
+      e.preventDefault();
+      alert("Comment cannot be empty");
+      return;
+    }
+    
+    // Update the actual input value with trimmed content
+    commentInput.value = commentInput.value.trim();
+  });
 });
