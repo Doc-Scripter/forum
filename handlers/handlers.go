@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"html"
 
 	e "forum/Error"
 
@@ -249,6 +250,12 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(postsJson)
 }
 
+func combineCategory(category []string) string{
+
+	return strings.Join(category, ", ")
+}
+
+
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	Profile := getUserDetails(w, r)
 
@@ -257,7 +264,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("creating post")
+
 
 	// Parse form with multipart support. This is needed when an image is provided.
 	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
@@ -270,85 +277,88 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("this is the form--> ", r.Form)
-	category := r.FormValue("category")
-	content := r.FormValue("content")
+	fmt.Println(r.Form)
+	category := combineCategory(r.Form["category"])
+	fmt.Println(category)
+	content := html.EscapeString(r.FormValue("content"))
 	title := r.FormValue("title")
-	var img m.Image
 
+	var img m.Image
 	// Attempt to retrieve the file. If no image is uploaded, proceed without processing.
 	file, handler, err := r.FormFile("image")
 	if err != nil {
-		// Check if error is due to missing file.
-		if err == http.ErrMissingFile {
-			fmt.Println("No image uploaded, continuing without image")
-			// Leave img fields as empty
-			img.Filename = ""
-			img.Path = ""
+			// Check if error is due to missing file.
+			if err == http.ErrMissingFile {
+				fmt.Println("No image uploaded, continuing without image")
+				// Leave img fields as empty
+				img.Filename = ""
+				img.Path = ""
+			} else {
+				http.Error(w, "Error retrieving file", http.StatusBadRequest)
+				return
+			}
 		} else {
-			http.Error(w, "Error retrieving file", http.StatusBadRequest)
-			return
+	
+			defer file.Close()
+	
+			// Validate file size
+			if handler.Size > maxUploadSize {
+				http.Error(w, "File too large", http.StatusBadRequest)
+				return
+			}
+	
+			// Validate file type
+			if !validateFileType(file) {
+				http.Error(w, "Invalid file type", http.StatusBadRequest)
+				return
+			}
+	
+			// Generate unique filename
+			fileName, err := generateFileName()
+			if err != nil {
+				http.Error(w, "Error processing file", http.StatusInternalServerError)
+				return
+			}
+	
+			// Add original file extension
+			fileName = fileName + filepath.Ext(handler.Filename)
+	
+			fmt.Println("filename: ", fileName)
+			// Create uploads directory if it doesn't exist
+			if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
+				http.Error(w, "Error processing file", http.StatusInternalServerError)
+				return
+			}
+	
+			// Create new file
+			filePath := filepath.Join(uploadsDir, fileName)
+			dst, err := os.Create(filePath)
+			if err != nil {
+				http.Error(w, "Error saving file", http.StatusInternalServerError)
+				return
+			}
+			defer dst.Close()
+	
+			// Copy file contents
+			if _, err := io.Copy(dst, file); err != nil {
+				http.Error(w, "Error saving file", http.StatusInternalServerError)
+				return
+			}
+	
+			modifyFilename := strings.Fields((handler.Filename))
+	
+			// Save to database
+			img.Path = strings.Join(modifyFilename, "_")
+			img.Path = filePath
 		}
-	} else {
-
-		defer file.Close()
-
-		// Validate file size
-		if handler.Size > maxUploadSize {
-			http.Error(w, "File too large", http.StatusBadRequest)
-			return
-		}
-
-		// Validate file type
-		if !validateFileType(file) {
-			http.Error(w, "Invalid file type", http.StatusBadRequest)
-			return
-		}
-
-		// Generate unique filename
-		fileName, err := generateFileName()
+		_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid ,filename,filepath) VALUES ($1, $2, $3, $4, $5, $6)", category, content, title, Profile.Uuid, img.Filename, img.Path)
 		if err != nil {
-			http.Error(w, "Error processing file", http.StatusInternalServerError)
-			return
-		}
-
-		// Add original file extension
-		fileName = fileName + filepath.Ext(handler.Filename)
-
-		fmt.Println("filename: ", fileName)
-		// Create uploads directory if it doesn't exist
-		if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
-			http.Error(w, "Error processing file", http.StatusInternalServerError)
-			return
-		}
-
-		// Create new file
-		filePath := filepath.Join(uploadsDir, fileName)
-		dst, err := os.Create(filePath)
-		if err != nil {
-			http.Error(w, "Error saving file", http.StatusInternalServerError)
-			return
-		}
-		defer dst.Close()
-
-		// Copy file contents
-		if _, err := io.Copy(dst, file); err != nil {
-			http.Error(w, "Error saving file", http.StatusInternalServerError)
-			return
-		}
-
-		modifyFilename := strings.Fields((handler.Filename))
-
-		// Save to database
-		img.Path = strings.Join(modifyFilename, "_")
-		img.Path = filePath
-	}
-	_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid ,filename,filepath) VALUES ($1, $2, $3, $4, $5, $6)", category, content, title, Profile.Uuid, img.Filename, img.Path)
-	if err != nil {
-		os.Remove(img.Path)
+			os.Remove(img.Path)
 		fmt.Println("could not insert posts", err)
 		// http.Error(w, "could not insert post", http.StatusInternalServerError)
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
 		return
+	
 	}
 
 	fmt.Println("Post created")
@@ -681,6 +691,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println(string(str))
 		err := json.Unmarshal(str, &postID)
+		fmt.Println("the post id====>post_id: ", postID)
 		if err != nil {
 			fmt.Println("could not unmarshal post id")
 			ErrorPage(err, m.ErrorsData.BadRequest, w, r)
@@ -709,6 +720,179 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(commentsJson)
 	}
+}
+func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+	Profile := getUserDetails(w, r)
+
+	str, _ := io.ReadAll(r.Body)
+	var commentId struct {
+		Comment_Id string `json:"comment_id"`
+	}
+	fmt.Println(string(str))
+	err := json.Unmarshal(str, &commentId)
+	if err != nil {
+		fmt.Println("could not unmarshal comment id")
+		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+
+	// Check if the user has already liked or disliked the post
+	var likeDislike string
+	// check if liked
+	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+
+	if err == sql.ErrNoRows {
+		fmt.Println("He hasn't liked it!")
+		// if not liked check if disliked
+		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				// check if the post exists
+				err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+				if err == sql.ErrNoRows {
+
+					fmt.Println("had not liked it")
+					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,comment_id,user_uuid) VALUES ('like',?,?)", commentId.Comment_Id, Profile.Uuid)
+					if err != nil {
+						fmt.Println("Failed to like comment", err)
+						http.Error(w, "Failed to like comment", http.StatusInternalServerError)
+						return
+					}
+				} else {
+					fmt.Println("had not liked it")
+					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+					if err != nil {
+						fmt.Println("Failed to like comment", err)
+						http.Error(w, "Failed to like comment", http.StatusInternalServerError)
+						return
+					}
+				}
+
+				// If the user hasn't liked or disliked the post, insert a new like
+				fmt.Println("has liked it")
+
+			} else {
+
+				fmt.Println("Failed to query comment", err)
+				ErrorPage(err, m.ErrorsData.InternalError, w, r)
+				return
+			}
+		}
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+		if err != nil {
+			fmt.Println("Failed to like comment", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
+	} else if err != nil {
+
+		fmt.Println("Failed to check if user has liked comment", err)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	} else if likeDislike == "like" {
+
+		// If the user has already liked the post, minus the like
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+		if err != nil {
+			fmt.Println("Failed to minus like", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+}
+
+func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+	Profile := getUserDetails(w, r)
+
+	str, _ := io.ReadAll(r.Body)
+	var commentId struct {
+		Comment_Id string `json:"comment_id"`
+	}
+	fmt.Println(string(str))
+	err := json.Unmarshal(str, &commentId)
+	if err != nil {
+		fmt.Println("could not unmarshal comment id")
+		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+		return
+	}
+
+	// Check if the user has already liked or disliked the post
+	var likeDislike string
+	// check if liked
+	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+
+	if err == sql.ErrNoRows {
+		fmt.Println("He hasn't liked it!")
+		// if not liked check if disliked
+		err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				// check if the post exists
+				err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
+				if err == sql.ErrNoRows {
+
+					fmt.Println("had not disliked it")
+					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,comment_id,user_uuid) VALUES ('dislike',?,?)", commentId.Comment_Id, Profile.Uuid)
+					if err != nil {
+						fmt.Println("Failed to like comment", err)
+						http.Error(w, "Failed to like comment", http.StatusInternalServerError)
+						return
+					}
+				} else {
+					fmt.Println("had not disliked it")
+					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+					if err != nil {
+						fmt.Println("Failed to dislike comment", err)
+						http.Error(w, "Failed to dislike comment", http.StatusInternalServerError)
+						return
+					}
+				}
+
+				// If the user hasn't liked or disliked the post, insert a new like
+				fmt.Println("has disliked it")
+
+			} else {
+
+				fmt.Println("Failed to query comment", err)
+				ErrorPage(err, m.ErrorsData.InternalError, w, r)
+				return
+			}
+		}
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+		if err != nil {
+			fmt.Println("Failed to dislike comment", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
+	} else if err != nil {
+
+		fmt.Println("Failed to check if user has disliked comment", err)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	} else if likeDislike == "dislike" {
+
+		// If the user has already liked the post, minus the like
+		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
+		if err != nil {
+			fmt.Println("Failed to minus like", err)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
 
 func ImageHandler(w http.ResponseWriter, r *http.Request) {

@@ -10,21 +10,43 @@ let currentCategory = "all";
 let posts = [];
 let route = "/posts";
 
-
-
-
-
 // State
 function fetchPosts(route) {
   console.log("here", route);
   fetch(route)
     .then((response) => response.json())
     .then((data) => {
+      console.log(data);
       displayPosts(data, currentCategory);
     })
     .catch((error) => {
       console.error("Error fetching posts:", error);
     });
+}
+
+//============The function that splits the string coming from the backend and displays them in different labels of a post============
+function createCategoryElements(categoryString) {
+  if (!categoryString) {
+    return ""; // Handle null, undefined, and empty strings
+  }
+
+  const categories = categoryString
+    .split(",")
+    .map((cat) => cat.trim())
+    .filter((cat) => cat.length > 0); // Split, trim whitespace, and remove empty strings
+
+  if (categories.length === 0) {
+    return ""; // Handle cases where there are no categories after splitting/trimming
+  }
+
+  let html = '<div class="category-container">';
+
+  categories.forEach((category) => {
+    html += `<h2 class="post-category"> ${category} </h2>`;
+  });
+
+  html += "</div>";
+  return html;
 }
 
 function displayPosts(posts, category) {
@@ -53,7 +75,7 @@ function displayPosts(posts, category) {
         (post) => `
       <article class="post">
       <div class="post-header"></div>
-      <h2 class="post-category">${post.category}</h2>
+      <div> ${createCategoryElements(post.category)} </div>
       <h2 class="post-title">${post.title}</h2>
       <p class="post-content">${post.content}</p>
       <div class="post-footer">
@@ -65,32 +87,20 @@ function displayPosts(posts, category) {
             👎${post.dislikes}
           </button>
           <button class="comments-toggle" data-post-id="${post.post_id}">
-            💬 Comments (${post.comments ? post.comments.length : 0})
+            💬 ${
+              post.comments?.length === 1
+                ? `${post.comments.length} Comment`
+                : `${post.comments?.length || 0} Comments`
+            }
           </button>
+
         </div>
         <div class="comments-section" id="comments-${post.post_id}">
-          ${
-            post.comments
-              ? post.comments
-                  .map(
-                    (comment) => `
-          <div class="comment">
-            <p>${comment}</p>
-          </div>
-          `
-                  )
-                  .join("")
-              : ""
-          }
+        
+        </div>
 
-          <form
-            class="comment-form"
-            data-post-id="${post.post_id}"
-            action="/register"
-            method="get"
-          >
-            <input type="hidden" name="post_id" value="${post.post_id}" />
-            <input
+          <form>
+              <input
               type="text"
               name="add-comment"
               class="comment-input"
@@ -102,12 +112,25 @@ function displayPosts(posts, category) {
         </div>
       </div>
     </article>
-       `
+      `
       )
       .join("");
   }
+  
+ // Select all comment forms
+  const commentForms = document.querySelectorAll('form');
+  
+commentForms.forEach((form) => {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault(); // Prevent the default form submission
+      if (confirm("Please Login to comment! Click OK to go to login page.")) {
+        window.location.href = "/login"; // Redirect to login page
+      }
+    });
+  });
+  
 
-  // Add comments toggle functionality
+  //=================Add comments toggle functionality===================
   document.querySelectorAll(".comments-toggle").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const postId = btn.dataset.postId;
@@ -117,13 +140,56 @@ function displayPosts(posts, category) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ post_id: postId }),
-      }).catch((error) => console.error(error));
+      })
+      .then((res) => res.json()
+      
+    )
+        .then((data) => {
+          displayComments(data, commentsSection);
+        })
+        .catch((error) => 
+          console.error("je",error));
     });
   });
 }
 
-document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
+function fetchComments(element, commentId) {
+  fetch("/comments", {
+    method: "POST",
+    content: "application/json",
+    body: JSON.stringify({ comment_id: commentId }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      displayComments(data, element);
+    })
+    .catch((error) => {
+      console.error("Error fetching comments:", error);
+    });
+}
 
+//=======================Function to display the comments=======================
+function displayComments(comments, element) {
+  element.innerHTML = comments
+    .map(
+      (comment) => `
+  <div class="comment"><p>${comment.content}</p></div>
+    <div class="comment-actions">
+    <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
+      👍${comment.likes}
+      </button>
+      <button class="comment dislikeBtn" data-comment-id="${comment.comment_id}">
+      👎${comment.dislikes}
+      </button>
+     </div>
+    `
+    )
+    .join(``);
+  attachCommentActionListeners(element);
+}
+
+document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 
 // Event listeners for filters
 filterBtns.forEach((btn) => {
@@ -195,4 +261,3 @@ function updateThemeIcon() {
   sunIcon.style.display = isLightTheme ? "none" : "block";
   moonIcon.style.display = isLightTheme ? "block" : "none";
 }
-
