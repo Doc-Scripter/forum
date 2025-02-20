@@ -13,7 +13,6 @@ const dislikebutton = document.querySelectorAll(".dislike-btn");
 const comments = document.querySelector(".comments-section");
 // const commentActions = document.querySelector(".comment-actions");
 
-
 const commentform = document.querySelectorAll(".comment-form");
 
 let currentFilter = "allPosts";
@@ -43,7 +42,6 @@ postsContainer.addEventListener("click", (e) => {
   }
 
   if (e.target.classList.contains("dislike-btn")) {
-
     const postId = e.target.dataset.postId;
     fetch("/dislikes", {
       method: "POST",
@@ -61,6 +59,7 @@ postForm.addEventListener("submit", (e) => {
 
 // State
 function fetchPosts(route) {
+  console.log(route);
   fetch(route)
     .then((response) => response.json())
     .then((data) => {
@@ -69,27 +68,21 @@ function fetchPosts(route) {
     .catch((error) => {
       console.error("Error fetching posts:", error);
     });
-   
 }
 
-function fetchComments(element,commentId){
-  fetch("/comments",{
-    method:"POST",
-    content:"application/json",
-    body:JSON.stringify({comment_id:commentId})
-    
-  }
-)
-.then((response) => response.json()
-
-)
-.then((data) => {
-  displayComments(data, element);
-})
-  .catch((error) => {
-    console.error("Error fetching comments:", error);
-  });
- 
+function fetchComments(element, commentId) {
+  fetch("/comments", {
+    method: "POST",
+    content: "application/json",
+    body: JSON.stringify({ comment_id: commentId }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      displayComments(data, element);
+    })
+    .catch((error) => {
+      console.error("Error fetching comments:", error);
+    });
 }
 
 //=================Function to create HTML for categories from an array============
@@ -100,7 +93,7 @@ function createCategoryElements(categories) {
 
   let html = '<div class="category-container">';
 
-  categories.forEach(category => {
+  categories.forEach((category) => {
     const trimmedCategory = category.trim();
 
     if (trimmedCategory.length > 0) {
@@ -108,11 +101,10 @@ function createCategoryElements(categories) {
     }
   });
 
-  html += '</div>';
+  html += "</div>";
 
   return html;
 }
-
 
 //===============This function will display the posts=================
 function displayPosts(posts, category) {
@@ -144,7 +136,11 @@ function displayPosts(posts, category) {
         <div> ${createCategoryElements(post.category)} </div>
       <h2 class="post-title">${post.title}</h2>
       <p class="post-content">${post.content}</p>
-      ${post.filepath? `<img src="/image/${post.filepath}" alt="${post.filename}">`:``}
+      ${
+        post.filepath
+          ? `<img src="/image/${post.filepath}" alt="${post.filename}">`
+          : ``
+      }
 
       <div class="post-footer">
         <div class="post-actions">
@@ -156,7 +152,11 @@ function displayPosts(posts, category) {
           </button>
           </div>
           <button class="comments-toggle" data-post-id="${post.post_id}">
-            💬 ${post.comments?.length === 1 ? `${post.comments.length} Comment` : `${post.comments?.length || 0} Comments`}
+            💬 ${
+              post.comments?.length === 1
+                ? `${post.comments.length} Comment`
+                : `${post.comments?.length || 0} Comments`
+            }
           </button>
         </div>
         <div class="comments-section" id="comments-${post.post_id}">
@@ -197,21 +197,22 @@ function displayPosts(posts, category) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ post_id: postId }),
       })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("empty", data)
-        displayComments(data,commentsSection)
-      })
-        .catch(
-          (error) => console.error(error)
-        );
+        .then((res) => res.json())
+        .then((data) => {
+          displayComments(data, commentsSection);
+        })
+        .catch((error) => console.error(error));
     });
   });
 }
 
 //=======================Function to display the comments=======================
-function displayComments(comments,element){ 
-  element.innerHTML=comments.map((comment)=>`
+function displayComments(comments, element) {
+  if (comments&& comments!==null){
+
+  element.innerHTML = comments
+    .map(
+      (comment) => `
   <div class="comment"><p>${comment.content}</p></div>
     <div class="comment-actions">
     <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
@@ -221,46 +222,42 @@ function displayComments(comments,element){
       👎${comment.dislikes}
       </button>
       </div>
-    `).join(``)
-    attachCommentActionListeners(element);
+    `
+    )
+    .join(``);
+  attachCommentActionListeners(element);
+}
 }
 
 //==========================comment actions====================
 function attachCommentActionListeners(container) {
-container.querySelectorAll(".comment-actions").forEach((btn)=>{
-  btn.addEventListener("click",(e)=>{
-    if (e.target.classList.contains("likeBtn")) {
-      const commentId = e.target.dataset.commentId;
-      fetch("/likesComment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comment_Id:commentId }),
-      })
-        .then(()=>fetchComments(container,commentId))
-        .catch(
-          (error) => console.error(error)
-        );
+  container.querySelectorAll(".comment-actions").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      if (e.target.classList.contains("likeBtn")) {
+        const commentId = e.target.dataset.commentId;
+        fetch("/likesComment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ comment_Id: commentId }),
+        })
+          .then(() => fetchComments(container, commentId))
+          .catch((error) => console.error(error));
       }
-  
-  
-  
-  
-    if (e.target.classList.contains("dislikeBtn")) {
-      // e.stopPropagation();
-  
-      const commentId = e.target.dataset.commentId;
-      fetch("/dislikesComment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comment_id:commentId }), // Ensure userId is defined
-      })
-     
-        .then(() => fetchComments(container,commentId))
-        .catch((error) => console.error(error)
-        );
-    }
+
+      if (e.target.classList.contains("dislikeBtn")) {
+        // e.stopPropagation();
+
+        const commentId = e.target.dataset.commentId;
+        fetch("/dislikesComment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ comment_id: commentId }), // Ensure userId is defined
+        })
+          .then(() => fetchComments(container, commentId))
+          .catch((error) => console.error(error));
+      }
+    });
   });
-  })
 }
 
 document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
@@ -338,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Function to update theme icon
-function updateThemeIcon() {  
+function updateThemeIcon() {
   const sunIcon = document.querySelector(".sun");
   const moonIcon = document.querySelector(".moon");
   const isLightTheme = document.body.classList.contains("light-theme");
@@ -347,15 +344,14 @@ function updateThemeIcon() {
   moonIcon.style.display = isLightTheme ? "block" : "none";
 }
 
-
 //===========for the checkboxes===================
 const checkboxGroup = document.querySelector(".checkbox-group");
 const myDivs = document.querySelectorAll(".category-option");
 
 // Default style
 myDivs.forEach((div) => {
-    div.style.backgroundColor = "#ccc";
-    div.style.color = "#000";
+  div.style.backgroundColor = "#ccc";
+  div.style.color = "#000";
 });
 
 // Hover style
@@ -369,22 +365,23 @@ myDivs.forEach((div) => {
 // });
 
 // Check style
-checkboxGroup.addEventListener("change", function() {
-    const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")].length;
+checkboxGroup.addEventListener("change", function () {
+  const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")]
+    .length;
 
-    myDivs.forEach((div) => {
-        if (div.querySelector("input").checked) {
-            div.classList.add("checked");
-            div.style.backgroundColor = "green";
-            div.style.color = "#fff";
-        } else {
-            // if (checkedCount >= 3) {
-            //     div.style.backgroundColor = "#f00"; // Red
-            //     div.style.color = "#fff";
-            // } else {
-                div.style.backgroundColor = "#ccc";
-                div.style.color = "#000";
-            // }
-        }
-    });
+  myDivs.forEach((div) => {
+    if (div.querySelector("input").checked) {
+      div.classList.add("checked");
+      div.style.backgroundColor = "green";
+      div.style.color = "#fff";
+    } else {
+      // if (checkedCount >= 3) {
+      //     div.style.backgroundColor = "#f00"; // Red
+      //     div.style.color = "#fff";
+      // } else {
+      div.style.backgroundColor = "#ccc";
+      div.style.color = "#000";
+      // }
+    }
+  });
 });

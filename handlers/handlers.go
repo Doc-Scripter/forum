@@ -61,7 +61,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		eachPost.CommentsCount = commentsCount
 
-		rows, err := d.Db.Query(`SELECT content,likes,dislikes FROM comments WHERE post_id = ?`, eachPost.Post_id)
+		rows, err := d.Db.Query(`SELECT content FROM comments WHERE post_id = ?`, eachPost.Post_id)
 		if err != nil {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
@@ -70,7 +70,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		var comments []m.Comment
 		for rows.Next() {
 			var comment m.Comment
-			rows.Scan(&comment.Content, &comment.Likes, &comment.Dislikes)
+			rows.Scan(&comment.Content )
 			comments = append(comments, comment)
 		}
 
@@ -364,22 +364,36 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 // ==== This function will handle the filtration of specific user post ====
 func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 	Profile := GetUserDetails(w, r)
-
-	rows, err := d.Db.Query("SELECT title,content,category,post_id FROM posts WHERE user_uuid = ? ", Profile.Uuid)
+	rows, err := d.Db.Query("SELECT title,content,post_id,created_at,filename,filepath FROM posts WHERE user_uuid = ? ", Profile.Uuid)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
-
+	defer rows.Close()
+	
 	var posts []m.Post
 	for rows.Next() {
 		var eachPost m.Post
-		err = rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Post_id)
-		eachPost.Seperate_Categories()
+		err = rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Post_id,&eachPost.CreatedAt,&eachPost.Filename,&eachPost.Filepath)
 		if err != nil {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
+		eachPost.Seperate_Categories()
+		rows, err := d.Db.Query(`SELECT content FROM comments WHERE post_id = ?`, eachPost.Post_id)
+		if err != nil {
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
+		var comments []m.Comment
+		for rows.Next() {
+			var comment m.Comment
+			rows.Scan(&comment.Content )
+			comments = append(comments, comment)
+		}
+
+		eachPost.Comments = comments
 		var likeCount, dislikeCount int
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND post_id = ?", eachPost.Post_id).Scan(&likeCount)
 		if err != nil {
@@ -391,18 +405,27 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
+		commentsCount := 0
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", eachPost.Post_id).Scan(&commentsCount)
+		if err != nil {
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+		defer rows.Close()
 
+		eachPost.CommentsCount = commentsCount
 		eachPost.Likes = likeCount
 		eachPost.Dislikes = dislikeCount
-
+		
 		posts = append(posts, eachPost)
 	}
+
+	// fmt.Println(Profile.Uuid)
 	postsJson, err := json.Marshal(posts)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(postsJson)
 }
@@ -426,23 +449,48 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		Postrows, err := d.Db.Query("SELECT likes, dislikes, title, content, post_id FROM posts WHERE post_id = ?", postID)
+		Postrows, err := d.Db.Query("SELECT title, content, post_id, filename,filepath FROM posts WHERE post_id = ?", postID)
 		if err != nil {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
+		defer Postrows.Close()
+
 		var eachPost m.Post
 
 		for Postrows.Next() {
 
-			err = Postrows.Scan(&eachPost.Likes, &eachPost.Dislikes, &eachPost.Title, &eachPost.Content, &eachPost.Post_id)
+			err = Postrows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Post_id, &eachPost.Filename,&eachPost.Filepath)
 			eachPost.Seperate_Categories()
 			if err != nil {
 				ErrorPage(err, m.ErrorsData.InternalError, w, r)
 				return
 			}
-
+			
 		}
+		commentsCount := 0
+		err = d.Db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", eachPost.Post_id).Scan(&commentsCount)
+		if err != nil {
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
+		eachPost.CommentsCount = commentsCount
+
+		rows, err := d.Db.Query(`SELECT content FROM comments WHERE post_id = ?`, eachPost.Post_id)
+		if err != nil {
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			return
+		}
+
+		var comments []m.Comment
+		for rows.Next() {
+			var comment m.Comment
+			rows.Scan(&comment.Content )
+			comments = append(comments, comment)
+		}
+
+		eachPost.Comments = comments
 
 		var likeCount, dislikeCount int
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", eachPost.Post_id).Scan(&likeCount)
@@ -549,7 +597,6 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
-		fmt.Println("This is it====> ", string(commentsJson))
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(commentsJson)
@@ -607,7 +654,6 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
-		fmt.Println("This is it====> ", string(commentsJson))
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(commentsJson)
 	}
@@ -839,7 +885,6 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 //		}
 //	}
 func ImageHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Here")
 	// Get the image file path from the request URL
 	imagePath := "web/uploads/" + r.URL.Path[len("/image/web/uploads/"):]
 
