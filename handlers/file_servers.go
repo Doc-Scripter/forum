@@ -27,25 +27,31 @@ func ErrorPage(Error error, ErrorData m.ErrorData, w http.ResponseWriter, r *htt
 // ==== The function handler serves the landing page of the web application ====
 func LandingPage(w http.ResponseWriter, r *http.Request) {
 
-	if bl, _ := ValidateSession(r); bl {
-		http.Redirect(w, r, "/home", http.StatusSeeOther)
-		return
-	}
+	if r.URL.Path == "/" {
 
-	if r.Method != http.MethodGet {
-		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
-		return
-	}
-	tmpl, err := template.ParseFiles("./web/templates/index.html")
-	errD := m.ErrorsData.InternalError
-	if err != nil {
-		ErrorPage(err, errD, w, r)
-		return
-	}
+		if bl, _ := ValidateSession(r); bl {
+			http.Redirect(w, r, "/home", http.StatusSeeOther)
+			return
+		}
 
-	if err = tmpl.Execute(w, nil); err != nil {
-		ErrorPage(err, errD, w, r)
-		return
+		if r.Method != http.MethodGet {
+			ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
+			return
+		}
+		tmpl, err := template.ParseFiles("./web/templates/index.html")
+		errD := m.ErrorsData.InternalError
+		if err != nil {
+			ErrorPage(err, errD, w, r)
+			return
+		}
+
+		if err = tmpl.Execute(w, nil); err != nil {
+			ErrorPage(err, errD, w, r)
+			return
+		}
+	}else {
+		ErrorPage(nil, m.ErrorsData.PageNotFound, w, r)
+        return
 	}
 }
 
