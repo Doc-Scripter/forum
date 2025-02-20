@@ -237,7 +237,6 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		posts = append(posts, eachPost)
 	}
-	fmt.Println(posts[0])
 	postsJson, err := json.Marshal(posts)
 	if err != nil {
 		fmt.Println("unable to marshal", err)
