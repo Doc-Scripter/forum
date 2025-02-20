@@ -30,7 +30,6 @@ commentform.forEach((form) => {
 
 postsContainer.addEventListener("click", (e) => {
   if (e.target.classList.contains("like-btn")) {
-    console.log("post like button clicked");
     const postId = e.target.dataset.postId;
     fetch("/likes", {
       method: "POST",
@@ -44,7 +43,6 @@ postsContainer.addEventListener("click", (e) => {
   }
 
   if (e.target.classList.contains("dislike-btn")) {
-    console.log("dislike button clicked");
 
     const postId = e.target.dataset.postId;
     fetch("/dislikes", {
@@ -63,11 +61,9 @@ postForm.addEventListener("submit", (e) => {
 
 // State
 function fetchPosts(route) {
-  console.log("here", route);
   fetch(route)
     .then((response) => response.json())
     .then((data) => {
-      console.log(data)
       displayPosts(data, currentCategory);
     })
     .catch((error) => {
@@ -88,7 +84,6 @@ function fetchComments(element,commentId){
 
 )
 .then((data) => {
-  console.log(data)
   displayComments(data, element);
 })
   .catch((error) => {
@@ -204,7 +199,7 @@ function displayPosts(posts, category) {
       })
       .then((res) => res.json())
       .then((data) => {
-
+        console.log("empty", data)
         displayComments(data,commentsSection)
       })
         .catch(
@@ -236,7 +231,6 @@ container.querySelectorAll(".comment-actions").forEach((btn)=>{
   btn.addEventListener("click",(e)=>{
     if (e.target.classList.contains("likeBtn")) {
       const commentId = e.target.dataset.commentId;
-      console.log("comment like button clicked comment id:",commentId)
       fetch("/likesComment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -253,7 +247,6 @@ container.querySelectorAll(".comment-actions").forEach((btn)=>{
   
     if (e.target.classList.contains("dislikeBtn")) {
       // e.stopPropagation();
-      console.log("dislike button clicked");
   
       const commentId = e.target.dataset.commentId;
       fetch("/dislikesComment", {
@@ -306,14 +299,12 @@ filterBtns.forEach((btn) => {
       default:
         console.error("Invalid filter value");
     }
-    console.log("new route", route);
     fetchPosts(route);
   });
 });
 
 categoryFilter.addEventListener("change", (e) => {
   currentCategory = e.target.value;
-  console.log("category", currentCategory);
   fetchPosts(route);
 });
 

@@ -1,15 +1,20 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	e "forum/Error"
 
 	m "forum/models"
 
@@ -477,8 +482,15 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 	Profile := GetUserDetails(w, r)
 
 	r.ParseForm()
-	comment := r.FormValue("add-comment")
+	comment := strings.TrimSpace(r.FormValue("add-comment"))
 	post_id := r.FormValue("post_id")
+
+	if comment == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("A comment is required"))
+		e.LogError(fmt.Errorf("user inserted a whitespace"))
+		return
+	}
 
 	_, err := d.Db.Exec("INSERT INTO comments (user_uuid,post_id,content) VALUES (?,?,?)", Profile.Uuid, post_id, comment)
 	if err != nil {
@@ -507,7 +519,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		rows, err := d.Db.Query(`SELECT created_at,likes,dislikes,content FROM comments WHERE post_id=?`, postID.Post_id)
+		rows, err := d.Db.Query(`SELECT comment_id, created_at, content FROM comments WHERE post_id=?`, postID.Post_id)
 		if err != nil {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
@@ -546,6 +558,8 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
+		fmt.Println("This is it====> ", string(commentsJson))
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(commentsJson)
 	} else {
@@ -602,6 +616,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
+		fmt.Println("This is it====> ", string(commentsJson))
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(commentsJson)
 	}
@@ -827,35 +842,59 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 // 		return
 // 	}
 
-// 	if err = tmpl.Execute(w, post); err != nil {
-// 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-// 		return
-// 	}
-// }
+//		if err = tmpl.Execute(w, post); err != nil {
+//			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+//			return
+//		}
+//	}
 func ImageHandler(w http.ResponseWriter, r *http.Request) {
-       fmt.Println("Here")
-       // Get the image file path from the request URL
-       imagePath := "web/uploads/" + r.URL.Path[len("/image/web/uploads/"):]
+	fmt.Println("Here")
+	// Get the image file path from the request URL
+	imagePath := "web/uploads/" + r.URL.Path[len("/image/web/uploads/"):]
 
-       // Open the image file
-       file, err := os.Open(imagePath)
-       if err != nil {
-               http.Error(w, "Failed to open image file", http.StatusInternalServerError)
-               return
-       }
-       defer file.Close()
+	// Open the image file
+	file, err := os.Open(imagePath)
+	if err != nil {
+		http.Error(w, "Failed to open image file", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
 
-       // Get the file info
-       fileInfo, err := file.Stat()
-       if err != nil {
-               http.Error(w, "Failed to get file info", http.StatusInternalServerError)
-               return
-       }
+	// Get the file info
+	fileInfo, err := file.Stat()
+	if err != nil {
+		http.Error(w, "Failed to get file info", http.StatusInternalServerError)
+		return
+	}
 
-       // Set the content type and disposition
-       w.Header().Set("Content-Type", "image/jpeg")
-       w.Header().Set("Content-Disposition", "inline; filename="+fileInfo.Name())
+	// Set the content type and disposition
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Content-Disposition", "inline; filename="+fileInfo.Name())
 
-       // Write the image file to the response
-       http.ServeFile(w, r, imagePath)
+	// Write the image file to the response
+	http.ServeFile(w, r, imagePath)
+}
+
+func validateFileType(file multipart.File) bool {
+	// Read the first 512 bytes to detect content type
+	buffer := make([]byte, 512)
+	_, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return false
+	}
+
+	// Reset the file pointer
+	file.Seek(0, 0)
+
+	// Get content type and check if it's allowed
+	contentType := http.DetectContentType(buffer)
+	return strings.Contains(allowedTypes, contentType)
+}
+
+func generateFileName() (string, error) {
+	bytes := make([]byte, 16)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }
