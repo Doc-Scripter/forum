@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"html"
 	"io"
-	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
-	"text/template"
 
-	e "forum/Error"
+	m "forum/models"
 
 	d "forum/database"
-	m "forum/models"
 )
 
 const (
@@ -22,20 +21,6 @@ const (
 	uploadsDir    = "./web/uploads"
 	allowedTypes  = "image/jpeg,image/png,image/gif"
 )
-
-// serve the login form
-
-// serve the login form
-
-
-// serve the Homepage
-
-
-
-
-
-// serve the login form
-
 
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -53,10 +38,8 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var posts []m.Post
 	for rows.Next() {
-		
-		var (
-			eachPost m.Post
-		)
+
+		var eachPost m.Post
 
 		err := rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.CreatedAt, &eachPost.Post_id, &eachPost.Filename, &eachPost.Filepath)
 		eachPost.Seperate_Categories()
@@ -120,14 +103,12 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 // ==== This function will handle post creation and insertion of the post into the database ====
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
-	Profile := getUserDetails(w, r)
+	Profile := GetUserDetails(w, r)
 
 	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
 		return
 	}
-
-
 
 	// Parse form with multipart support. This is needed when an image is provided.
 	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
@@ -154,73 +135,73 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	// Attempt to retrieve the file. If no image is uploaded, proceed without processing.
 	file, handler, err := r.FormFile("image")
 	if err != nil {
-			// Check if error is due to missing file.
-			if err == http.ErrMissingFile {
-				fmt.Println("No image uploaded, continuing without image")
-				// Leave img fields as empty
-				img.Filename = ""
-				img.Path = ""
-			} else {
-				http.Error(w, "Error retrieving file", http.StatusBadRequest)
-				return
-			}
+		// Check if error is due to missing file.
+		if err == http.ErrMissingFile {
+			fmt.Println("No image uploaded, continuing without image")
+			// Leave img fields as empty
+			img.Filename = ""
+			img.Path = ""
 		} else {
-	
-			defer file.Close()
-	
-			// Validate file size
-			if handler.Size > maxUploadSize {
-				http.Error(w, "File too large", http.StatusBadRequest)
-				return
-			}
-	
-			// Validate file type
-			if !validateFileType(file) {
-				http.Error(w, "Invalid file type", http.StatusBadRequest)
-				return
-			}
-	
-			// Generate unique filename
-			fileName, err := generateFileName()
-			if err != nil {
-				http.Error(w, "Error processing file", http.StatusInternalServerError)
-				return
-			}
-	
-			// Add original file extension
-			fileName = fileName + filepath.Ext(handler.Filename)
-	
-			fmt.Println("filename: ", fileName)
-			// Create uploads directory if it doesn't exist
-			if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
-				http.Error(w, "Error processing file", http.StatusInternalServerError)
-				return
-			}
-	
-			// Create new file
-			filePath := filepath.Join(uploadsDir, fileName)
-			dst, err := os.Create(filePath)
-			if err != nil {
-				http.Error(w, "Error saving file", http.StatusInternalServerError)
-				return
-			}
-			defer dst.Close()
-	
-			// Copy file contents
-			if _, err := io.Copy(dst, file); err != nil {
-				http.Error(w, "Error saving file", http.StatusInternalServerError)
-				return
-			}
-	
-			modifyFilename := strings.Fields((handler.Filename))
-	
-			// Save to database
-			img.Path = strings.Join(modifyFilename, "_")
-			img.Path = filePath
+			http.Error(w, "Error retrieving file", http.StatusBadRequest)
+			return
 		}
-		_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid ,filename,filepath) VALUES ($1, $2, $3, $4, $5, $6)", category, content, title, Profile.Uuid, img.Filename, img.Path)
+	} else {
+
+		defer file.Close()
+
+		// Validate file size
+		if handler.Size > maxUploadSize {
+			http.Error(w, "File too large", http.StatusBadRequest)
+			return
+		}
+
+		// Validate file type
+		if !validateFileType(file) {
+			http.Error(w, "Invalid file type", http.StatusBadRequest)
+			return
+		}
+
+		// Generate unique filename
+		fileName, err := generateFileName()
 		if err != nil {
-			os.Remove(img.Path)
+			http.Error(w, "Error processing file", http.StatusInternalServerError)
+			return
+		}
+
+		// Add original file extension
+		fileName = fileName + filepath.Ext(handler.Filename)
+
+		fmt.Println("filename: ", fileName)
+		// Create uploads directory if it doesn't exist
+		if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
+			http.Error(w, "Error processing file", http.StatusInternalServerError)
+			return
+		}
+
+		// Create new file
+		filePath := filepath.Join(uploadsDir, fileName)
+		dst, err := os.Create(filePath)
+		if err != nil {
+			http.Error(w, "Error saving file", http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
+
+		// Copy file contents
+		if _, err := io.Copy(dst, file); err != nil {
+			http.Error(w, "Error saving file", http.StatusInternalServerError)
+			return
+		}
+
+		modifyFilename := strings.Fields((handler.Filename))
+
+		// Save to database
+		img.Path = strings.Join(modifyFilename, "_")
+		img.Path = filePath
+	}
+	_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid ,filename,filepath) VALUES ($1, $2, $3, $4, $5, $6)", category, content, title, Profile.Uuid, img.Filename, img.Path)
+	if err != nil {
+		os.Remove(img.Path)
 		fmt.Println("could not insert posts", err)
 		// http.Error(w, "could not insert post", http.StatusInternalServerError)
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
@@ -309,7 +290,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
 		return
 	}
-	Profile := getUserDetails(w, r)
+	Profile := GetUserDetails(w, r)
 
 	str, _ := io.ReadAll(r.Body)
 
@@ -379,7 +360,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 // ==== This function will handle the filtration of specific user post ====
 func MyPostHandler(w http.ResponseWriter, r *http.Request) {
-	Profile := getUserDetails(w, r)
+	Profile := GetUserDetails(w, r)
 
 	rows, err := d.Db.Query("SELECT title,content,category,post_id FROM posts WHERE user_uuid = ? ", Profile.Uuid)
 	if err != nil {
@@ -425,7 +406,7 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // ==== This function will handle filtration of the posts based on the ones that have been liked ====
 func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
-	Profile := getUserDetails(w, r)
+	Profile := GetUserDetails(w, r)
 
 	likedRows, err := d.Db.Query("SELECT post_id FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", Profile.Uuid)
 	if err != nil {
@@ -493,7 +474,7 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Profile := getUserDetails(w, r)
+	Profile := GetUserDetails(w, r)
 
 	r.ParseForm()
 	comment := r.FormValue("add-comment")
@@ -536,18 +517,18 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 
 			var (
-				eachComment m.Comment
-				likeCount int
+				eachComment  m.Comment
+				likeCount    int
 				dislikeCount int
 			)
 
 			rows.Scan(&eachComment.Comment_id, &eachComment.CreatedAt, &eachComment.Content)
 			eachComment.Post_id = postID.Post_id
-			
+
 			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND comment_id = ?", eachComment.Comment_id).Scan(&likeCount)
 			if err != nil {
 				ErrorPage(err, m.ErrorsData.InternalError, w, r)
-        		return
+				return
 			}
 			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ?", eachComment.Comment_id).Scan(&dislikeCount)
 			if err != nil {
