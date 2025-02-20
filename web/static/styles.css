@@ -237,19 +237,16 @@ body.light-theme .post-footer {
 }
 
 .comments-section {
-  display: none;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-out;
+  display: none; /* Start hidden */
   width: 100%;
   margin-top: 10px;
   padding: 0 15px;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
 }
 
 .comments-section.active {
-  display: block;
-  max-height: 1000px; /* Adjust this value based on your needs */
-  transition: max-height 0.3s ease-in;
+  opacity: 1;
 }
 
 /* Individual Comment Styling */

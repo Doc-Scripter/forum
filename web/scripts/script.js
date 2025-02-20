@@ -219,20 +219,28 @@ function displayPosts(posts, category) {
     btn.addEventListener("click", (e) => {
       const postId = btn.dataset.postId;
       const commentsSection = document.getElementById(`comments-${postId}`);
-      commentsSection.classList.toggle("active");
-      fetch("/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ post_id: postId }),
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("empty", data)
-        displayComments(data,commentsSection)
-      })
-        .catch(
-          (error) => console.error(error)
-        );
+      
+      // Toggle the active class
+      if (commentsSection.classList.contains("active")) {
+        // If comments are showing, hide them
+        commentsSection.classList.remove("active");
+        commentsSection.style.display = "none";
+      } else {
+        // If comments are hidden, show them and fetch
+        commentsSection.classList.add("active");
+        commentsSection.style.display = "block";
+        
+        fetch("/comments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ post_id: postId }),
+        })
+        .then((res) => res.json())
+        .then((data) => {
+          displayComments(data, commentsSection);
+        })
+        .catch((error) => console.error(error));
+      }
     });
   });
 }
