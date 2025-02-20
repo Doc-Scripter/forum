@@ -140,6 +140,15 @@ function createCategoryElements(categories) {
   return html;
 }
 
+// Helper function to escape HTML
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
 //===============This function will display the posts=================
 function displayPosts(posts, category) {
@@ -169,11 +178,11 @@ function displayPosts(posts, category) {
       <article class="post">
         <div class="post-header"></div>
         <div>${createCategoryElements(post.category)}</div>
-        <h2 class="post-title">${post.title}</h2>
-        <p class="post-content">${post.content}</p>
+        <h2 class="post-title">${escapeHtml(post.title)}</h2>
+        <p class="post-content">${escapeHtml(post.content)}</p>
         ${post.filepath ? 
           `<div class="post-image-container">
-            <img src="/image/${post.filepath}" alt="${post.filename}" class="post-image">
+            <img src="/image/${post.filepath}" alt="${escapeHtml(post.filename)}" class="post-image">
            </div>` 
           : ``}
         <div class="post-footer">
@@ -189,7 +198,17 @@ function displayPosts(posts, category) {
             💬 ${post.comments?.length === 1 ? `${post.comments.length} Comment` : `${post.comments?.length || 0} Comments`}
           </button>
         </div>
-        <div class="comments-section" id="comments-${post.post_id}"></div>
+        <div class="comments-section" id="comments-${post.post_id}">
+          ${post.comments ? post.comments.map(comment => `
+            <div class="comment">
+              <p>${escapeHtml(comment.content)}</p>
+              <div class="comment-actions">
+                <button class="comment likeBtn">👍 ${comment.likes}</button>
+                <button class="comment dislikeBtn">👎 ${comment.dislikes}</button>
+              </div>
+            </div>
+          `).join('') : ''}
+        </div>
         <form
           class="comment-form"
           data-post-id="${post.post_id}"
