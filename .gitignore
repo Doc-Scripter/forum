@@ -4,4 +4,5 @@
 *.db
 *.sqlite
 *.prettierrc
+app.log
 *uploads

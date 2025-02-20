@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	d "forum/database"
+	e "forum/Error"
 )
 
 type ProfileData struct {
@@ -61,7 +63,7 @@ var ErrorsData = Errors{
 
 type Post struct {
 	CreatedAt time.Time `json:"created_at"`
-	Category  string    `json:"category"`
+	Categories  []string    `json:"category"`
 	Likes     int       `json:"likes"`
 	Title     string    `json:"title"`
 	Dislikes  int       `json:"dislikes"`
@@ -122,4 +124,31 @@ type Image struct {
     Filename  string    `json:"filename"`
     Path      string    `json:"path"`
     CreatedAt time.Time `json:"created_at"`
+}
+type Category_Process interface {
+	Seperate_Categories() string
+}
+
+// ===========The function will pack the categories as a slice of strings from the database==========
+func (p *Post)Seperate_Categories() Post{
+	var (
+		combined_categories string
+		categories []string
+	)
+
+    row, err := d.Db.Query("SELECT category FROM posts")
+    if err != nil {
+		e.LogError(err)
+        return *p
+    }
+	for row.Next() {
+		err = row.Scan(&combined_categories)
+		if err != nil {
+			e.LogError(err)
+			return Post{}
+		}
+		categories = strings.Split(combined_categories, ", ")
+		p.Categories = categories
+	}
+    return *p
 }
