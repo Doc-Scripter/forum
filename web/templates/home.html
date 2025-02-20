@@ -21,17 +21,23 @@
 
     <div class="filters glass-effect">
       <div class="filter-options">
-        <button class="filter-btn active glass-btn" data-filter="allPosts">All Posts</button>
-        <button class="filter-btn glass-btn" data-filter="created">My Posts</button>
-        <button class="filter-btn glass-btn" data-filter="liked">Favorites</button>
+        <button class="filter-btn active glass-btn" data-filter="allPosts">
+          All Posts
+        </button>
+        <button class="filter-btn glass-btn" data-filter="created">
+          My Posts
+        </button>
+        <button class="filter-btn glass-btn" data-filter="liked">
+          Favorites
+        </button>
         <select id="category-filter" class="glass-select">
           <option value="all">All Categories</option>
           <option value="tech">Technology</option>
           <option value="health">Health</option>
           <option value="math">Math</option>
           <option value="games">Games</option>
-              <option value="science">Science</option>
-              <option value="religion">Religion</option>
+          <option value="science">Science</option>
+          <option value="religion">Religion</option>
           <option value="education">Education</option>
           <option value="politics">Politics</option>
           <option value="fashion">Fashion</option>
@@ -50,19 +56,20 @@
       <div class="profile">
         <div class="avatar" id="profile-Name">{{.Initials}}</div>
         <p class="username" id="username">{{.Username}}</p>
-        <!-- <p class="email">{{.Email}}</p>  for privacy--> 
+        <!-- <p class="email">{{.Email}}</p>  for privacy-->
       </div>
-      <div class="logout-div">
-
-        <button 
-        class="logout-btn" 
-        onclick="window.location.href='/logout'"
-        onmouseover="this.style.transform='translateY(-5px)'"
-        onmouseout="this.style.transform='translateY(0)'"
-        >
-        Logout
-      </button>
-    </div>
+      <form action="/logout" method="post">
+        <div class="logout-div">
+          <button
+            type="submit"
+            class="logout-btn"
+            onmouseover="this.style.transform='translateY(-5px)'"
+            onmouseout="this.style.transform='translateY(0)'"
+          >
+            Logout
+          </button>
+        </div>
+      </form>
     </div>
 
     <main class="posts-container">
@@ -108,29 +115,78 @@
             Create Post
           </button>
         </form> -->
-        <form class="post-form" action="/create-post" method="POST">
-          <textarea name="title" placeholder="Post Title" required rows="1"></textarea>
-        
-          <textarea name="content" placeholder="Post Content" required rows="5"></textarea>
-        
+        <form class="post-form" action="/create-post" method="POST" enctype="multipart/form-data">
+          <textarea
+            name="title"
+            placeholder="Post Title"
+            required
+            rows="1"
+          ></textarea>
+
+          <textarea
+            name="content"
+            placeholder="Post Content"
+            required
+            rows="5"
+          ></textarea>
+          <div class="image-upload">
+            <label for="image">Upload Image</label>
+            <input type="file" name="image" id="image" accept="image/*" >
+            <div id="image-preview"></div>
+          </div> 
+
           <!-- <p>Select up to 3 categories:</p> -->
           <div class="checkbox-group">
-            <label class="category-option"><input type="checkbox" name="category" value="tech"> Technology</label>
-            <label class="category-option"><input type="checkbox" name="category" value="health"> Health</label>
-            <label class="category-option"><input type="checkbox" name="category" value="games"> Games</label>
-            <label class="category-option"><input type="checkbox" name="category" value="religion"> Religion</label>
-            <label class="category-option"><input type="checkbox" name="category" value="math"> Math</label>
-            <label class="category-option"><input type="checkbox" name="category" value="education"> Education</label>
-            <label class="category-option"><input type="checkbox" name="category" value="science"> Science</label>
-            <label class="category-option"><input type="checkbox" name="category" value="politics"> Politics</label>
-            <label class="category-option"><input type="checkbox" name="category" value="fashion"> Fashion</label>
-            <label class="category-option"><input type="checkbox" name="category" value="lifestyle"> Lifestyle</label>
-            <label class="category-option"><input type="checkbox" name="category" value="sports"> Sports</label>
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="tech" />
+              Technology</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="health" />
+              Health</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="games" />
+              Games</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="religion" />
+              Religion</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="math" />
+              Math</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="education" />
+              Education</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="science" />
+              Science</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="politics" />
+              Politics</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="fashion" />
+              Fashion</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="lifestyle" />
+              Lifestyle</label
+            >
+            <label class="category-option"
+              ><input type="checkbox" name="category" value="sports" />
+              Sports</label
+            >
           </div>
-        
-          <button type="submit" style="font-family: 'Inkut Antiqua'">Create Post</button>
+
+          <button type="submit" style="font-family: 'Inkut Antiqua'">
+            Create Post
+          </button>
         </form>
-        
       </div>
     </div>
     <!-- <script>
@@ -157,15 +213,30 @@
     </script> -->
     <script>
       // Prevent form submission when "Enter" is pressed inside the textareas
-      document.querySelector('form').addEventListener('keydown', function(event) {
-        if (event.key === 'Enter' && event.target.tagName === 'TEXTAREA') {
-          event.preventDefault();  // Prevents the form from submitting
-        }
-      });
+      document
+        .querySelector("form")
+        .addEventListener("keydown", function (event) {
+          if (event.key === "Enter" && event.target.tagName === "TEXTAREA") {
+            event.preventDefault(); // Prevents the form from submitting
+          }
+        });
     </script>
-        
+
     <!-- <script src="/web/scripts/generatePosts.js"></script> -->
     <script src="/web/scripts/script.js"></script>
     <script src="/web/scripts/sidebar.js"></script>
+    <!-- <script src="/web/scripts/logout.js"></script> -->
+    <script>
+      (function () {
+        // Push a new state to the history
+        window.history.pushState({}, "", window.location.href);
+
+        // Add an event listener for the popstate event
+        window.addEventListener("popstate", function () {
+          // Redirect to the login page or show a session expired message
+          window.location.href = "/";
+        });
+      })();
+    </script>
   </body>
 </html>

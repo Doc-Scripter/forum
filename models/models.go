@@ -1,9 +1,11 @@
 package models
 
 import (
-	"time"
-	"strings"
 	"net/http"
+	"strings"
+	"time"
+	d "forum/database"
+	e "forum/Error"
 )
 
 type ProfileData struct {
@@ -52,7 +54,7 @@ var ErrorsData = Errors{
 	},
 
 	MethodNotAllowed: ErrorData{
-		Msg:  "The HTTP method you used is not allowed for this route",
+		Msg:  "The HTTP method used is not accessible",
 		Code: http.StatusMethodNotAllowed,
 	},
 }
@@ -61,7 +63,7 @@ var ErrorsData = Errors{
 
 type Post struct {
 	CreatedAt time.Time `json:"created_at"`
-	Category  string    `json:"category"`
+	Categories  []string    `json:"category"`
 	Likes     int       `json:"likes"`
 	Title     string    `json:"title"`
 	Dislikes  int       `json:"dislikes"`
@@ -70,6 +72,8 @@ type Post struct {
 	Content   string    `json:"content"`
 	User_uuid string    `json:"user_uuid"`
 	Post_id   int       `json:"post_id"`
+	Filepath string     `json:"filepath"`
+	Filename string  `json:"filename"`
 	Owner         string
 	OwnerInitials string
 }
@@ -113,3 +117,38 @@ func (p *ProfileData) GenerateInitials() string {
 	return strings.ToUpper(firstInitial)
 }
 
+type Image struct {
+    ImageID   string     `json:"image_id"`
+    UserID    string     `json:"user_id"`
+    PostID    string     `json:"post_id"`
+    Filename  string    `json:"filename"`
+    Path      string    `json:"path"`
+    CreatedAt time.Time `json:"created_at"`
+}
+type Category_Process interface {
+	Seperate_Categories() string
+}
+
+// ===========The function will pack the categories as a slice of strings from the database==========
+func (p *Post)Seperate_Categories() Post{
+	var (
+		combined_categories string
+		categories []string
+	)
+
+    row, err := d.Db.Query("SELECT category FROM posts")
+    if err != nil {
+		e.LogError(err)
+        return *p
+    }
+	for row.Next() {
+		err = row.Scan(&combined_categories)
+		if err != nil {
+			e.LogError(err)
+			return Post{}
+		}
+		categories = strings.Split(combined_categories, ", ")
+		p.Categories = categories
+	}
+    return *p
+}

@@ -1,17 +1,19 @@
 package handlers
 
 import (
-	"database/sql"
-	"fmt"
-	"net/http"
 	"time"
+	"strings"
+	"net/http"
+	"database/sql"
 
+	e "forum/Error"
+	m "forum/models"
 	d "forum/database"
 
 	"github.com/gofrs/uuid"
 )
 
-// User struct to store user details
+//=======User struct to store user details===
 type User struct {
 	ID       int
 	UUID     string
@@ -20,67 +22,62 @@ type User struct {
 	Password string
 }
 
-// =========Handle user registration========================
+// ==== The handler will perform registration on submission of a form from the frontend. Register a new user and generate them a cookie ====
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
 		return
 	}
 
-	// Parse form and log the raw data
 	if err := r.ParseForm(); err != nil {
-		fmt.Println("Error parsing form:", err)
-		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Unable to process registration request"))
+		e.LogError(err)
 		return
 	}
-
-	// Log the raw form data
-	fmt.Printf("Raw form data: %+v\n", r.Form)
 
 	user := User{
-		Username: r.FormValue("username"),
-		Email:    r.FormValue("email"),
-		Password: r.FormValue("password"),
+		Username: strings.TrimSpace(r.FormValue("username")),
+		Email:    strings.TrimSpace(r.FormValue("email")),
+		Password: strings.TrimSpace(r.FormValue("password")),
 	}
 
-	// Log the extracted user data
-	fmt.Printf("Extracted user data - Username: %s, Email: %s, Password: [REDACTED]\n", 
-		user.Username, user.Email)
-
-	fmt.Println("Username:"+user.Username+" Email:"+user.Email+" Password:"+user.Password)
-
-	// Validate input fields
 	if user.Username == "" || user.Email == "" || user.Password == "" {
-		http.Error(w, "All fields are required", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Leading and trailing spaces are not accepted"))
+		http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
 
 	if !IsValidEmail(user.Email) {
-		http.Error(w, "Invalid email format", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Invalid email address"))
+		http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
 
-	// Check if username or email already exists
 	if credentialExists(d.Db, user.Username) || credentialExists(d.Db, user.Email) {
-		http.Error(w, "Username or email already in use", http.StatusConflict)
-		http.Redirect(w, r, "/register", http.StatusFound)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Username or email already in use"))
+		http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
 
 	if err = user.HashPassword(); err != nil {
-		fmt.Fprint(w, "Failed to hash password", http.StatusInternalServerError)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
 
-	// generate a UUID for the user
+	// generate a UUID for the user using the google/uuid package
 	// UUID := uuid.New().String()
 	u, err := uuid.NewV4()
 	if err != nil {
-		fmt.Println("Error generating UUID:", err)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
+
 	UUID := u.String()
 	expiresAt := time.Now().Add(24 * time.Hour)
 
@@ -88,25 +85,23 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	query := `INSERT INTO users (uuid, username, email, password) VALUES (?, ?, ?, ?)`
 	_, err = d.Db.Exec(query, UUID, user.Username, user.Email, user.Password)
 	if err != nil {
-		http.Error(w, "Failed to register user", http.StatusInternalServerError)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
 
 	var userID string
 	err = d.Db.QueryRow("SELECT id FROM users WHERE email = ?", user.Email).Scan(&userID)
 	if err == sql.ErrNoRows {
-		fmt.Println(err)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 	} else if err != nil {
 
-		http.Error(w, "Database error", http.StatusInternalServerError)
-		fmt.Println(err)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 	}
 
-	// Store session in the database
-	// _, err = d.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", userID, UUID, expiresAt)
+	//grant a session on registration
 	_, err = d.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", userID, UUID, expiresAt)
 	if err != nil {
-		http.Error(w, "Error creating session", http.StatusInternalServerError)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
 
