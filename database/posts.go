@@ -23,8 +23,6 @@ func CreatePostsTable(db *sql.DB) error {
         filepath TEXT DEFAULT '',
         comments INTEGER DEFAULT 0,
         category  TEXT NOT NULL,
-		likes INTEGER DEFAULT 0,
-        dislikes INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_uuid) REFERENCES users(uuid)
     );`
