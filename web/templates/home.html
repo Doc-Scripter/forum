@@ -77,42 +77,16 @@
           <h2 style="font-family: 'Inkut Antiqua'">Create New Post</h2>
           <button class="close-modal"></button>
         </div>
-        <!-- <form class="post-form" action="/create-post" method="POST">
-          <textarea
-            name="title"
-            placeholder="Post Title"
-            required
-            rows="1"
-          ></textarea>
-
-          <textarea
-            name="content"
-            placeholder="Post Content"
-            required
-            rows="5"
-          ></textarea>
-          <select name="category" required>
-            <option value="tech">Technology</option>
-            <option value="health">Health</option>
-            <option value="games">Games</option>
-            <option value="religion">Religion</option>
-              <option value="math">Math</option>
-              <option value="education">Education</option>
-              <option value="science">Science</option>
-            <option value="politics">Politics</option>
-            <option value="fashion">Fashion</option>
-            <option value="lifestyle">Lifestyle</option>
-            <option value="sports">Sports</option>
-          </select>
-          <button type="submit" style="font-family: 'Inkut Antiqua'">
-            Create Post
-          </button>
-        </form> -->
-        <form class="post-form" action="/create-post" method="POST">
+       
+        <form class="post-form" action="/create-post" method="POST" enctype="multipart/form-data">
           <textarea name="title" placeholder="Post Title" required rows="1"></textarea>
         
           <textarea name="content" placeholder="Post Content" required rows="5"></textarea>
-        
+          <div class="image-upload">
+            <label for="image">Upload Image</label>
+            <input type="file" name="image" id="image" accept="image/*" >
+            <div id="image-preview"></div>
+          </div> 
           <!-- <p>Select up to 3 categories:</p> -->
           <div class="checkbox-group">
             <label class="category-option"><input type="checkbox" name="category" value="tech"> Technology</label>
@@ -167,5 +141,6 @@
     <!-- <script src="/web/scripts/generatePosts.js"></script> -->
     <script src="/web/scripts/script.js"></script>
     <script src="/web/scripts/sidebar.js"></script>
+    <script src="/web/scripts/image.js"></script>
   </body>
 </html>

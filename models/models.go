@@ -1,9 +1,9 @@
 package models
 
 import (
-	"time"
-	"strings"
 	"net/http"
+	"strings"
+	"time"
 )
 
 type ProfileData struct {
@@ -70,6 +70,8 @@ type Post struct {
 	Content   string    `json:"content"`
 	User_uuid string    `json:"user_uuid"`
 	Post_id   int       `json:"post_id"`
+	Filepath string     `json:"filepath"`
+	Filename string  `json:"filename"`
 	Owner         string
 	OwnerInitials string
 }
@@ -113,3 +115,11 @@ func (p *ProfileData) GenerateInitials() string {
 	return strings.ToUpper(firstInitial)
 }
 
+type Image struct {
+    ImageID   string     `json:"image_id"`
+    UserID    string     `json:"user_id"`
+    PostID    string     `json:"post_id"`
+    Filename  string    `json:"filename"`
+    Path      string    `json:"path"`
+    CreatedAt time.Time `json:"created_at"`
+}
