@@ -14,8 +14,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	e "forum/Error"
-
 	m "forum/models"
 
 	d "forum/database"
@@ -484,13 +482,6 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	comment := strings.TrimSpace(r.FormValue("add-comment"))
 	post_id := r.FormValue("post_id")
-
-	if comment == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("A comment is required"))
-		e.LogError(fmt.Errorf("user inserted a whitespace"))
-		return
-	}
 
 	_, err := d.Db.Exec("INSERT INTO comments (user_uuid,post_id,content) VALUES (?,?,?)", Profile.Uuid, post_id, comment)
 	if err != nil {
