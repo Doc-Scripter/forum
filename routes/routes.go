@@ -8,9 +8,10 @@ import(
 func Routers() (*http.ServeMux, error) {
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/image/web/uploads/", handler.ImageHandler)
 	fileServer := http.FileServer(http.Dir("web/static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
-
+	
 	scriptServer := http.FileServer(http.Dir("web/scripts/"))
     mux.Handle("/web/scripts/", http.StripPrefix("/web/scripts/", scriptServer))
 
