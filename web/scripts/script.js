@@ -229,7 +229,7 @@ function displayComments(comments, element) {
     element.innerHTML = comments
       .map(
         (comment) => `
-  <div class="comment" style="color: black;"><p>${escapeHtml(comment.content)}</p></div>
+  <div class="comment" "><p>${escapeHtml(comment.content)}</p></div>
     <div class="comment-actions">
     <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
       👍${comment.likes}
