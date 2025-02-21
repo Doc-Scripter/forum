@@ -241,7 +241,6 @@ body.light-theme .post-footer {
   display: none; /* Start hidden */
   width: 100%;
   margin-top: 10px;
-  color: black;
   padding: 0 15px;
   transition: opacity 0.3s ease-in-out;
   opacity: 0;
@@ -265,6 +264,13 @@ body.light-theme .post-footer {
 .comment p {
   margin: 0;
   color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+body.light-theme .comment p {
+  margin: 0;
+  color: #000000;
   font-size: 0.9rem;
   line-height: 1.4;
 }
@@ -293,7 +299,7 @@ body.light-theme .post-footer {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.comment-form button[type="submit"] {
+.comment-submit {
   background-color: #2196F3;  /* Blue color */
   color: white !important;    /* Force white text */
   padding: 8px 16px;
@@ -304,20 +310,16 @@ body.light-theme .post-footer {
   transition: background-color 0.3s ease;
 }
 
-.comment-form button[type="submit"]:hover {
+.light-theme .comment-submit,
+.dark-theme .comment-submit {
   background-color: #1976D2;  /* Darker blue on hover */
 }
 
 /* Ensure the button stays blue in both themes */
-.light-theme .comment-form button[type="submit"],
-.dark-theme .comment-form button[type="submit"] {
+.light-theme .comment-submit,
+.dark-theme .comment-submit {
   background-color: #2196F3;
   color: white !important;
-}
-
-.light-theme .comment-form button[type="submit"]:hover,
-.dark-theme .comment-form button[type="submit"]:hover {
-  background-color: #1976D2;
 }
 
 /* Comment Actions Styling */
