@@ -31,7 +31,7 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	SetSessionCookie(w, "", time.Now().Add(-time.Hour))
-
+	defer d.Db.Close()
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
