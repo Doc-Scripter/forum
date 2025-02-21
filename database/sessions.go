@@ -9,7 +9,7 @@ import (
 func CreateSessionsTable(db *sql.DB) error {
 
     if db == nil {
-        defer db.Close()
+    
         return fmt.Errorf("nil database connection")
     }
 
