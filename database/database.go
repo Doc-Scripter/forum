@@ -9,11 +9,12 @@ import (
 
 var Db *sql.DB
 
-// ==== This function will starting the connection to the database=============
-func StartDbConnection() error {
+// startDbConnectionWithPath establishes a database connection with a specified path
+// This is a helper function that can be used for testing with different paths
+func startDbConnectionWithCustomPath(dbPath string) error {
 	var err error
 
-	Db, err = sql.Open("sqlite3", "forum.db")
+	Db, err = sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return err
 	}
@@ -39,6 +40,16 @@ func StartDbConnection() error {
 		return err
 	}
 	if err = CreateCommentsTable(Db); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ==== This function will start the connection to the database=============
+func StartDbConnection() error {
+	err := startDbConnectionWithCustomPath("forum.db")
+	if err != nil {
 		return err
 	}
 	
