@@ -4,4 +4,4 @@
 *.sqlite
 *.prettierrc
 app.log
-*uploads
+*.db
