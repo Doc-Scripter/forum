@@ -1399,3 +1399,13 @@ html {
     width: 90%;
   }
 }
+
+
+.comments-section.hidden {
+  display: none;
+}
+
+.comments-section {
+  display: block;
+  margin-top: 10px;
+}

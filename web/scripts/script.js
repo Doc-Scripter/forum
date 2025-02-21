@@ -170,8 +170,7 @@ function displayPosts(posts, category) {
             }
           </button>
         </div>
-        <div class="comments-section" id="comments-${post.post_id}">
-
+        <div class="comments-section hidden" id="comments-${post.post_id}">
         </div>
 
           <form
@@ -202,17 +201,24 @@ function displayPosts(posts, category) {
     btn.addEventListener("click", (e) => {
       const postId = btn.dataset.postId;
       const commentsSection = document.getElementById(`comments-${postId}`);
-      commentsSection.classList.toggle("active");
-      fetch("/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ post_id: postId }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          displayComments(data, commentsSection);
+      
+      // Toggle visibility using a CSS class
+      if (commentsSection.classList.contains("hidden")) {
+        commentsSection.classList.remove("hidden");
+        // Only fetch comments when opening the section
+        fetch("/comments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ post_id: postId }),
         })
-        .catch((error) => console.error(error));
+          .then((res) => res.json())
+          .then((data) => {
+            displayComments(data, commentsSection);
+          })
+          .catch((error) => console.error(error));
+      } else {
+        commentsSection.classList.add("hidden");
+      }
     });
   });
 }
@@ -223,7 +229,7 @@ function displayComments(comments, element) {
     element.innerHTML = comments
       .map(
         (comment) => `
-  <div class="comment"><p>${escapeHtml(comment.content)}</p></div>
+  <div class="comment" style="color: black;"><p>${escapeHtml(comment.content)}</p></div>
     <div class="comment-actions">
     <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
       👍${comment.likes}
