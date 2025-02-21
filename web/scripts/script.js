@@ -57,6 +57,7 @@ postForm.addEventListener("submit", (e) => {
   alert("Post submitted successfully!");
 });
 
+// ==== This is the fnuction that will be fetching posts ====
 function fetchComments(element, commentId) {
   fetch("/comments", {
     method: "POST",
@@ -72,22 +73,7 @@ function fetchComments(element, commentId) {
     });
 }
 
-function fetchComments(element, commentId) {
-  fetch("/comments", {
-    method: "POST",
-    content: "application/json",
-    body: JSON.stringify({ comment_id: commentId }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      displayComments(data, element);
-    })
-    .catch((error) => {
-      console.error("Error fetching comments:", error);
-    });
-}
-
-//=================Function to create HTML for categories from an array============
+//===== Function to create HTML for categories from an array ====
 function createCategoryElements(categories) {
   if (!Array.isArray(categories) || categories.length === 0) {
     return "";
@@ -106,6 +92,16 @@ function createCategoryElements(categories) {
   html += "</div>";
 
   return html;
+}
+
+// === Helper function to escape HTML ===
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 //====== Function to fetch posts from the backend =====
@@ -149,8 +145,8 @@ function displayPosts(posts, category) {
       <article class="post">
       <div class="post-header"></div>
         <div> ${createCategoryElements(post.category)} </div>
-      <h2 class="post-title">${post.title}</h2>
-      <p class="post-content">${post.content}</p>
+      <h2 class="post-title">${escapeHtml(post.title)}</h2>
+      <p class="post-content">${escapeHtml(post.content)}</p>
       ${
         post.filepath
           ? `<img src="/image/${post.filepath}" alt="${post.filename}">`
@@ -227,7 +223,7 @@ function displayComments(comments, element) {
     element.innerHTML = comments
       .map(
         (comment) => `
-  <div class="comment"><p>${comment.content}</p></div>
+  <div class="comment"><p>${escapeHtml(comment.content)}</p></div>
     <div class="comment-actions">
     <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
       👍${comment.likes}
@@ -243,8 +239,7 @@ function displayComments(comments, element) {
   }
 }
 
-
-//==========================comment actions====================
+//===== comment actions =========
 function attachCommentActionListeners(container) {
   container.querySelectorAll(".comment-actions").forEach((btn) => {
     btn.addEventListener("click", (e) => {
@@ -320,7 +315,7 @@ categoryFilter.addEventListener("change", (e) => {
   fetchPosts(route);
 });
 
-//===================Theme Toggle Functionality====================
+//==== Theme Toggle Functionality =====
 document.addEventListener("DOMContentLoaded", () => {
   const themeToggle = document.getElementById("theme-toggle");
 
@@ -359,7 +354,7 @@ function updateThemeIcon() {
   moonIcon.style.display = isLightTheme ? "block" : "none";
 }
 
-//===========for the checkboxes===================
+//====== For the checkboxes===================
 const checkboxGroup = document.querySelector(".checkbox-group");
 const myDivs = document.querySelectorAll(".category-option");
 
