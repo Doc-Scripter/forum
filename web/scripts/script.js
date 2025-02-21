@@ -361,12 +361,12 @@ function displayComments(comments, element) {
       <div class="comment"><p>${escapeHTML(comment.content)}</p></div>
       <div class="comment-actions">
       <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
-      👍${comment.likes}
+      👍 ${comment.likes}
       </button>
       <button class="comment dislikeBtn" data-comment-id="${
         comment.comment_id
       }">
-      👎${comment.dislikes}
+      👎 ${comment.dislikes}
       </button>
       </div>
       `
