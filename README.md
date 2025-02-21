@@ -11,66 +11,141 @@
 - [License](#license)
 
 
-# forum
+# FORUM
 
-# Overview
-This project is a web forum that allows users to communicate with each other, associate categories to posts, like and dislike posts and comments, and filter posts. The project uses SQLite as the database management system and is built using Go.
+## Overview
+This project involves creating a web forum that facilitates user communication through posts and comments. The forum supports features like associating categories with posts, liking and disliking posts and comments, and filtering posts based on various criteria. The project utilizes SQLite for database management and Docker for containerization.
 
-# Features
-User registration and login
-Post creation and commenting
-Category association with posts
-Liking and disliking posts and comments
-Filtering posts by categories, created posts, and liked posts
-Error handling for website errors and technical errors
-Use of Docker for containerization
+## Features
+* User Authentication: Users can register and log in. Sessions are managed using cookies with expiration dates.
 
-# Requirements
-Go 1.17 or higher
-SQLite 3.36 or higher
-Docker 20.10 or higher
-# Installation
-Clone the repository: git clone https://github.com/your-username/forum-project.git
-Change into the project directory: cd forum-project
-Build the Docker image: docker build -t forum-project .
-Run the Docker container: docker run -p 8080:8080 forum-project
-# Usage
-Open a web browser and navigate to http://localhost:8080
-Register as a new user by filling out the registration form
-Login to the forum using your registered credentials
-Create a new post by filling out the post form
-Associate categories with your post by selecting from the available categories
-Like or dislike posts and comments by clicking on the like or dislike button
-Filter posts by categories, created posts, or liked posts using the filter dropdown menu
+* Post and Comment Management: Registered users can create posts and comments. Posts can be associated with one or more categories.
 
-# API Endpoints
-/register: Register a new user
-/login: Login to the forum
-/posts: Create a new post
-/posts/{id}: Get a post by ID
-/posts/{id}/comments: Get comments for a post
-/posts/{id}/like: Like a post
-/posts/{id}/dislike: Dislike a post
-/categories: Get all categories
-/categories/{id}: Get a category by ID
-/filter: Filter posts by categories, created posts, or liked posts
+* Likes and Dislikes: Registered users can like or dislike posts and comments. The counts are visible to all users.
 
-# Database Schema
-The database schema is defined in the schema.sql file and consists of the following tables:
+* Filtering: Users can filter posts by categories, created posts, and liked posts.
 
-users: Stores user information
-posts: Stores post information
-comments: Stores comment information
-categories: Stores category information
-post_categories: Stores the association between posts and categories
-likes: Stores like information for posts and comments
-dislikes: Stores dislike information for posts and comments
+## Technologies Used
+
+* Backend: Go (Golang)
+
+* Database: SQLite
+
+* Containerization: Docker
+
+* Authentication: UUID (Bonus), bcrypt for password encryption (Bonus)
+
+## Getting Started
+## Requirements
+* Go 1.17 or higher
+* SQLite 3.36 or higher
+* Docker 20.10 or higher
+
+## Installation
+1. Clone the repository: 
+```bash
+git clone https://learn.zone01kisumu.ke/git/shaokoth/forum
+cd forum
+```
+
+2. Build the Docker image: 
+```bash
+docker build -t forum
+```
+
+3. Run the Docker Container
+```bash
+docker run -p 33333:33333 web-forum
+```
+
+4. Access the Forum
+Open your web browser and navigate to 
+```bash
+http://localhost:33333
+```
+## Database Schema
+### Tables
+* Users
+    - id (Primary Key)
+    - uuid (Unique)
+    - username (Unique)
+    - email (Unique)
+    - password (Encrypted)
+* Posts
+    - post_id (Primary Key)
+    - user_uuid (Foreign Key to Users)
+    - title
+    - filename
+    - content
+    - filepath
+    - comments
+    - category
+    - created_at
+* Comments
+    - id (Primary Key)
+    - post_id (Foreign Key to Posts)
+    - user_uuid (Foreign Key to Users)
+    - content
+    - likes
+    - dislikes
+    - created_at
+* LikesDislikes
+    - id (Primary Key)
+    - post_id (Foreign Key to Posts)
+    - comment_id (Foreign Key to comments)
+    - user_uuid (Foreign Key to Users)
+    - like_dislike
+* Sessions
+    - id (Primary Key)
+    - user_id (Foreign Key to users(id))
+    - session_token (Unique)
+    - expires_at
+
+## API Endpoints
+## Authentication
+* POST/register
+    - Registers a new user.
+* POST/login
+    - Logs in a user and creates a session.
+* POST /logout
+    - logs out a user and deletes a session.
+
+## Posts
+* GET /posts
+    - Retrieves all posts.
+
+* POST /create-post
+    - Creates a new post.
+* GET /favorites
+    - Displays liked posts
+
+## Comments
+* POST /addcomment
+    - Adds a comment to a post.
+* GET /comments
+    - Display all comments for a specific post.
+
+## LikesDislikes
+* POST /likes
+    - Likes a post.
+* POST /dislikes
+    - Dislikes a post.
+* POST /likesComment
+    - Likes a comment.
+* POST /dislikeComment
+    - Dislikes a comment.
+
+## Error Handling
+The application handles various HTTP status errors and technical errors gracefully. Custom error messages are provided for better debugging and user feedback.
 
 # Testing
 Unit tests are written using the Go testing framework and can be run using the go test command.
+```bash
+go test ./...
+```
 
-# Docker
-The project uses Docker for containerization and can be built and run using the docker build and docker run commands.
+## Contributing
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.
 
 # License
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
