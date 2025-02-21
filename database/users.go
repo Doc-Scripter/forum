@@ -2,10 +2,18 @@ package database
 
 import (
     "database/sql"
+    "fmt"
+
     _ "github.com/mattn/go-sqlite3"
 )
 
 func CreateUsersTable(db *sql.DB) error {
+
+    if db == nil {
+    
+        return fmt.Errorf("nil database connection")
+    }
+
     query := `
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
