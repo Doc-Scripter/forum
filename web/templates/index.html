@@ -1,59 +1,77 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Forum</title>
-    <link
-      href="https://fonts.googleapis.com/css?family=Inknut+Antiqua&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/static/styles.css" />
-  </head>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Forum</title>
+        <link
+            href="https://fonts.googleapis.com/css?family=Inknut+Antiqua&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/static/styles.css" />
+    </head>
 
-  <body class="gradient-background light-theme">
-    <div class="header glass-effect">
-      <h1>FORUM</h1>
-      <div class="header-controls">
-        <div class="user-icon">
-          <a href="/login"><img style="background-color: rgb(60, 128, 229);" src="/static/images/login.png" alt="Login" class="glass-effect" /></a>
-          <a href="/register"><img src="/static/images/profile.png" alt="User" class="glass-effect" /></a>
+    <body class="gradient-background light-theme">
+        <div class="header glass-effect">
+            <a href="/home" style="text-decoration: none; color: inherit"
+                ><h1>FORUM</h1></a
+            >
+            <div class="header-controls">
+                <div class="user-icon">
+                    <a href="/login"
+                        ><img
+                            style="background-color: rgb(60, 128, 229)"
+                            src="/static/images/login.png"
+                            alt="Login"
+                            class="glass-effect"
+                    /></a>
+                    <a href="/register"
+                        ><img
+                            src="/static/images/profile.png"
+                            alt="User"
+                            class="glass-effect"
+                    /></a>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <div class="filters glass-effect">
-      <div class="filter-options">
-        <button class="filter-btn active glass-btn" data-filter="allPosts">All Posts</button>
-        <select id="category-filter" class="glass-select">
-          <option value="all">All Categories</option>
-          <option value="tech">Technology</option>
-          <option value="health">Health</option>
-          <option value="math">Math</option>
-          <option value="games">Games</option>
-          <option value="science">Science</option>
-          <option value="religion">Religion</option>
-          <option value="education">Education</option>
-          <option value="politics">Politics</option>
-          <option value="fashion">Fashion</option>
-          <option value="lifestyle">Lifestyle</option>
-          <option value="sports">Sports</option>
-        </select>
-      </div>
-      <button id="theme-toggle" class="theme-toggle glass-btn">
-        <span class="moon">🌙</span>
-        <span class="sun">☀️</span>
-      </button>
-    </div>
+        <div class="filters glass-effect">
+            <div class="filter-options">
+                <button
+                    class="filter-btn active glass-btn"
+                    data-filter="allPosts"
+                >
+                    All Posts
+                </button>
+                <select id="category-filter" class="glass-select">
+                    <option value="all">All Categories</option>
+                    <option value="tech">Technology</option>
+                    <option value="health">Health</option>
+                    <option value="math">Math</option>
+                    <option value="games">Games</option>
+                    <option value="science">Science</option>
+                    <option value="religion">Religion</option>
+                    <option value="education">Education</option>
+                    <option value="politics">Politics</option>
+                    <option value="fashion">Fashion</option>
+                    <option value="lifestyle">Lifestyle</option>
+                    <option value="sports">Sports</option>
+                </select>
+            </div>
+            <button id="theme-toggle" class="theme-toggle glass-btn">
+                <span class="moon">🌙</span>
+                <span class="sun">☀️</span>
+            </button>
+        </div>
 
-    <main class="posts-container">
-      <!-- Posts will be dynamically inserted here -->
-      <!-- <div class="post-title">
+        <main class="posts-container">
+            <!-- Posts will be dynamically inserted here -->
+            <!-- <div class="post-title">
           <a href="/post?id={{.Post_id}}" style="text-decoration: none; color: inherit;">{{.Title}}</a>
       </div> -->
-    </main>
+        </main>
 
-    <!-- <script src="/web/scripts/generatePosts.js"></script> -->
-    <script src="/web/scripts/index_script.js"></script>
-  </body>
+        <!-- <script src="/web/scripts/generatePosts.js"></script> -->
+        <script src="/web/scripts/index_script.js"></script>
+    </body>
 </html>
