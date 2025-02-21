@@ -41,7 +41,7 @@ func StartDbConnection() error {
 	if err = CreateCommentsTable(Db); err != nil {
 		return err
 	}
-	
+
 	fmt.Println("Connected to the SQLite database!")
 	return nil
 }

@@ -1,19 +1,20 @@
 package handlers
 
 import (
-	"time"
-	"strings"
-	"net/http"
 	"database/sql"
+	"net/http"
+	"strings"
+	"time"
 
 	e "forum/Error"
-	m "forum/models"
 	d "forum/database"
+	m "forum/models"
+	u "forum/utils"
 
 	"github.com/gofrs/uuid"
 )
 
-//=======User struct to store user details===
+// =======User struct to store user details===
 type User struct {
 	ID       int
 	UUID     string
@@ -38,34 +39,32 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := User{
-		Username: strings.TrimSpace(r.FormValue("username")),
-		Email:    strings.TrimSpace(r.FormValue("email")),
-		Password: strings.TrimSpace(r.FormValue("password")),
-	}
+	m.User.Username = strings.TrimSpace(r.FormValue("username"))
+	m.User.Email = strings.TrimSpace(r.FormValue("email"))
+	m.User.Password = strings.TrimSpace(r.FormValue("password"))
 
-	if user.Username == "" || user.Email == "" || user.Password == "" {
+	if m.User.Username == "" || m.User.Email == "" || m.User.Password == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Leading and trailing spaces are not accepted"))
 		http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
 
-	if !IsValidEmail(user.Email) {
+	if !u.IsValidEmail(m.User.Email) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Invalid email address"))
 		http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
 
-	if credentialExists(d.Db, user.Username) || credentialExists(d.Db, user.Email) {
+	if u.CredentialExists(d.Db, m.User.Username) || u.CredentialExists(d.Db, m.User.Email) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Username or email already in use"))
 		http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
 
-	if err = user.HashPassword(); err != nil {
+	if err = m.User.HashPassword(); err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -83,19 +82,21 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	// Insert new user into the database
 	query := `INSERT INTO users (uuid, username, email, password) VALUES (?, ?, ?, ?)`
-	_, err = d.Db.Exec(query, UUID, user.Username, user.Email, user.Password)
+	_, err = d.Db.Exec(query, UUID, m.User.Username, m.User.Email, m.User.Password)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
 
 	var userID string
-	err = d.Db.QueryRow("SELECT id FROM users WHERE email = ?", user.Email).Scan(&userID)
+	err = d.Db.QueryRow("SELECT id FROM users WHERE email = ?", m.User.Email).Scan(&userID)
 	if err == sql.ErrNoRows {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
 	} else if err != nil {
 
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
 	}
 
 	//grant a session on registration

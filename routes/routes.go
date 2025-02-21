@@ -1,8 +1,8 @@
 package routers
 
 import (
-	"net/http"
 	handler "forum/handlers"
+	"net/http"
 )
 
 func Routers() (*http.ServeMux, error) {

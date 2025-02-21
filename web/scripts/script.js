@@ -124,7 +124,7 @@ function displayPosts(posts, category) {
     filteredPosts = posts;
   } else {
     if (posts !== null) {
-      filteredPosts = posts.filter((post) => post.category === category);
+      filteredPosts = posts.filter((post) => post.category.includes(category));
     }
   }
   if (filteredPosts === null || !posts || filteredPosts.length === 0) {
@@ -223,13 +223,35 @@ function displayPosts(posts, category) {
   });
 }
 
+function escapeHTML(str) {
+  return str.replace(/[&<>"'/]/g, function (char) {
+    switch (char) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&#039;";
+      case "/":
+        return "&#47;";
+      default:
+        return char;
+    }
+  });
+}
+
 //========= Function to display the comments =========
 function displayComments(comments, element) {
-  if (comments && comments !== null) {
-    element.innerHTML = comments
-      .map(
-        (comment) => `
-  <div class="comment" "><p>${escapeHtml(comment.content)}</p></div>
+  if (comments&& comments!==null){
+
+  element.innerHTML = comments
+    .map(
+      (comment) => `
+  <div class="comment"><p>${escapeHTML(comment.content)}</p></div>
     <div class="comment-actions">
     <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
       👍${comment.likes}
@@ -238,11 +260,10 @@ function displayComments(comments, element) {
       👎${comment.dislikes}
       </button>
       </div>
-    `,
-      )
-      .join(``);
-    attachCommentActionListeners(element);
-  }
+    `
+    )
+    .join(``);
+  attachCommentActionListeners(element);
 }
 
 //===== comment actions =========

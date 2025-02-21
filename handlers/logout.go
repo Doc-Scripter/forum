@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"time"
-	"net/http"
-	d "forum/database"
 	e "forum/Error"
+	d "forum/database"
 	m "forum/models"
+	"net/http"
+	"time"
 )
 
 //=================LogoutUser removes session from the database and clears the cookie==================
@@ -14,8 +14,8 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
-        return
-    }
+		return
+	}
 
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
@@ -35,13 +35,13 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-//==================This function will protected the private endpoints===============
+// ==================This function will protected the private endpoints===============
 func ProtectedHandler(w http.ResponseWriter, r *http.Request) {
-    // Set headers to prevent caching
-    w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-    w.Header().Set("Pragma", "no-cache")
-    w.Header().Set("Expires", "0")
+	// Set headers to prevent caching
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
 
-    // Your protected content logic here
-    w.Write([]byte("This is protected content."))//I will have a deeper look at this later
+	// Your protected content logic here
+	w.Write([]byte("This is protected content.")) //I will have a deeper look at this later
 }

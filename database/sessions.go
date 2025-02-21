@@ -1,19 +1,19 @@
 package database
 
 import (
-    "fmt"
-    "database/sql"
-    _ "github.com/mattn/go-sqlite3"
+	"database/sql"
+	"fmt"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func CreateSessionsTable(db *sql.DB) error {
 
-    if db == nil {
-        defer db.Close()
-        return fmt.Errorf("nil database connection")
-    }
+	if db == nil {
+		defer db.Close()
+		return fmt.Errorf("nil database connection")
+	}
 
-    query := `
+	query := `
     CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
@@ -23,7 +23,7 @@ func CreateSessionsTable(db *sql.DB) error {
     );`
 
 	if _, err := db.Exec(query); err != nil {
-        return err
-    }
+		return err
+	}
 	return nil
 }
