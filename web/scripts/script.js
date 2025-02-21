@@ -264,7 +264,6 @@ function displayPosts(posts, category) {
           <button class="action-btn dislike-btn" data-post-id="${post.post_id}">
             👎${post.dislikes}
           </button>
-          </div>
           <button class="comments-toggle" data-post-id="${post.post_id}">
             💬 ${
               post.comments?.length === 1
@@ -272,6 +271,7 @@ function displayPosts(posts, category) {
                 : `${post.comments?.length || 0} Comments`
             }
           </button>
+          </div>
         </div>
         <div class="comments-section" id="comments-${post.post_id}">
         </div>
