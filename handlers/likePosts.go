@@ -12,7 +12,6 @@ import (
 
 // ==== This function will handle liking a post ====
 
-
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)

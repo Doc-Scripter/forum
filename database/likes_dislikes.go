@@ -10,9 +10,9 @@ import (
 func CreateLikesDislikesTable(db *sql.DB) error {
 
 	if db == nil {
-        defer db.Close()
-        return fmt.Errorf("nil database connection")
-    }
+		defer db.Close()
+		return fmt.Errorf("nil database connection")
+	}
 
 	query := `
 	CREATE TABLE IF NOT EXISTS likes_dislikes (

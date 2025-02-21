@@ -68,7 +68,7 @@ func ValidateSession(r *http.Request) (bool, string) {
 }
 
 // ==== The function will take  a response writer w and a request r, for displaying errors when encountered. The function returns a struct of a user model ====
-func GetUserDetails(w http.ResponseWriter, r *http.Request) (m.ProfileData,error) {
+func GetUserDetails(w http.ResponseWriter, r *http.Request) (m.ProfileData, error) {
 
 	var (
 		Profile m.ProfileData
@@ -78,14 +78,14 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) (m.ProfileData,error
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		e.LogError(fmt.Errorf("profile Section: No session cookie found: %v", err))
-		return m.ProfileData{},err
+		return m.ProfileData{}, err
 	}
 
 	err = d.Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
 	if err != nil {
 		e.LogError(fmt.Errorf("session not found in DB: %v", err))
 		e.LogError(err)
-		return m.ProfileData{},err
+		return m.ProfileData{}, err
 	}
 
 	query := `
@@ -94,12 +94,12 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) (m.ProfileData,error
 	err = d.Db.QueryRow(query, userID).Scan(&Profile.Username, &Profile.Email, &Profile.Uuid)
 	if err != nil {
 		e.LogError(err)
-		return m.ProfileData{},err
+		return m.ProfileData{}, err
 	}
 
 	Profile.Initials = Profile.GenerateInitials()
 
-	return Profile,nil
+	return Profile, nil
 }
 
 // =====The function to make all the categories as a string to be stored into the database===========

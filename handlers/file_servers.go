@@ -1,16 +1,19 @@
 package handlers
 
-import(
+import (
 	"net/http"
-    "text/template"
+	"text/template"
 
-    e "forum/Error"
-    m "forum/models"
+	e "forum/Error"
+	m "forum/models"
 	u "forum/utils"
 )
 
-/* ==== The function handler serves the error page with relevant error messages. The function will log the actual problem (Error) to the
-logging file and then, serve the error page with the error message and the error code in the ErrorData object ====*/
+/*
+	==== The function handler serves the error page with relevant error messages. The function will log the actual problem (Error) to the
+
+logging file and then, serve the error page with the error message and the error code in the ErrorData object ====
+*/
 func ErrorPage(Error error, ErrorData m.ErrorData, w http.ResponseWriter, r *http.Request) {
 	e.LogError(Error)
 	tmpl, err := template.ParseFiles("./web/templates/error.html")
@@ -50,13 +53,11 @@ func LandingPage(w http.ResponseWriter, r *http.Request) {
 			ErrorPage(err, errD, w, r)
 			return
 		}
-	}else {
+	} else {
 		ErrorPage(nil, m.ErrorsData.PageNotFound, w, r)
-        return
+		return
 	}
 }
-
-
 
 // ==== The function handler serves the home page of the web application ====
 func HomePage(w http.ResponseWriter, r *http.Request) {
@@ -71,13 +72,12 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Profile,err := u.GetUserDetails(w, r)
+	Profile, err := u.GetUserDetails(w, r)
 	if err != nil {
-	ErrorPage(err, m.ErrorsData.InternalError, w, r)
-	return
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
 	}
-	
-	
+
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
@@ -122,7 +122,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("./web/templates/register.html")
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-        return
+		return
 	}
 	if err = tmpl.Execute(w, nil); err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)

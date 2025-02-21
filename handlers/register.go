@@ -1,21 +1,20 @@
 package handlers
 
 import (
-	"time"
-	"strings"
-	"net/http"
 	"database/sql"
+	"net/http"
+	"strings"
+	"time"
 
 	e "forum/Error"
-	m "forum/models"
 	d "forum/database"
+	m "forum/models"
 	u "forum/utils"
 
 	"github.com/gofrs/uuid"
-	
 )
 
-//=======User struct to store user details===
+// =======User struct to store user details===
 type User struct {
 	ID       int
 	UUID     string
@@ -40,10 +39,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	m.User.Username= strings.TrimSpace(r.FormValue("username"))
-	m.User.Email =    strings.TrimSpace(r.FormValue("email"))
-	m.User.Password= strings.TrimSpace(r.FormValue("password"))
-	
+	m.User.Username = strings.TrimSpace(r.FormValue("username"))
+	m.User.Email = strings.TrimSpace(r.FormValue("email"))
+	m.User.Password = strings.TrimSpace(r.FormValue("password"))
 
 	if m.User.Username == "" || m.User.Email == "" || m.User.Password == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -94,9 +92,11 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	err = d.Db.QueryRow("SELECT id FROM users WHERE email = ?", m.User.Email).Scan(&userID)
 	if err == sql.ErrNoRows {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
 	} else if err != nil {
 
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
 	}
 
 	//grant a session on registration
@@ -110,4 +110,3 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
-

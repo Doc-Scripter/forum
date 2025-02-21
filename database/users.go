@@ -1,12 +1,12 @@
 package database
 
 import (
-    "database/sql"
-    _ "github.com/mattn/go-sqlite3"
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func CreateUsersTable(db *sql.DB) error {
-    query := `
+	query := `
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         uuid TEXT UNIQUE NOT NULL,
@@ -14,7 +14,7 @@ func CreateUsersTable(db *sql.DB) error {
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     );`
-    if _, err := db.Exec(query); err != nil {
+	if _, err := db.Exec(query); err != nil {
 		return err
 	}
 	return nil

@@ -30,12 +30,11 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		// If parsing fails, attempt a standard form parse which may work if no file is present.
 		fmt.Println("ParseMultipartForm error:", err)
 		if err := r.ParseForm(); err != nil {
-			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 	}
 
-	fmt.Println("this is the form--> ", r.Form)
 	category := u.CombineCategory(r.Form["category"])
 	content := strings.TrimSpace(html.EscapeString(r.FormValue("content")))
 	title := strings.TrimSpace(html.EscapeString(r.FormValue("title")))
@@ -52,12 +51,11 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Check if error is due to missing file.
 		if err == http.ErrMissingFile {
-			fmt.Println("No image uploaded, continuing without image")
 			// Leave img fields as empty
 			img.Filename = ""
 			img.Path = ""
 		} else {
-			http.Error(w, "Error retrieving file", http.StatusBadRequest)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 	} else {
@@ -66,20 +64,20 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Validate file size
 		if handler.Size > u.MaxUploadSize {
-			http.Error(w, "File too large", http.StatusBadRequest)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 		// Validate file type
 		if !u.ValidateFileType(file) {
-			http.Error(w, "Invalid file type", http.StatusBadRequest)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 		// Generate unique filename
 		fileName, err := u.GenerateFileName()
 		if err != nil {
-			http.Error(w, "Error processing file", http.StatusInternalServerError)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 
@@ -89,7 +87,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("filename: ", fileName)
 		// Create uploads directory if it doesn't exist
 		if err := os.MkdirAll(u.UploadsDir, 0o755); err != nil {
-			http.Error(w, "Error processing file", http.StatusInternalServerError)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 
@@ -97,14 +95,14 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		filePath := filepath.Join(u.UploadsDir, fileName)
 		dst, err := os.Create(filePath)
 		if err != nil {
-			http.Error(w, "Error saving file", http.StatusInternalServerError)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 		defer dst.Close()
 
 		// Copy file contents
 		if _, err := io.Copy(dst, file); err != nil {
-			http.Error(w, "Error saving file", http.StatusInternalServerError)
+			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
 		}
 
@@ -117,8 +115,6 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid ,filename,filepath) VALUES ($1, $2, $3, $4, $5, $6)", category, content, title, Profile.Uuid, img.Filename, img.Path)
 	if err != nil {
 		os.Remove(img.Path)
-		fmt.Println("could not insert posts", err)
-		// http.Error(w, "could not insert post", http.StatusInternalServerError)
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
 		return
 

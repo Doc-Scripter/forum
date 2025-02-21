@@ -22,7 +22,7 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	likedRows, err := d.Db.Query("SELECT post_id FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", Profile.Uuid)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
 

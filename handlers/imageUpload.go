@@ -17,7 +17,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	// Open the image file
 	file, err := os.Open(imagePath)
 	if err != nil {
-		http.Error(w, "Failed to open image file", http.StatusInternalServerError)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
 	defer file.Close()
@@ -25,7 +25,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the file info
 	fileInfo, err := file.Stat()
 	if err != nil {
-		http.Error(w, "Failed to get file info", http.StatusInternalServerError)
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
 
