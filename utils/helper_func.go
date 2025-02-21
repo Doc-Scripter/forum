@@ -1,19 +1,17 @@
-package handlers
+package utils
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
-	"time"
-	"strings"
-	"regexp"
 	"net/http"
-	"database/sql"
-	
-	
-	m "forum/models"
+	"regexp"
+	"strings"
+	"time"
+
 	e "forum/Error"
 	d "forum/database"
-	"golang.org/x/crypto/bcrypt"
+	m "forum/models"
 )
 
 // ==============Validate email format==========
@@ -24,7 +22,7 @@ func IsValidEmail(email string) bool {
 }
 
 // ===== Check if a username or email (credential) already exists in a database db =====
-func credentialExists(db *sql.DB, credential string) bool {
+func CredentialExists(db *sql.DB, credential string) bool {
 	query := `SELECT COUNT(*) FROM users WHERE username = ? OR email = ?`
 	var count int
 	err := db.QueryRow(query, credential, credential).Scan(&count)
@@ -36,18 +34,12 @@ func credentialExists(db *sql.DB, credential string) bool {
 }
 
 // ==============HashPassword hashes the user's password before storing it=========
-func (u *User) HashPassword() error {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	u.Password = string(hashed)
-	return nil
-}
 
-/*=== ValidateSession checks if a session token is valid. The function takes a pointer to the request
-and returns a boolean value and a user_ID of type string based on the session_token found in the 
-cookie present in the header, within the request =====*/
+/*
+=== ValidateSession checks if a session token is valid. The function takes a pointer to the request
+and returns a boolean value and a user_ID of type string based on the session_token found in the
+cookie present in the header, within the request =====
+*/
 func ValidateSession(r *http.Request) (bool, string) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
@@ -71,31 +63,29 @@ func ValidateSession(r *http.Request) (bool, string) {
 		return false, ""
 	}
 
-	e.LogError(fmt.Errorf(fmt.Sprintf("session valid for user: %s", userID)))
+	e.LogError(fmt.Errorf("session valid for user: %s", userID))
 	return true, userID
 }
 
-
 // ==== The function will take  a response writer w and a request r, for displaying errors when encountered. The function returns a struct of a user model ====
-func GetUserDetails(w http.ResponseWriter, r *http.Request) m.ProfileData {
-	
+func GetUserDetails(w http.ResponseWriter, r *http.Request) (m.ProfileData, error) {
+
 	var (
 		Profile m.ProfileData
-		userID string
+		userID  string
 	)
-	
+
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		e.LogError(fmt.Errorf(fmt.Sprintf("Profile Section: No session cookie found: %v",  err)))
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-		return m.ProfileData{}
+		e.LogError(fmt.Errorf("profile Section: No session cookie found: %v", err))
+		return m.ProfileData{}, err
 	}
 
 	err = d.Db.QueryRow("SELECT user_id FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID)
 	if err != nil {
-		e.LogError(fmt.Errorf(fmt.Sprintf("Session not found in DB: %v",  err)))
+		e.LogError(fmt.Errorf("session not found in DB: %v", err))
 		e.LogError(err)
-		return m.ProfileData{}
+		return m.ProfileData{}, err
 	}
 
 	query := `
@@ -104,16 +94,16 @@ func GetUserDetails(w http.ResponseWriter, r *http.Request) m.ProfileData {
 	err = d.Db.QueryRow(query, userID).Scan(&Profile.Username, &Profile.Email, &Profile.Uuid)
 	if err != nil {
 		e.LogError(err)
-		return m.ProfileData{}
+		return m.ProfileData{}, err
 	}
-	
+
 	Profile.Initials = Profile.GenerateInitials()
-	
-	return Profile
+
+	return Profile, nil
 }
 
-//=====The function to make all the categories as a string to be stored into the database===========
-func CombineCategory(category []string) string{
+// =====The function to make all the categories as a string to be stored into the database===========
+func CombineCategory(category []string) string {
 
 	return strings.Join(category, ", ")
 }
