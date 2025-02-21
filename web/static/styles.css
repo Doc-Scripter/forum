@@ -241,6 +241,7 @@ body.light-theme .post-footer {
   display: none; /* Start hidden */
   width: 100%;
   margin-top: 10px;
+  color: black;
   padding: 0 15px;
   transition: opacity 0.3s ease-in-out;
   opacity: 0;
@@ -324,6 +325,7 @@ body.light-theme .post-footer {
   display: flex;
   gap: 10px;
   margin-top: 5px;
+  width: 2% !important;
   padding: 5px 0;
 }
 
@@ -1413,16 +1415,6 @@ html {
   }
 }
 
-
-.comments-section.hidden {
-  display: none;
-}
-
-.comments-section {
-  display: block;
-  margin-top: 10px;
-}
-
 .notification {
     position: fixed;
     top: 20px;
@@ -1525,4 +1517,109 @@ html {
 .dislike-btn.active .dislike-count, .dislikeBtn.active .dislike-count,
 .light-theme .dislike-btn.active .dislike-count, .light-theme .dislikeBtn.active .dislike-count {
     color: #f44336;
+}
+
+/* Comment text color in light theme */
+.light-theme .comment-text {
+    color: #000;  /* Black text in light mode */
+}
+
+/* Style comment reaction buttons the same as post buttons */
+.comment-actions .likeBtn,
+.comment-actions .dislikeBtn {
+    background: transparent;
+    border: 2px solid #888;  /* Default grey border */
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #888;  /* Default grey color */
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Light theme specific styles for comment buttons */
+.light-theme .comment-actions .likeBtn,
+.light-theme .comment-actions .dislikeBtn {
+    border: 2px solid #888;
+    color: #888;
+}
+
+/* Hover effects for comment buttons */
+.comment-actions .likeBtn:hover,
+.light-theme .comment-actions .likeBtn:hover {
+    border-color: #4CAF50;  /* Green border */
+    color: #4CAF50;  /* Green text */
+}
+
+.comment-actions .dislikeBtn:hover,
+.light-theme .comment-actions .dislikeBtn:hover {
+    border-color: #f44336;  /* Red border */
+    color: #f44336;  /* Red text */
+}
+
+/* Active states for comment buttons */
+.comment-actions .likeBtn.active,
+.light-theme .comment-actions .likeBtn.active {
+    color: #4CAF50;  /* Green text */
+    border-color: #4CAF50;  /* Green border */
+    background: transparent;
+}
+
+.comment-actions .dislikeBtn.active,
+.light-theme .comment-actions .dislikeBtn.active {
+    color: #f44336;  /* Red text */
+    border-color: #f44336;  /* Red border */
+    background: transparent;
+}
+
+/* Count spans for comment buttons */
+.comment-actions .like-count,
+.comment-actions .dislike-count,
+.light-theme .comment-actions .like-count,
+.light-theme .comment-actions .dislike-count {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+/* Active state count colors for comment buttons */
+.comment-actions .likeBtn.active .like-count,
+.light-theme .comment-actions .likeBtn.active .like-count {
+    color: #4CAF50;
+}
+
+.comment-actions .dislikeBtn.active .dislike-count,
+.light-theme .comment-actions .dislikeBtn.active .dislike-count {
+    color: #f44336;
+}
+
+/* Standardize action containers for both posts and comments */
+.post-actions,
+.comment-actions {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    width: 100%;
+}
+
+/* Make all action buttons (posts and comments) the same size */
+.post-actions button,
+.comment-actions button,
+.like-btn, .dislike-btn,
+.likeBtn, .dislikeBtn {
+    min-width: 80px;  /* Set minimum width */
+    height: 36px;     /* Set fixed height */
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 14px;  /* Standardize font size */
+}
+
+/* Ensure counts have consistent size and alignment */
+.like-count, .dislike-count {
+    min-width: 20px;  /* Ensure space for numbers */
+    text-align: center;
 }
