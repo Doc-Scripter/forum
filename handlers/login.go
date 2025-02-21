@@ -12,11 +12,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	e "forum/Error"
 	m "forum/models"
+	u "forum/utils"
 )
 
 //==============This function will be called when a the login submission is done=====================
 func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
-	if bl, _ := ValidateSession(r); bl {
+	if bl, _ := u.ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
 	}

@@ -1,29 +1,23 @@
 package handlers
 
 import (
-	"crypto/rand"
 	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
 	m "forum/models"
+	u "forum/utils"
 
 	d "forum/database"
 )
 
-const (
-	maxUploadSize = 10 << 20 // 10MB
-	uploadsDir    = "./web/uploads"
-	allowedTypes  = "image/jpeg,image/png,image/gif"
-)
+
 
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -70,7 +64,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		var comments []m.Comment
 		for rows.Next() {
 			var comment m.Comment
-			rows.Scan(&comment.Content )
+			rows.Scan(&comment.Content)
 			comments = append(comments, comment)
 		}
 
@@ -106,7 +100,11 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 // ==== This function will handle post creation and insertion of the post into the database ====
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
-	Profile := GetUserDetails(w, r)
+	Profile,err := u.GetUserDetails(w, r)
+	if err != nil {
+	ErrorPage(err, m.ErrorsData.InternalError, w, r)
+	return
+	}
 
 	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
@@ -114,7 +112,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse form with multipart support. This is needed when an image is provided.
-	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
+	if err := r.ParseMultipartForm(u.MaxUploadSize); err != nil {
 		// If parsing fails, attempt a standard form parse which may work if no file is present.
 		fmt.Println("ParseMultipartForm error:", err)
 		if err := r.ParseForm(); err != nil {
@@ -124,7 +122,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("this is the form--> ", r.Form)
-	category := CombineCategory(r.Form["category"])
+	category := u.CombineCategory(r.Form["category"])
 	content := strings.TrimSpace(html.EscapeString(r.FormValue("content")))
 	title := strings.TrimSpace(html.EscapeString(r.FormValue("title")))
 
@@ -153,19 +151,19 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		// Validate file size
-		if handler.Size > maxUploadSize {
+		if handler.Size > u.MaxUploadSize {
 			http.Error(w, "File too large", http.StatusBadRequest)
 			return
 		}
 
 		// Validate file type
-		if !validateFileType(file) {
+		if !u.ValidateFileType(file) {
 			http.Error(w, "Invalid file type", http.StatusBadRequest)
 			return
 		}
 
 		// Generate unique filename
-		fileName, err := generateFileName()
+		fileName, err := u.GenerateFileName()
 		if err != nil {
 			http.Error(w, "Error processing file", http.StatusInternalServerError)
 			return
@@ -176,13 +174,13 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("filename: ", fileName)
 		// Create uploads directory if it doesn't exist
-		if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
+		if err := os.MkdirAll(u.UploadsDir, 0o755); err != nil {
 			http.Error(w, "Error processing file", http.StatusInternalServerError)
 			return
 		}
 
 		// Create new file
-		filePath := filepath.Join(uploadsDir, fileName)
+		filePath := filepath.Join(u.UploadsDir, fileName)
 		dst, err := os.Create(filePath)
 		if err != nil {
 			http.Error(w, "Error saving file", http.StatusInternalServerError)
@@ -221,14 +219,18 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Profile := GetUserDetails(w, r)
+	Profile,err := u.GetUserDetails(w, r)
+	if err != nil {
+	ErrorPage(err, m.ErrorsData.InternalError, w, r)
+	return
+	}
 
 	str, _ := io.ReadAll(r.Body)
 	var postID struct {
 		Post_id string `json:"post_id"`
 	}
 
-	err := json.Unmarshal(str, &postID)
+	err = json.Unmarshal(str, &postID)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
 		return
@@ -293,7 +295,11 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
 		return
 	}
-	Profile := GetUserDetails(w, r)
+	Profile,err := u.GetUserDetails(w, r)
+	if err != nil {
+	ErrorPage(err, m.ErrorsData.InternalError, w, r)
+	return
+	}
 
 	str, _ := io.ReadAll(r.Body)
 
@@ -301,7 +307,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 		Post_id string `json:"post_id"`
 	}
 
-	err := json.Unmarshal(str, &postID)
+	err = json.Unmarshal(str, &postID)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
 		return
@@ -363,18 +369,27 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 // ==== This function will handle the filtration of specific user post ====
 func MyPostHandler(w http.ResponseWriter, r *http.Request) {
-	Profile := GetUserDetails(w, r)
+	if r.Method != http.MethodGet {
+		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
+		return
+	}
+	Profile,err := u.GetUserDetails(w, r)
+	if err != nil {
+	ErrorPage(err, m.ErrorsData.InternalError, w, r)
+	return
+	}
+
 	rows, err := d.Db.Query("SELECT title,content,post_id,created_at,filename,filepath FROM posts WHERE user_uuid = ? ", Profile.Uuid)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
 	}
 	defer rows.Close()
-	
+
 	var posts []m.Post
 	for rows.Next() {
 		var eachPost m.Post
-		err = rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Post_id,&eachPost.CreatedAt,&eachPost.Filename,&eachPost.Filepath)
+		err = rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Post_id, &eachPost.CreatedAt, &eachPost.Filename, &eachPost.Filepath)
 		if err != nil {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
@@ -389,7 +404,7 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 		var comments []m.Comment
 		for rows.Next() {
 			var comment m.Comment
-			rows.Scan(&comment.Content )
+			rows.Scan(&comment.Content)
 			comments = append(comments, comment)
 		}
 
@@ -416,7 +431,7 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 		eachPost.CommentsCount = commentsCount
 		eachPost.Likes = likeCount
 		eachPost.Dislikes = dislikeCount
-		
+
 		posts = append(posts, eachPost)
 	}
 
@@ -432,7 +447,15 @@ func MyPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // ==== This function will handle filtration of the posts based on the ones that have been liked ====
 func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
-	Profile := GetUserDetails(w, r)
+	if r.Method != http.MethodGet {
+		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
+		return
+	}
+	Profile,err := u.GetUserDetails(w, r)
+	if err != nil {
+	ErrorPage(err, m.ErrorsData.InternalError, w, r)
+	return
+	}
 
 	likedRows, err := d.Db.Query("SELECT post_id FROM likes_dislikes WHERE user_uuid = ? AND like_dislike = 'like'", Profile.Uuid)
 	if err != nil {
@@ -460,13 +483,13 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 
 		for Postrows.Next() {
 
-			err = Postrows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Post_id, &eachPost.Filename,&eachPost.Filepath)
+			err = Postrows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.Post_id, &eachPost.Filename, &eachPost.Filepath)
 			eachPost.Seperate_Categories()
 			if err != nil {
 				ErrorPage(err, m.ErrorsData.InternalError, w, r)
 				return
 			}
-			
+
 		}
 		commentsCount := 0
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", eachPost.Post_id).Scan(&commentsCount)
@@ -486,7 +509,7 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 		var comments []m.Comment
 		for rows.Next() {
 			var comment m.Comment
-			rows.Scan(&comment.Content )
+			rows.Scan(&comment.Content)
 			comments = append(comments, comment)
 		}
 
@@ -525,13 +548,17 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Profile := GetUserDetails(w, r)
+	Profile,err := u.GetUserDetails(w, r)
+	if err != nil {
+	ErrorPage(err, m.ErrorsData.InternalError, w, r)
+	return
+	}
 
 	r.ParseForm()
 	comment := strings.TrimSpace(r.FormValue("add-comment"))
 	post_id := r.FormValue("post_id")
 
-	_, err := d.Db.Exec("INSERT INTO comments (user_uuid,post_id,content) VALUES (?,?,?)", Profile.Uuid, post_id, comment)
+	_, err = d.Db.Exec("INSERT INTO comments (user_uuid,post_id,content) VALUES (?,?,?)", Profile.Uuid, post_id, comment)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
@@ -666,14 +693,18 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Profile := GetUserDetails(w, r)
+	Profile,err := u.GetUserDetails(w, r)
+	if err != nil {
+	ErrorPage(err, m.ErrorsData.InternalError, w, r)
+	return
+	}
 
 	str, _ := io.ReadAll(r.Body)
 	var commentId struct {
 		Comment_Id string `json:"comment_id"`
 	}
 
-	err := json.Unmarshal(str, &commentId)
+	err = json.Unmarshal(str, &commentId)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
 		return
@@ -741,14 +772,18 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Profile := GetUserDetails(w, r)
+	Profile,err := u.GetUserDetails(w, r)
+	if err != nil {
+	ErrorPage(err, m.ErrorsData.InternalError, w, r)
+	return
+	}
 
 	str, _ := io.ReadAll(r.Body)
 	var commentId struct {
 		Comment_Id string `json:"comment_id"`
 	}
 
-	err := json.Unmarshal(str, &commentId)
+	err = json.Unmarshal(str, &commentId)
 	if err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
@@ -810,81 +845,11 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// func PostHandler(w http.ResponseWriter, r *http.Request) {
-// 	if r.Method != http.MethodGet {
-// 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
-// 		return
-// 	}
-
-// 	// Get post_id from URL query parameter
-// 	postID := r.URL.Query().Get("id")
-// 	if postID == "" {
-// 		ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
-// 		return
-// 	}
-
-// 	// Query for post details
-// 	var post m.Post
-// 	query := `
-// 		SELECT p.title, p.content, p.category, p.created_at, p.post_id, u.username
-// 		FROM posts p
-// 		JOIN users u ON p.user_uuid = u.uuid
-// 		WHERE p.post_id = ?`
-
-// 	err := d.Db.QueryRow(query, postID).Scan(
-// 		&post.Title,
-// 		&post.Content,
-// 		&post.Category,
-// 		&post.CreatedAt,
-// 		&post.Post_id,
-// 		&post.Owner,
-// 	)
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			ErrorPage(err, m.ErrorsData.PageNotFound, w, r)
-// 		} else {
-// 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
-// 		}
-// 		return
-// 	}
-
-// 	// Get like/dislike counts
-// 	err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", postID).Scan(&post.Likes)
-// 	if err != nil {
-// 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-// 		return
-// 	}
-
-// 	err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", postID).Scan(&post.Dislikes)
-// 	if err != nil {
-// 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-// 		return
-// 	}
-
-// 	// Generate owner initials
-// 	post.OwnerInitials = strings.ToUpper(string(post.Owner[0]))
-// 	if len(post.Owner) > 1 {
-// 		for i := 1; i < len(post.Owner); i++ {
-// 			if post.Owner[i-1] == ' ' {
-// 				post.OwnerInitials += string(post.Owner[i])
-// 				break
-// 			}
-// 		}
-// 	}
-
-// 	// Parse and execute template
-// 	tmpl, err := template.ParseFiles("./web/templates/post.html")
-// 	if err != nil {
-// 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
-// 		return
-// 	}
-
-//		if err = tmpl.Execute(w, post); err != nil {
-//			ErrorPage(err, m.ErrorsData.InternalError, w, r)
-//			return
-//		}
-//	}
 func ImageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
+		return
+	}
 	// Get the image file path from the request URL
 	imagePath := "web/uploads/" + r.URL.Path[len("/image/web/uploads/"):]
 
@@ -909,28 +874,4 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Write the image file to the response
 	http.ServeFile(w, r, imagePath)
-}
-
-func validateFileType(file multipart.File) bool {
-	// Read the first 512 bytes to detect content type
-	buffer := make([]byte, 512)
-	_, err := file.Read(buffer)
-	if err != nil && err != io.EOF {
-		return false
-	}
-
-	// Reset the file pointer
-	file.Seek(0, 0)
-
-	// Get content type and check if it's allowed
-	contentType := http.DetectContentType(buffer)
-	return strings.Contains(allowedTypes, contentType)
-}
-
-func generateFileName() (string, error) {
-	bytes := make([]byte, 16)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
 }

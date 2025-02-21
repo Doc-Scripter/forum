@@ -6,6 +6,7 @@ import(
 
     e "forum/Error"
     m "forum/models"
+	u "forum/utils"
 )
 
 /* ==== The function handler serves the error page with relevant error messages. The function will log the actual problem (Error) to the
@@ -29,7 +30,7 @@ func LandingPage(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Path == "/" {
 
-		if bl, _ := ValidateSession(r); bl {
+		if bl, _ := u.ValidateSession(r); bl {
 			http.Redirect(w, r, "/home", http.StatusSeeOther)
 			return
 		}
@@ -60,7 +61,7 @@ func LandingPage(w http.ResponseWriter, r *http.Request) {
 // ==== The function handler serves the home page of the web application ====
 func HomePage(w http.ResponseWriter, r *http.Request) {
 
-	if bl, _ := ValidateSession(r); !bl {
+	if bl, _ := u.ValidateSession(r); !bl {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -70,7 +71,11 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Profile := GetUserDetails(w, r)
+	Profile,err := u.GetUserDetails(w, r)
+	if err != nil {
+	ErrorPage(err, m.ErrorsData.InternalError, w, r)
+	return
+	}
 	
 	
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
@@ -87,7 +92,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 
 // ==== This function will serve the login form of the application ====
 func Login(w http.ResponseWriter, r *http.Request) {
-	if bl, _ := ValidateSession(r); bl {
+	if bl, _ := u.ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
 	}
@@ -106,7 +111,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // ==== This function will serve the registration form of the application ====
 func Register(w http.ResponseWriter, r *http.Request) {
 
-	if bl, _ := ValidateSession(r); bl {
+	if bl, _ := u.ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	}
 	if r.Method != http.MethodGet {
