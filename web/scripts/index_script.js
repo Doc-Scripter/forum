@@ -61,7 +61,7 @@ function displayPosts(posts, category) {
     </div>
     <h2 class="post-title">No posts available</h2>
     <p class="post-content">No posts to display</p>
-     <div class="post-footer">
+    <div class="post-footer">
         <span class="post-author"></span>
       </div>
     </article>`;

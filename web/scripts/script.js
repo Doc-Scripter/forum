@@ -446,12 +446,35 @@ categoryFilter.addEventListener("change", (e) => {
   fetchPosts(route);
 });
 
+
+//===================Theme Toggle Functionality====================
+document.addEventListener("DOMContentLoaded", () => {
+  const themeToggle = document.getElementById("theme-toggle");
+  // Check for saved theme preference, default to light if none
+  const savedTheme = localStorage.getItem("theme") || "light-theme";
+  document.body.classList.toggle("light-theme", savedTheme === "light-theme");
+  // Ensure light theme is applied by default
+  if (!localStorage.getItem("theme")) {
+    document.body.classList.add("light-theme");
+    localStorage.setItem("theme", "light-theme");
+  }
+  // Update icon visibility based on current theme
+  updateThemeIcon();
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("light-theme");
+    updateThemeIcon();
+    // Save theme preference
+    const currentTheme = document.body.classList.contains("light-theme")
+      ? "light-theme"
+      : "dark-theme";
+    localStorage.setItem("theme", currentTheme);
+  });
+});
 // Function to update theme icon
 function updateThemeIcon() {
   const sunIcon = document.querySelector(".sun");
   const moonIcon = document.querySelector(".moon");
   const isLightTheme = document.body.classList.contains("light-theme");
-
   sunIcon.style.display = isLightTheme ? "none" : "block";
   moonIcon.style.display = isLightTheme ? "block" : "none";
 }
