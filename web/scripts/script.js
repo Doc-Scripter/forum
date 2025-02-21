@@ -259,6 +259,27 @@ function displayPosts(posts, category) {
   });
 }
 
+function escapeHTML(str) {
+  return str.replace(/[&<>"'/]/g, function (char) {
+    switch (char) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&#039;";
+      case "/":
+        return "&#47;";
+      default:
+        return char;
+    }
+  });
+}
+
 //=======================Function to display the comments=======================
 function displayComments(comments, element) {
   if (comments&& comments!==null){
@@ -266,7 +287,7 @@ function displayComments(comments, element) {
   element.innerHTML = comments
     .map(
       (comment) => `
-  <div class="comment"><p>${comment.content}</p></div>
+  <div class="comment"><p>${escapeHTML(comment.content)}</p></div>
     <div class="comment-actions">
     <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
       👍${comment.likes}
@@ -274,7 +295,7 @@ function displayComments(comments, element) {
       <button class="comment dislikeBtn" data-comment-id="${comment.comment_id}">
       👎${comment.dislikes}
       </button>
-      </div>
+      </div>z
     `
     )
     .join(``);
