@@ -234,28 +234,7 @@
                 </form>
             </div>
         </div>
-        <!-- <script>
-      document.addEventListener("DOMContentLoaded", function () {
-  const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]');
-
-  checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      let checkedCount = document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked').length;
-
-      if (checkedCount >= 3) {
-        // Disable unchecked checkboxes
-        checkboxes.forEach(cb => {
-          if (!cb.checked) cb.disabled = true;
-        });
-      } else {
-        // Re-enable all checkboxes when selections are less than 3
-        checkboxes.forEach(cb => cb.disabled = false);
-      }
-    });
-  });
-});
-
-    </script> -->
+        <div id="notification" class="notification"></div>
         <script>
             // Prevent form submission when "Enter" is pressed inside the textareas
             document

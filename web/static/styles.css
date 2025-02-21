@@ -1409,3 +1409,39 @@ html {
   display: block;
   margin-top: 10px;
 }
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 1000;
+    transform: translateX(150%);
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: "Inknut Antiqua", serif;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    background-color: #4CAF50;
+    border-left: 5px solid #45a049;
+}
+
+.notification.error {
+    background-color: #f44336;
+    border-left: 5px solid #da190b;
+}
+
+/* Optional: Add glass effect to match your theme */
+.notification.success,
+.notification.error {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}

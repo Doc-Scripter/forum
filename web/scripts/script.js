@@ -35,10 +35,18 @@ postsContainer.addEventListener("click", (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: postId }),
     })
-      .then(() => {
-        fetchPosts(route);
+      .then((response) => {
+        if (!response.ok) {
+          return response.text().then(text => {
+            throw new Error(text || 'Failed to like post');
+          });
+        }
+        return fetchPosts(route);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        showNotification(error.message, "error");
+        console.error(error);
+      });
   }
 
   if (e.target.classList.contains("dislike-btn")) {
@@ -46,15 +54,71 @@ postsContainer.addEventListener("click", (e) => {
     fetch("/dislikes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ post_id: postId }), // Ensure userId is defined
+      body: JSON.stringify({ post_id: postId }),
     })
-      .then(() => fetchPosts(route))
-      .catch((error) => console.error(error));
+      .then(
+        response => {
+          if (!response.ok) {
+            return response.text().then(text => {
+              throw new Error(text || 'Failed to dislike post');
+            });
+          }
+          return fetchPosts(route)
+        }
+      )
+      .catch((error) => {
+        showNotification(error.message, "error");
+        console.error(error);
+      });
   }
 });
 
 postForm.addEventListener("submit", (e) => {
-  alert("Post submitted successfully!");
+  e.preventDefault();
+  
+  // Get form values
+  const title = postForm.querySelector('[name="title"]').value.trim();
+  const content = postForm.querySelector('[name="content"]').value.trim();
+  const categories = Array.from(postForm.querySelectorAll('[name="category"]:checked')).map(cb => cb.value);
+  
+  // Validation checks
+  if (!title) {
+    showNotification("Post title is required", "error");
+    return;
+  }
+  
+  if (!content) {
+    showNotification("Post content is required", "error");
+    return;
+  }
+  
+  if (categories.length === 0) {
+    showNotification("Please select at least one category", "error");
+    return;
+  }
+
+  // If validation passes, proceed with form submission
+  const formData = new FormData(postForm);
+  
+  fetch("/create-post", {
+    method: "POST",
+    body: formData,
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.text().then(text => {
+          throw new Error(text || 'Failed to create post');
+        });
+      }
+      showNotification("Post submitted successfully!", "success");
+      modal.classList.remove("active");
+      postForm.reset();
+      return fetchPosts(route);
+    })
+    .catch((error) => {
+      showNotification(error.message, "error");
+      console.error("Error creating post:", error);
+    });
 });
 
 // ==== This is the fnuction that will be fetching posts ====
@@ -94,15 +158,26 @@ function createCategoryElements(categories) {
   return html;
 }
 
-// === Helper function to escape HTML ===
-function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+//====== Function to fetch posts from the backend =====
+// function fetchPosts(route) {
+//   console.log(route);
+//   fetch(route)
+//     .then((response) => {
+//       if (!response.ok) {
+//         return response.text().then(text => {
+//           throw new Error(text || 'Failed to fetch posts');
+//         });
+//       }
+//       return response.json();
+//     })
+//     .then((data) => {
+//       displayPosts(data, currentCategory);
+//     })
+//     .catch((error) => {
+//       alert(error.message);
+//       console.error("Error fetching posts:", error);
+//     });
+// }
 
 //====== Function to fetch posts from the backend =====
 function fetchPosts(route) {
@@ -145,8 +220,8 @@ function displayPosts(posts, category) {
       <article class="post">
       <div class="post-header"></div>
         <div> ${createCategoryElements(post.category)} </div>
-      <h2 class="post-title">${escapeHtml(post.title)}</h2>
-      <p class="post-content">${escapeHtml(post.content)}</p>
+      <h2 class="post-title">${escapeHTML(post.title)}</h2>
+      <p class="post-content">${escapeHTML(post.content)}</p>
       ${
         post.filepath
           ? `<img src="/image/${post.filepath}" alt="${post.filename}">`
@@ -191,7 +266,7 @@ function displayPosts(posts, category) {
           </form>
       </div>
     </article>
-      `,
+      `
       )
       .join("");
   }
@@ -201,7 +276,7 @@ function displayPosts(posts, category) {
     btn.addEventListener("click", (e) => {
       const postId = btn.dataset.postId;
       const commentsSection = document.getElementById(`comments-${postId}`);
-      
+
       // Toggle visibility using a CSS class
       if (commentsSection.classList.contains("hidden")) {
         commentsSection.classList.remove("hidden");
@@ -246,24 +321,26 @@ function escapeHTML(str) {
 
 //========= Function to display the comments =========
 function displayComments(comments, element) {
-  if (comments&& comments!==null){
-
-  element.innerHTML = comments
-    .map(
-      (comment) => `
-  <div class="comment"><p>${escapeHTML(comment.content)}</p></div>
-    <div class="comment-actions">
-    <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
-      👍${comment.likes}
-      </button>
-      <button class="comment dislikeBtn" data-comment-id="${comment.comment_id}">
-      👎${comment.dislikes}
-      </button>
-      </div>
-    `
-    )
-    .join(``);
-  attachCommentActionListeners(element);
+  if (comments && comments !== null) {
+    element.innerHTML = comments
+      .map(
+        (comment) => `
+    <div class="comment"><p>${escapeHTML(comment.content)}</p></div>
+      <div class="comment-actions">
+      <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
+        👍${comment.likes}
+        </button>
+        <button class="comment dislikeBtn" data-comment-id="${
+          comment.comment_id
+        }">
+        👎${comment.dislikes}
+        </button>
+        </div>
+      `
+      )
+      .join(``);
+    attachCommentActionListeners(element);
+  }
 }
 
 //===== comment actions =========
@@ -277,21 +354,39 @@ function attachCommentActionListeners(container) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ comment_Id: commentId }),
         })
-          .then(() => fetchComments(container, commentId))
-          .catch((error) => console.error(error));
+          .then((response) => {
+            if (!response.ok) {
+              return response.text().then((text) => {
+                throw new Error(text || "Failed to like comment");
+              });
+            }
+            return fetchComments(container, commentId);
+          })
+          .catch((error) => {
+            showNotification(error.message, "error");
+            console.error(error);
+          });
       }
 
       if (e.target.classList.contains("dislikeBtn")) {
-        // e.stopPropagation();
-
         const commentId = e.target.dataset.commentId;
         fetch("/dislikesComment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ comment_id: commentId }), // Ensure userId is defined
+          body: JSON.stringify({ comment_id: commentId }),
         })
-          .then(() => fetchComments(container, commentId))
-          .catch((error) => console.error(error));
+          .then((response) => {
+            if (!response.ok) {
+              return response.text().then((text) => {
+                throw new Error(text || "Failed to dislike comment");
+              });
+            }
+            return fetchComments(container, commentId);
+          })
+          .catch((error) => {
+            showNotification(error.message, "error");
+            console.error(error);
+          });
       }
     });
   });
@@ -391,21 +486,10 @@ myDivs.forEach((div) => {
   div.style.color = "#000";
 });
 
-// Hover style
-// myDivs.forEach((div) => {
-//     div.addEventListener("mouseover", function() {
-//         if (!div.classList.contains("checked")) {
-//             div.style.backgroundColor = "green";
-//             div.style.color = "#fff";
-//         }
-//     });
-// });
-
 // Check style
 checkboxGroup.addEventListener("change", function () {
   const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")]
     .length;
-
   myDivs.forEach((div) => {
     if (div.querySelector("input").checked) {
       div.classList.add("checked");
@@ -422,3 +506,20 @@ checkboxGroup.addEventListener("change", function () {
     }
   });
 });
+
+// Add this function at the top with other utility functions
+function showNotification(message, type = "success") {
+  const notification = document.getElementById("notification");
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+
+  // Show notification
+  setTimeout(() => {
+    notification.classList.add("show");
+  }, 100);
+
+  // Hide notification after 3 seconds
+  setTimeout(() => {
+    notification.classList.remove("show");
+  }, 3000);
+}

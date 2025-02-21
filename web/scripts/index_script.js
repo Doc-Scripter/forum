@@ -12,7 +12,7 @@ let route = "/posts";
 
 // State
 function fetchPosts(route) {
-  console.log("here", route);
+  console.log("I got here");
   fetch(route)
     .then((response) => response.json())
     .then((data) => {
@@ -157,7 +157,7 @@ function fetchComments(element, commentId) {
   })
     .then((response) => response.json())
     .then((data) => {
-      console.log(data);
+      console.log(  data);
       displayComments(data, element);
     })
     .catch((error) => {
@@ -206,14 +206,12 @@ filterBtns.forEach((btn) => {
       default:
         console.error("Invalid filter value");
     }
-    console.log("new route", route);
     fetchPosts(route);
   });
 });
 
 categoryFilter.addEventListener("change", (e) => {
   currentCategory = e.target.value;
-  console.log("category", currentCategory);
   fetchPosts(route);
 });
 
