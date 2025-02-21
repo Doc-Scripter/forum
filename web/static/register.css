@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
@@ -10,270 +10,137 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(45deg, #4b6cb7, #182848);
-    background-size: cover;
-    background-position: center;
+    background-color: #3674B5;
+    padding: 20px;
 }
 
-section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-}
-
+/* Register Box */
 .register-box {
-    width: 100%;
-    max-width: 400px;
-    padding: 40px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1);
+    padding: 30px;
+    width: 396px;
+    text-align: center;
 }
 
+/* Form Heading */
 .register-box h2 {
-    font-size: 2em;
-    color: #fff;
-    text-align: center;
+    color: #1c1e21;
     margin-bottom: 20px;
 }
 
+/* Input Box */
 .input-box {
     position: relative;
-    width: 100%;
-    margin: 25px 0;
+    margin-bottom: 15px;
+    text-align: left;
 }
 
 .input-box input {
     width: 100%;
-    padding: 15px;
-    background: transparent;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    font-size: 1em;
-    color: #fff;
+    padding: 14px 16px;
+    border: 1px solid #dddfe2;
+    border-radius: 6px;
+    font-size: 17px;
     outline: none;
-    transition: 0.3s ease;
 }
 
+.input-box input:focus {
+    border-color: #1877f2;
+    box-shadow: 0 0 0 2px #e7f3ff;
+}
+
+/* Labels */
 .input-box label {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1em;
-    color: #fff;
-    pointer-events: none;
-    transition: 0.3s ease;
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+    color: #606770;
 }
 
-.input-box input:focus,
-.input-box input:valid {
-    border-color: #fff;
+/* Helper Text */
+.helper-text,
+.password-hint {
+    font-size: 13px;
+    color: #606770;
+    margin-top: 5px;
+    text-align: left;
 }
 
-.input-box input:focus ~ label,
-.input-box input:valid ~ label {
-    top: -5px;
-    left: 10px;
-    font-size: 0.8em;
-    padding: 0 5px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+.helper-text ul,
+.password-hint ul {
+    margin-top: 5px;
+    padding-left: 15px;
+    font-size: 12px;
 }
 
-button {
-    width: 100%;
-    padding: 15px;
-    background: #fff;
+.helper-text ul li,
+.password-hint ul li {
+    list-style: disc;
+}
+
+/* Register Button */
+button[type="submit"] {
+    background-color: #3674B5;
     border: none;
-    border-radius: 8px;
-    font-size: 1em;
-    color: #182848;
-    font-weight: 600;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 14px;
+    width: 100%;
     cursor: pointer;
-    transition: 0.3s ease;
+    margin-top: 10px;
 }
 
-button:hover {
-    background: rgba(255, 255, 255, 0.8);
+button[type="submit"]:hover {
+    background-color: #125096;
 }
 
+/* Login Link */
 .login-link {
     margin-top: 20px;
-    color: #fff;
-    font-size: 0.9em;
-    text-align: center;
+    font-size: 15px;
+    color: #1c1e21;
 }
 
 .login-link a {
-    color: #fff;
+    color: #3674B5;
     text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
+    font-weight: bold;
 }
 
 .login-link a:hover {
     text-decoration: underline;
 }
 
-/* Notification Styles */
+/* Notification */
 .notification {
+    display: none;
     position: fixed;
     top: 20px;
     right: 20px;
-    padding: 15px 25px;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 1em;
-    transform: translateX(150%);
-    transition: transform 0.3s ease-in-out;
+    padding: 15px;
+    background-color: #f44336;
+    color: white;
+    border-radius: 4px;
     z-index: 1000;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    opacity: 0;
-    visibility: hidden;
 }
 
 .closebtn {
+    margin-left: 15px;
     color: white;
     font-weight: bold;
-    font-size: 20px;
-    line-height: 20px;
+    float: right;
     cursor: pointer;
-    transition: 0.3s;
-    margin-right: 5px;
-}
-
-.closebtn:hover {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.notification.show {
-    transform: translateX(0);
-    opacity: 1;
-    visibility: visible;
-}
-
-.notification.error {
-    background-color: #ff4444;
-    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
-}
-
-.notification.success {
-    background-color: #00C851;
-    box-shadow: 0 4px 12px rgba(0, 200, 81, 0.3);
-}
-
-#notification-message {
-    flex-grow: 1;
 }
 
 /* Responsive Design */
-@media (max-width: 480px) {
+@media (max-width: 450px) {
     .register-box {
-        width: 90%;
+        width: 100%;
+        max-width: 350px;
         padding: 20px;
-    }
-
-    .register-box h2 {
-        font-size: 1.5em;
-    }
-
-    .input-box input {
-        height: 40px;
-    }
-}
-
-/* Form Validation Styles */
-.input-box input:valid {
-    border-color: rgba(0, 255, 0, 0.5);
-}
-
-.input-box input:invalid {
-    border-color: rgba(255, 0, 0, 0.5);
-}
-
-.password-hint {
-    display: none;
-    position: absolute;
-    background: rgba(255, 255, 255, 0.9);
-    color: #182848;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 0.8em;
-    margin-top: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 100;
-}
-
-.password-hint ul {
-    margin: 5px 0 0 20px;
-}
-
-.input-box input[name="password"]:focus ~ .password-hint {
-    display: block;
-}
-
-.helper-text {
-    display: none;
-    font-size: 0.95rem;
-    color: #000000;
-    margin-top: 5px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 10px 15px;
-    border-radius: 5px;
-    border-left: 3px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    backdrop-filter: blur(10px);
-    position: absolute;
-    width: 100%;
-    z-index: 100;
-}
-
-/* Show helper text when username input is focused */
-.input-box input[name="username"]:focus ~ .helper-text {
-    display: block;
-}
-
-.helper-text ul {
-    list-style: none;
-    padding-left: 0;
-    margin-top: 5px;
-    margin-bottom: 0;
-}
-
-.helper-text li {
-    padding: 3px 0;
-    padding-left: 20px;
-    position: relative;
-    font-size: 0.8em;
-}
-
-.helper-text li:before {
-    content: "•";
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: bold;
-    position: absolute;
-    left: 5px;
-}
-
-/* Animation for helper text */
-.input-box input:focus ~ .helper-text {
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
     }
 }

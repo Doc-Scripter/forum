@@ -3,18 +3,23 @@
     --primary-dark: #1565c0;
     --background-color: #f5f5f5;
     --text-color: #333;
+    --glass-background: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Inknut Antiqua', serif;
 }
 
 body {
     font-family: Arial, sans-serif;
     background-color: var(--background-color);
     color: var(--text-color);
+    line-height: 1.6;
 }
 
 /* Header */
@@ -22,160 +27,193 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #007bff;
+    background: var(--primary-color);
     color: white;
-    padding: 15px;
+    padding: 15px 2rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
 
 .auth-btn {
-    padding: 8px 12px;
-    background-color: #007bff;
+    padding: 8px 16px;
+    background-color: var(--primary-dark);
     color: white;
     border: none;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
 }
 
 .auth-btn.register {
     background-color: #28a745;
 }
 
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
 /* Discuss With Us Button */
 .discuss-btn {
     display: block;
     margin: 20px auto;
-    padding: 12px 20px;
+    padding: 12px 24px;
     font-size: 16px;
     background-color: #ff9800;
     color: white;
     border: none;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
 }
 
-.hamburger-icon {
-    font-size: 24px;
-    cursor: pointer;
+.discuss-btn:hover {
+    background-color: #e68900;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
 /* Sidebar */
 .sidebar {
     position: fixed;
     top: 0;
-    left: -350px; /* Start hidden */
+    left: -350px;
     width: 250px;
     height: 100%;
     background: #222;
     color: white;
     padding: 20px;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
     transition: left 0.3s ease-in-out;
+    z-index: 1001;
 }
 
 .sidebar.active {
-    left: 0; /* Slide in */
+    left: 0;
 }
 
-/*Profile */
 .profile-pic {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     background: gray;
     color: white;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
-    display:flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
-/* Logout Button */
 .logout-btn {
     width: 100%;
     padding: 10px;
-    background: red;
+    background: #ff4444;
     color: white;
     border: none;
     cursor: pointer;
+    border-radius: 25px;
+    transition: all 0.3s ease;
 }
 
-.logo {
-    font-size: 1.5rem;
-    font-weight: bold;
+.logout-btn:hover {
+    background: #cc0000;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
+/* Filters */
 .filters {
     padding: 1rem 2rem;
     display: flex;
     gap: 1rem;
     background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
+    border-radius: 10px;
+    margin: 1rem auto;
+    max-width: 1200px;
 }
 
 .filter-btn,
 select {
-    padding: 10px;
+    padding: 10px 16px;
     border: none;
-    background: #007bff;
+    background: var(--primary-color);
     color: white;
-    border-radius: 5px;
+    border-radius: 25px;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .filter-btn.active {
-    background: #0056b3;
+    background: var(--primary-dark);
 }
 
-.filter-btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    background: none;
-    cursor: pointer;
-    border-radius: 4px;
+.filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
 #category-filter {
-    padding: 0.5rem;
-    border-radius: 4px;
+    padding: 10px;
+    border-radius: 25px;
     border: 1px solid #ddd;
+    background: white;
+    color: var(--text-color);
 }
 
+/* Posts Container */
 .posts-container {
     padding: 2rem;
     display: grid;
-    gap: 1rem;
+    gap: 1.5rem;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .post {
     background-color: white;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .post-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .post-category {
     color: var(--primary-color);
     font-size: 0.9rem;
+    font-weight: bold;
 }
 
 .post-title {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
 }
 
 .post-content {
     margin-bottom: 1rem;
+    color: #555;
 }
 
 .post-footer {
@@ -198,35 +236,24 @@ select {
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-}
-
-.dislike-btn {
-    color: var(--text-color);
-}
-
-.like-btn {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
     gap: 0.5rem;
+    color: var(--primary-color);
+    transition: color 0.3s ease;
+}
+
+.action-btn:hover {
+    color: var(--primary-dark);
 }
 
 .like-btn.liked {
     color: #e91e63;
 }
 
-.like-btn.active {
-    color: #4caf50;
-}
-
 .dislike-btn.active {
     color: #f44336;
 }
 
+/* Comments Section */
 .comments-section {
     margin-top: 1rem;
     border-top: 1px solid #ddd;
@@ -238,50 +265,49 @@ select {
     display: block;
 }
 
-.comments-toggle {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    cursor: pointer;
-    padding: 0.5rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.comments-toggle:hover {
-    text-decoration: underline;
-}
-
 .comment {
     background-color: #f8f8f8;
-    padding: 0.5rem;
-    border-radius: 4px;
-    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    transition: background-color 0.3s ease;
+}
+
+.comment:hover {
+    background-color: #eee;
 }
 
 .comment-form {
     display: flex;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    margin-top: 1rem;
 }
 
 .comment-input {
     flex: 1;
-    padding: 0.5rem;
+    padding: 0.75rem;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 8px;
+    font-size: 0.9rem;
 }
 
 .comment-submit {
     background-color: var(--primary-color);
     color: white;
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
+.comment-submit:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Create Post Button */
 .create-post-btn {
     position: fixed;
     bottom: 2rem;
@@ -294,14 +320,16 @@ select {
     height: 60px;
     font-size: 2rem;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
 }
 
 .create-post-btn:hover {
     transform: scale(1.1);
+    background-color: var(--primary-dark);
 }
 
+/* Modal */
 .modal {
     display: none;
     position: fixed;
@@ -312,6 +340,7 @@ select {
     background-color: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
+    z-index: 1002;
 }
 
 .modal.active {
@@ -321,9 +350,10 @@ select {
 .modal-content {
     background-color: white;
     padding: 2rem;
-    border-radius: 8px;
+    border-radius: 10px;
     width: 90%;
     max-width: 600px;
+    box-shadow: var(--shadow);
 }
 
 .modal-header {
@@ -342,37 +372,37 @@ select {
 .post-form input,
 .post-form textarea,
 .post-form select {
-    padding: 0.5rem;
+    padding: 0.75rem;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 8px;
+    font-size: 0.9rem;
 }
 
 .post-form button {
     background-color: var(--primary-color);
     color: white;
     border: none;
-    padding: 0.5rem;
-    border-radius: 4px;
+    padding: 0.75rem;
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.user-name {
-    display: block;
-    font-size: 18px;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
-.user-email {
-    display: block;
-    font-size: 14px;
-    color: #ccc;
+.post-form button:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
 .close-modal {
     background: none;
     border: none;
-    font-size: 20px;
+    font-size: 24px;
     cursor: pointer;
-    float: right;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #333;
 }
