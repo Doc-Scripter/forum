@@ -2,14 +2,13 @@
 const postsContainer = document.querySelector(".posts-container");
 const filterBtns = document.querySelectorAll(".filter-btn");
 const categoryFilter = document.getElementById("category-filter");
-const menuContent = document.querySelector(".menu-content");
+const menuContent = document.querySelector(".menu-content"); //this is unused
 const createPostBtn = document.querySelector(".create-post-btn");
 const modal = document.querySelector(".modal");
 const closeModal = document.querySelector(".close-modal");
 const postForm = document.querySelector(".post-form");
-const hamburgerIcon = document.querySelector(".hamburger-icon");
-const likebutton = document.querySelectorAll(".like-btn");
-const dislikebutton = document.querySelectorAll(".dislike-btn");
+const likebutton = document.querySelectorAll(".like-btn"); //this is unused
+const dislikebutton = document.querySelectorAll(".dislike-btn"); //this is unused
 const comments = document.querySelector(".comments-section");
 // const commentActions = document.querySelector(".comment-actions");
 
@@ -30,6 +29,8 @@ commentform.forEach((form) => {
 postsContainer.addEventListener("click", (e) => {
   if (e.target.classList.contains("like-btn")) {
     const postId = e.target.dataset.postId;
+    const isCurrentlyLiked = e.target.classList.contains("active");
+
     fetch("/likes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -37,9 +38,19 @@ postsContainer.addEventListener("click", (e) => {
     })
       .then((response) => {
         if (!response.ok) {
-          return response.text().then(text => {
-            throw new Error(text || 'Failed to like post');
+          return response.text().then((text) => {
+            throw new Error(text || "Failed to like post");
           });
+        }
+        // Remove active class from dislike button
+        const dislikeBtn = e.target.parentElement.querySelector(".dislike-btn");
+        dislikeBtn.classList.remove("active");
+
+        // Toggle active class on like button based on current state
+        if (isCurrentlyLiked) {
+          e.target.classList.remove("active");
+        } else {
+          e.target.classList.add("active");
         }
         return fetchPosts(route);
       })
@@ -51,21 +62,31 @@ postsContainer.addEventListener("click", (e) => {
 
   if (e.target.classList.contains("dislike-btn")) {
     const postId = e.target.dataset.postId;
+    const isCurrentlyDisliked = e.target.classList.contains("active");
+
     fetch("/dislikes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ post_id: postId }),
     })
-      .then(
-        response => {
-          if (!response.ok) {
-            return response.text().then(text => {
-              throw new Error(text || 'Failed to dislike post');
-            });
-          }
-          return fetchPosts(route)
+      .then((response) => {
+        if (!response.ok) {
+          return response.text().then((text) => {
+            throw new Error(text || "Failed to dislike post");
+          });
         }
-      )
+        // Remove active class from like button
+        const likeBtn = e.target.parentElement.querySelector(".like-btn");
+        likeBtn.classList.remove("active");
+
+        // Toggle active class on dislike button based on current state
+        if (isCurrentlyDisliked) {
+          e.target.classList.remove("active");
+        } else {
+          e.target.classList.add("active");
+        }
+        return fetchPosts(route);
+      })
       .catch((error) => {
         showNotification(error.message, "error");
         console.error(error);
@@ -75,23 +96,25 @@ postsContainer.addEventListener("click", (e) => {
 
 postForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  
+
   // Get form values
   const title = postForm.querySelector('[name="title"]').value.trim();
   const content = postForm.querySelector('[name="content"]').value.trim();
-  const categories = Array.from(postForm.querySelectorAll('[name="category"]:checked')).map(cb => cb.value);
-  
+  const categories = Array.from(
+    postForm.querySelectorAll('[name="category"]:checked')
+  ).map((cb) => cb.value);
+
   // Validation checks
   if (!title) {
     showNotification("Post title is required", "error");
     return;
   }
-  
+
   if (!content) {
     showNotification("Post content is required", "error");
     return;
   }
-  
+
   if (categories.length === 0) {
     showNotification("Please select at least one category", "error");
     return;
@@ -99,15 +122,15 @@ postForm.addEventListener("submit", (e) => {
 
   // If validation passes, proceed with form submission
   const formData = new FormData(postForm);
-  
+
   fetch("/create-post", {
     method: "POST",
     body: formData,
   })
-    .then(response => {
+    .then((response) => {
       if (!response.ok) {
-        return response.text().then(text => {
-          throw new Error(text || 'Failed to create post');
+        return response.text().then((text) => {
+          throw new Error(text || "Failed to create post");
         });
       }
       showNotification("Post submitted successfully!", "success");
@@ -125,7 +148,10 @@ postForm.addEventListener("submit", (e) => {
 function fetchComments(element, commentId) {
   fetch("/comments", {
     method: "POST",
-    content: "application/json",
+    // content: "application/json",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ comment_id: commentId }),
   })
     .then((response) => response.json())
@@ -224,7 +250,9 @@ function displayPosts(posts, category) {
       <p class="post-content">${escapeHTML(post.content)}</p>
       ${
         post.filepath
-          ? `<img src="/image/${post.filepath}" alt="${post.filename}">`
+          ? `<div class="post-image-container">
+          <img src="/image/${post.filepath}" alt="${post.filename}" class="post-image">
+          </div>`
           : ``
       }
 
@@ -245,7 +273,7 @@ function displayPosts(posts, category) {
             }
           </button>
         </div>
-        <div class="comments-section hidden" id="comments-${post.post_id}">
+        <div class="comments-section" id="comments-${post.post_id}">
         </div>
 
           <form
@@ -271,28 +299,32 @@ function displayPosts(posts, category) {
       .join("");
   }
 
-  //======== Add comments toggle functionality =======
+  //=================Add comments toggle functionality===================
   document.querySelectorAll(".comments-toggle").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const postId = btn.dataset.postId;
       const commentsSection = document.getElementById(`comments-${postId}`);
-
-      // Toggle visibility using a CSS class
-      if (commentsSection.classList.contains("hidden")) {
-        commentsSection.classList.remove("hidden");
-        // Only fetch comments when opening the section
+      
+      // Toggle the active class
+      if (commentsSection.classList.contains("active")) {
+        // If comments are showing, hide them
+        commentsSection.classList.remove("active");
+        commentsSection.style.display = "none";
+      } else {
+        // If comments are hidden, show them and fetch
+        commentsSection.classList.add("active");
+        commentsSection.style.display = "block";
+        
         fetch("/comments", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ post_id: postId }),
         })
-          .then((res) => res.json())
-          .then((data) => {
-            displayComments(data, commentsSection);
-          })
-          .catch((error) => console.error(error));
-      } else {
-        commentsSection.classList.add("hidden");
+        .then((res) => res.json())
+        .then((data) => {
+          displayComments(data, commentsSection);
+        })
+        .catch((error) => console.error(error));
       }
     });
   });
@@ -321,21 +353,22 @@ function escapeHTML(str) {
 
 //========= Function to display the comments =========
 function displayComments(comments, element) {
+  console.log("This is the comments: ", comments);
   if (comments && comments !== null) {
     element.innerHTML = comments
       .map(
         (comment) => `
-    <div class="comment"><p>${escapeHTML(comment.content)}</p></div>
+      <div class="comment"><p>${escapeHTML(comment.content)}</p></div>
       <div class="comment-actions">
       <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
-        👍${comment.likes}
-        </button>
-        <button class="comment dislikeBtn" data-comment-id="${
-          comment.comment_id
-        }">
-        👎${comment.dislikes}
-        </button>
-        </div>
+      👍${comment.likes}
+      </button>
+      <button class="comment dislikeBtn" data-comment-id="${
+        comment.comment_id
+      }">
+      👎${comment.dislikes}
+      </button>
+      </div>
       `
       )
       .join(``);
@@ -343,7 +376,7 @@ function displayComments(comments, element) {
   }
 }
 
-//===== comment actions =========
+//==========================comment actions====================
 function attachCommentActionListeners(container) {
   container.querySelectorAll(".comment-actions").forEach((btn) => {
     btn.addEventListener("click", (e) => {
@@ -354,39 +387,19 @@ function attachCommentActionListeners(container) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ comment_Id: commentId }),
         })
-          .then((response) => {
-            if (!response.ok) {
-              return response.text().then((text) => {
-                throw new Error(text || "Failed to like comment");
-              });
-            }
-            return fetchComments(container, commentId);
-          })
-          .catch((error) => {
-            showNotification(error.message, "error");
-            console.error(error);
-          });
+          .then(() => fetchComments(container, commentId))
+          .catch((error) => console.error(error));
       }
-
       if (e.target.classList.contains("dislikeBtn")) {
+        // e.stopPropagation();
         const commentId = e.target.dataset.commentId;
         fetch("/dislikesComment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ comment_id: commentId }),
         })
-          .then((response) => {
-            if (!response.ok) {
-              return response.text().then((text) => {
-                throw new Error(text || "Failed to dislike comment");
-              });
-            }
-            return fetchComments(container, commentId);
-          })
-          .catch((error) => {
-            showNotification(error.message, "error");
-            console.error(error);
-          });
+          .then(() => fetchComments(container, commentId))
+          .catch((error) => console.error(error));
       }
     });
   });
@@ -398,17 +411,14 @@ document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 createPostBtn.addEventListener("click", () => {
   modal.classList.add("active");
 });
-
 closeModal.addEventListener("click", () => {
   modal.classList.remove("active");
 });
-
 modal.addEventListener("click", (e) => {
   if (e.target === modal) {
     modal.classList.remove("active");
   }
 });
-
 // Event listeners for filters
 filterBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -431,39 +441,9 @@ filterBtns.forEach((btn) => {
     fetchPosts(route);
   });
 });
-
 categoryFilter.addEventListener("change", (e) => {
   currentCategory = e.target.value;
   fetchPosts(route);
-});
-
-//==== Theme Toggle Functionality =====
-document.addEventListener("DOMContentLoaded", () => {
-  const themeToggle = document.getElementById("theme-toggle");
-
-  // Check for saved theme preference, default to light if none
-  const savedTheme = localStorage.getItem("theme") || "light-theme";
-  document.body.classList.toggle("light-theme", savedTheme === "light-theme");
-
-  // Ensure light theme is applied by default
-  if (!localStorage.getItem("theme")) {
-    document.body.classList.add("light-theme");
-    localStorage.setItem("theme", "light-theme");
-  }
-
-  // Update icon visibility based on current theme
-  updateThemeIcon();
-
-  themeToggle.addEventListener("click", () => {
-    document.body.classList.toggle("light-theme");
-    updateThemeIcon();
-
-    // Save theme preference
-    const currentTheme = document.body.classList.contains("light-theme")
-      ? "light-theme"
-      : "dark-theme";
-    localStorage.setItem("theme", currentTheme);
-  });
 });
 
 // Function to update theme icon

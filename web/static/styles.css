@@ -292,18 +292,31 @@ body.light-theme .post-footer {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.comment-submit {
+.comment-form button[type="submit"] {
+  background-color: #2196F3;  /* Blue color */
+  color: white !important;    /* Force white text */
   padding: 8px 16px;
   border: none;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
-.comment-submit:hover {
-  background: rgba(255, 255, 255, 0.3);
+.comment-form button[type="submit"]:hover {
+  background-color: #1976D2;  /* Darker blue on hover */
+}
+
+/* Ensure the button stays blue in both themes */
+.light-theme .comment-form button[type="submit"],
+.dark-theme .comment-form button[type="submit"] {
+  background-color: #2196F3;
+  color: white !important;
+}
+
+.light-theme .comment-form button[type="submit"]:hover,
+.dark-theme .comment-form button[type="submit"]:hover {
+  background-color: #1976D2;
 }
 
 /* Comment Actions Styling */
@@ -1444,4 +1457,72 @@ html {
 .notification.error {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+}
+
+/* Common styles for like/dislike buttons in posts and comments */
+.like-btn, .dislike-btn,
+.likeBtn, .dislikeBtn {
+    background: transparent;
+    border: 2px solid #888;  /* Default grey border */
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #888;  /* Default grey color */
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Light theme specific styles */
+.light-theme .like-btn, .light-theme .dislike-btn,
+.light-theme .likeBtn, .light-theme .dislikeBtn {
+    border: 2px solid #888;
+    color: #888;
+}
+
+/* Hover effects for both themes */
+.like-btn:hover, .likeBtn:hover,
+.light-theme .like-btn:hover, .light-theme .likeBtn:hover {
+    border-color: #4CAF50;  /* Green border */
+    color: #4CAF50;  /* Green text */
+}
+
+.dislike-btn:hover, .dislikeBtn:hover,
+.light-theme .dislike-btn:hover, .light-theme .dislikeBtn:hover {
+    border-color: #f44336;  /* Red border */
+    color: #f44336;  /* Red text */
+}
+
+/* Active states for both themes */
+.like-btn.active, .likeBtn.active,
+.light-theme .like-btn.active, .light-theme .likeBtn.active {
+    color: #4CAF50;  /* Green text */
+    border-color: #4CAF50;  /* Green border */
+    background: transparent;
+}
+
+.dislike-btn.active, .dislikeBtn.active,
+.light-theme .dislike-btn.active, .light-theme .dislikeBtn.active {
+    color: #f44336;  /* Red text */
+    border-color: #f44336;  /* Red border */
+    background: transparent;
+}
+
+/* Count spans for both themes */
+.like-count, .dislike-count,
+.light-theme .like-count, .light-theme .dislike-count {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+/* Active state count colors for both themes */
+.like-btn.active .like-count, .likeBtn.active .like-count,
+.light-theme .like-btn.active .like-count, .light-theme .likeBtn.active .like-count {
+    color: #4CAF50;
+}
+
+.dislike-btn.active .dislike-count, .dislikeBtn.active .dislike-count,
+.light-theme .dislike-btn.active .dislike-count, .light-theme .dislikeBtn.active .dislike-count {
+    color: #f44336;
 }
