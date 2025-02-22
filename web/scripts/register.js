@@ -144,3 +144,87 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification(decodeURIComponent(errorMsg));
     }
 }); 
+
+
+function isValidUsername(username) {
+    // Username requirements:
+    // 1. Length between 3 and 20 characters
+    // 2. Must start with a letter
+    // 3. Can contain letters, numbers, underscores, or hyphens
+    // 4. No consecutive special characters (like '__' or '--')
+    // 5. No spaces allowed
+    
+    const usernameRegex = /^[A-Za-z][A-Za-z0-9_-]{2,19}$/;
+    const consecutiveSpecialChars = /[_-]{2,}/;
+    
+    // List of common inappropriate patterns or reserved words
+    const inappropriatePatterns = [
+      'admin',
+      'root',
+      'system',
+      'mod',
+      'fuck',
+      'shit',
+      'faggot',
+      'nigga',
+      'nig',
+      // Add more inappropriate words as needed
+    ];
+    
+    // Basic checks
+    if (!username || typeof username !== 'string') {
+      return { isValid: false, message: "Username is required" };
+    }
+    
+    if (username.length < 3 || username.length > 20) {
+      return { 
+        isValid: false, 
+        message: "Username must be between 3 and 20 characters long" 
+      };
+    }
+    
+    if (!usernameRegex.test(username)) {
+      return { 
+        isValid: false, 
+        message: "Username must start with a letter and can only contain letters, numbers, underscores, and hyphens" 
+      };
+    }
+    
+    if (consecutiveSpecialChars.test(username)) {
+      return { 
+        isValid: false, 
+        message: "Username cannot contain consecutive special characters" 
+      };
+    }
+    
+    // Check for inappropriate patterns
+    const lowerUsername = username.toLowerCase();
+    for (const pattern of inappropriatePatterns) {
+      if (lowerUsername.includes(pattern)) {
+        return { 
+          isValid: false, 
+          message: "This username is not allowed" 
+        };
+      }
+    }
+    
+    return { isValid: true, message: "Valid username" };
+  }
+  
+  // Add this to your registration form submit handler
+  document.querySelector('.registration-form').addEventListener('submit', (e) => {
+    const usernameInput = e.target.querySelector('input[name="username"]');
+    const username = usernameInput.value;
+    
+    const validation = isValidUsername(username);
+    
+    if (!validation.isValid) {
+      e.preventDefault();
+      alert(validation.message);
+      return;
+    }
+    
+    // If username is valid, trim any leading/trailing whitespace
+    usernameInput.value = username.trim();
+  });
+  

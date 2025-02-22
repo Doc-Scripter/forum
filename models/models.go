@@ -1,11 +1,13 @@
 package models
 
 import (
+	e "forum/Error"
+	d "forum/database"
 	"net/http"
 	"strings"
 	"time"
-	d "forum/database"
-	e "forum/Error"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type ProfileData struct {
@@ -59,33 +61,38 @@ var ErrorsData = Errors{
 	},
 }
 
-
-
 type Post struct {
-	CreatedAt time.Time `json:"created_at"`
-	Categories  []string    `json:"category"`
-	Likes     int       `json:"likes"`
-	Title     string    `json:"title"`
-	Dislikes  int       `json:"dislikes"`
-	CommentsCount  int   `json:"comments_count"`
-	Comments  []Comment `json:"comments"`
-	Content   string    `json:"content"`
-	User_uuid string    `json:"user_uuid"`
-	Post_id   int       `json:"post_id"`
-	Filepath string     `json:"filepath"`
-	Filename string  `json:"filename"`
+	CreatedAt     time.Time `json:"created_at"`
+	Categories    []string  `json:"category"`
+	Likes         int       `json:"likes"`
+	Title         string    `json:"title"`
+	Dislikes      int       `json:"dislikes"`
+	CommentsCount int       `json:"comments_count"`
+	Comments      []Comment `json:"comments"`
+	Content       string    `json:"content"`
+	User_uuid     string    `json:"user_uuid"`
+	Post_id       int       `json:"post_id"`
+	Filepath      string    `json:"filepath"`
+	Filename      string    `json:"filename"`
 	Owner         string
 	OwnerInitials string
 }
 
-type Comment struct{
-	Comment_id int `json:"comment_id"`
-	Post_id string `json:"post_id"`
-	CreatedAt time.Time `json:"created_at"`
-	Likes     int       `json:"likes"`
-	Dislikes  int       `json:"dislikes"`
-	Content   string    `json:"content"`
+type Users struct {
+	Username string
+	Email    string
+	Password string
+}
 
+var User Users
+
+type Comment struct {
+	Comment_id int       `json:"comment_id"`
+	Post_id    string    `json:"post_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	Likes      int       `json:"likes"`
+	Dislikes   int       `json:"dislikes"`
+	Content    string    `json:"content"`
 }
 
 // Initials interface defines the method for generating initials
@@ -96,20 +103,20 @@ type Initials interface {
 // Make ProfileData implement the Initials interface
 func (p *ProfileData) GenerateInitials() string {
 	parts := strings.Split(p.Username, " ")
-	
+
 	if len(parts) == 0 || len(parts[0]) == 0 {
 		return "?"
 	}
-	
+
 	// Get first initial
 	firstInitial := string(parts[0][0])
-	
+
 	// Get second initial if available
 	var secondInitial string
 	if len(parts) > 1 && len(parts[1]) > 0 {
 		secondInitial = string(parts[1][0])
 	}
-	
+
 	// Return combined initials
 	if secondInitial != "" {
 		return strings.ToUpper(firstInitial + secondInitial)
@@ -118,29 +125,29 @@ func (p *ProfileData) GenerateInitials() string {
 }
 
 type Image struct {
-    ImageID   string     `json:"image_id"`
-    UserID    string     `json:"user_id"`
-    PostID    string     `json:"post_id"`
-    Filename  string    `json:"filename"`
-    Path      string    `json:"path"`
-    CreatedAt time.Time `json:"created_at"`
+	ImageID   string    `json:"image_id"`
+	UserID    string    `json:"user_id"`
+	PostID    string    `json:"post_id"`
+	Filename  string    `json:"filename"`
+	Path      string    `json:"path"`
+	CreatedAt time.Time `json:"created_at"`
 }
 type Category_Process interface {
 	Seperate_Categories() string
 }
 
 // ===========The function will pack the categories as a slice of strings from the database==========
-func (p *Post)Seperate_Categories() Post{
+func (p *Post) Seperate_Categories() Post {
 	var (
 		combined_categories string
-		categories []string
+		categories          []string
 	)
 
-    row, err := d.Db.Query("SELECT category FROM posts")
-    if err != nil {
+	row, err := d.Db.Query("SELECT category FROM posts")
+	if err != nil {
 		e.LogError(err)
-        return *p
-    }
+		return *p
+	}
 	for row.Next() {
 		err = row.Scan(&combined_categories)
 		if err != nil {
@@ -150,5 +157,14 @@ func (p *Post)Seperate_Categories() Post{
 		categories = strings.Split(combined_categories, ", ")
 		p.Categories = categories
 	}
-    return *p
+	return *p
+}
+
+func (user *Users) HashPassword() error {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.Password = string(hashed)
+	return nil
 }

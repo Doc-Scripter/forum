@@ -1,28 +1,29 @@
 package handlers
 
 import (
-	"time"
-	"strings"
-	"net/http"
 	"database/sql"
+	"net/http"
+	"strings"
+	"time"
 	// "fmt"
 
-	d "forum/database"
-	"github.com/gofrs/uuid"// the google package is also allowed
-	"golang.org/x/crypto/bcrypt"
 	e "forum/Error"
+	d "forum/database"
 	m "forum/models"
+	u "forum/utils"
+	"github.com/gofrs/uuid" // the google package is also allowed
+	"golang.org/x/crypto/bcrypt"
 )
 
-//==============This function will be called when a the login submission is done=====================
+// ==============This function will be called when a the login submission is done=====================
 func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
-	if bl, _ := ValidateSession(r); bl {
+	if bl, _ := u.ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
 	}
 
 	if r.Method != http.MethodPost {
-		ErrorPage(nil, m.ErrorsData.MethodNotAllowed , w, r)
+		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
 		return
 	}
 
@@ -34,7 +35,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 		// ErrorPage(err, m.ErrorsData.InternalError , w, r)
 		return
 	}
-	
+
 	email := strings.TrimSpace(r.FormValue("email"))
 	password := strings.TrimSpace(r.FormValue("password"))
 
@@ -77,9 +78,17 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 
 	sessionToken := u.String()
 	expiresAt := time.Now().Add(24 * time.Hour)
+	
+	_, err = d.Db.Exec("DELETE FROM sessions WHERE user_id = ?",userID)
+	if err != nil {
+		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		return
+	}
+	SetSessionCookie(w, "", time.Now().Add(-time.Hour))
+
 
 	//==============Store the created session=================
-	_, err = d.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", 
+	_, err = d.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)",
 		userID, sessionToken, expiresAt)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -89,7 +98,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	SetSessionCookie(w, sessionToken, expiresAt)
-	
+
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Redirecting you to home page"))
 }
