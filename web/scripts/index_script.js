@@ -12,7 +12,7 @@ let route = "/posts";
 
 // State
 function fetchPosts(route) {
-  console.log("here", route);
+  console.log("I got here");
   fetch(route)
     .then((response) => response.json())
     .then((data) => {
@@ -61,7 +61,7 @@ function displayPosts(posts, category) {
     </div>
     <h2 class="post-title">No posts available</h2>
     <p class="post-content">No posts to display</p>
-     <div class="post-footer">
+    <div class="post-footer">
         <span class="post-author"></span>
       </div>
     </article>`;
@@ -95,7 +95,7 @@ function displayPosts(posts, category) {
         
         </div>
 
-          <form>
+          <form class="comment-form">
               <input
               type="text"
               name="add-comment"
@@ -126,25 +126,87 @@ commentForms.forEach((form) => {
   });
   
 
-  //=================Add comments toggle functionality===================
-  document.querySelectorAll(".comments-toggle").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const postId = btn.dataset.postId;
-      const commentsSection = document.getElementById(`comments-${postId}`);
-      commentsSection.classList.toggle("active");
+ //=================Add comments toggle functionality===================
+ document.querySelectorAll(".comments-toggle").forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    const postId = btn.dataset.postId;
+    const commentsSection = document.getElementById(`comments-${postId}`);
+    
+    // Toggle the active class
+    if (commentsSection.classList.contains("active")) {
+      // If comments are showing, hide them
+      commentsSection.classList.remove("active");
+      commentsSection.style.display = "none";
+    } else {
+      // If comments are hidden, show them and fetch
+      commentsSection.classList.add("active");
+      commentsSection.style.display = "block";
+      
       fetch("/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ post_id: postId }),
       })
-      .then((res) => res.json()
-      
-    )
-        .then((data) => {
-          displayComments(data, commentsSection);
+      .then((res) => res.json())
+      .then((data) => {
+        displayComments(data, commentsSection);
+      })
+      .catch((error) => console.error(error));
+    }
+  });
+});
+}
+//========= Function to display the comments =========
+function displayComments(comments, element) {
+  console.log("This is the comments: ", comments);
+  if (comments && comments !== null) {
+    element.innerHTML = comments
+      .map(
+        (comment) => `
+      <div class="comment"><p>${escapeHTML(comment.content)}</p></div>
+      <div class="comment-actions">
+      <button class="comment likeBtn" data-comment-id="${comment.comment_id}">
+      👍${comment.likes}
+      </button>
+      <button class="comment dislikeBtn" data-comment-id="${
+        comment.comment_id
+      }">
+      👎${comment.dislikes}
+      </button>
+      </div>
+      `
+      )
+      .join(``);
+    attachCommentActionListeners(element);
+  }
+}
+
+
+//==========================comment actions====================
+function attachCommentActionListeners(container) {
+  container.querySelectorAll(".comment-actions").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      if (e.target.classList.contains("likeBtn")) {
+        const commentId = e.target.dataset.commentId;
+        fetch("/likesComment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ comment_Id: commentId }),
         })
-        .catch((error) => 
-          console.error("je",error));
+          .then(() => fetchComments(container, commentId))
+          .catch((error) => console.error(error));
+      }
+      if (e.target.classList.contains("dislikeBtn")) {
+        // e.stopPropagation();
+        const commentId = e.target.dataset.commentId;
+        fetch("/dislikesComment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ comment_id: commentId }),
+        })
+          .then(() => fetchComments(container, commentId))
+          .catch((error) => console.error(error));
+      }
     });
   });
 }
@@ -157,7 +219,7 @@ function fetchComments(element, commentId) {
   })
     .then((response) => response.json())
     .then((data) => {
-      console.log(data);
+      console.log(  data);
       displayComments(data, element);
     })
     .catch((error) => {
@@ -206,14 +268,12 @@ filterBtns.forEach((btn) => {
       default:
         console.error("Invalid filter value");
     }
-    console.log("new route", route);
     fetchPosts(route);
   });
 });
 
 categoryFilter.addEventListener("change", (e) => {
   currentCategory = e.target.value;
-  console.log("category", currentCategory);
   fetchPosts(route);
 });
 
