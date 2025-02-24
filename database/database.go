@@ -13,7 +13,7 @@ var Db *sql.DB
 func StartDbConnection() error {
 	var err error
 
-	Db, err = sql.Open("sqlite3", "forum.db")
+	Db, err = sql.Open("sqlite3", "data/forum.db")
 	if err != nil {
 		return err
 	}
