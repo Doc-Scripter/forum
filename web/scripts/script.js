@@ -129,9 +129,12 @@ postForm.addEventListener("submit", (e) => {
   })
     .then((response) => {
       if (!response.ok) {
-        return response.text().then((text) => {
-          throw new Error(text || "Failed to create post");
-        });
+        showNotification("Failed to create post", "error");
+        return;
+      // console.error("Error creating post:", error);
+        // return response.text().then((text) => {
+        //   throw new Error("Bad Request" || "Failed to create post");
+        // });
       }
       showNotification("Post submitted successfully!", "success");
       modal.classList.remove("active");
@@ -139,7 +142,7 @@ postForm.addEventListener("submit", (e) => {
       return fetchPosts(route);
     })
     .catch((error) => {
-      showNotification(error.message, "error");
+      showNotification("Failed to create post", "error");
       console.error("Error creating post:", error);
     });
 });
@@ -281,6 +284,7 @@ function displayPosts(posts, category) {
             data-post-id="${post.post_id}"
             action="/addcomment"
             method="post"
+             onsubmit="return validateComment(event)"
           >
             <input type="hidden" name="post_id" value="${post.post_id}" />
             <input
@@ -304,7 +308,7 @@ function displayPosts(posts, category) {
     btn.addEventListener("click", (e) => {
       const postId = btn.dataset.postId;
       const commentsSection = document.getElementById(`comments-${postId}`);
-      
+
       // Toggle the active class
       if (commentsSection.classList.contains("active")) {
         // If comments are showing, hide them
@@ -314,17 +318,17 @@ function displayPosts(posts, category) {
         // If comments are hidden, show them and fetch
         commentsSection.classList.add("active");
         commentsSection.style.display = "block";
-        
+
         fetch("/comments", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ post_id: postId }),
         })
-        .then((res) => res.json())
-        .then((data) => {
-          displayComments(data, commentsSection);
-        })
-        .catch((error) => console.error(error));
+          .then((res) => res.json())
+          .then((data) => {
+            displayComments(data, commentsSection);
+          })
+          .catch((error) => console.error(error));
       }
     });
   });
@@ -446,7 +450,6 @@ categoryFilter.addEventListener("change", (e) => {
   fetchPosts(route);
 });
 
-
 //===================Theme Toggle Functionality====================
 document.addEventListener("DOMContentLoaded", () => {
   const themeToggle = document.getElementById("theme-toggle");
@@ -525,4 +528,37 @@ function showNotification(message, type = "success") {
   setTimeout(() => {
     notification.classList.remove("show");
   }, 3000);
+}
+
+// Add validation for comment forms
+document.querySelectorAll(".comment-form").forEach((form) => {
+  form.addEventListener("submit", (e) => {
+    const commentInput = form.querySelector(".comment-input");
+
+    if (commentInput.value.trim() === "") {
+      e.preventDefault();
+      alert("Comment cannot be empty");
+      return;
+    }
+
+    // Update the actual input value with trimmed content
+    commentInput.value = commentInput.value.trim();
+  });
+});
+
+function validateComment(event) {
+  const form = event.target;
+  const commentInput = form.querySelector(".comment-input");
+
+  if (commentInput.value.trim() === "") {
+    event.preventDefault();
+    alert("Comment cannot be empty or contain only whitespace");
+    commentInput.value = ""; // Clear the input
+    commentInput.focus(); // Return focus to the input
+    return false;
+  }
+
+  // Update the input value with trimmed content before submission
+  commentInput.value = commentInput.value.trim();
+  return true;
 }

@@ -2,15 +2,16 @@ package handlers
 
 import (
 	"fmt"
-	d "forum/database"
-	m "forum/models"
-	u "forum/utils"
 	"html"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	d "forum/database"
+	m "forum/models"
+	u "forum/utils"
 )
 
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,15 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	category := u.CombineCategory(r.Form["category"])
+	var category string
+
+	if !ValidateCategory(r.Form["category"]) {
+		w.WriteHeader(http.StatusBadRequest)
+		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+		return
+	} else {
+		category = u.CombineCategory(r.Form["category"])
+	}
 	content := strings.TrimSpace(html.EscapeString(r.FormValue("content")))
 	title := strings.TrimSpace(html.EscapeString(r.FormValue("title")))
 
@@ -120,4 +129,22 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
+}
+
+func ValidateCategory(str []string) bool {
+	categories := []string{"All Categories", "Technology", "Health", "Math", "Games", "Science", "Religion", "Education", "Politics", "Fashion", "Lifestyle", "Sports"}
+
+	for i, s := range str {
+		for _, v := range categories {
+
+
+			if s == v && i==len(str)-1{
+				fmt.Println(str)
+
+				fmt.Println(v)
+				return true
+			}
+		}
+	}
+	return false
 }

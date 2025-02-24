@@ -84,6 +84,8 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	Profile.Category = m.Category
+
 	if err = tmpl.Execute(w, Profile); err != nil {
 		ErrorPage(err, m.ErrorsData.InternalError, w, r)
 		return
