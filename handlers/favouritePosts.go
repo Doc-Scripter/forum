@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-// ==== This function will handle filtration of the posts based on the ones that have been liked ====
+// ==== This function will handle filtration of the posts based on the ones that have been liked by the current user ====
 func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodGet {
@@ -108,7 +108,7 @@ func FavoritesPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e.LOGGER("[SUCCESS]: Fetching favorite posts was a success!", nil)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(postsJson)
+	e.LOGGER("[SUCCESS]: Fetching favorite posts was a success!", nil)
 }

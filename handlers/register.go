@@ -15,7 +15,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// =======User struct to store user details===
+// ===== User struct to store user details= ===
 type User struct {
 	ID       int
 	UUID     string
@@ -70,7 +70,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// generate a UUID for the user using the google/uuid package
+	// ======= generate a UUID for the user using the google/uuid package =====
 	// UUID := uuid.New().String()
 	u, err := uuid.NewV4()
 	if err != nil {

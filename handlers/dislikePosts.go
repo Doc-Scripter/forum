@@ -32,13 +32,12 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(str, &postID)
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+		ErrorPage(fmt.Errorf("|dislike post handler|---> {%v}", err), m.ErrorsData.BadRequest, w, r)
 		return
 	}
 
-	// Check if the user has already liked or disliked the post
+	//=========== Check if the user has already liked or disliked the post ===============
 	var likeDislike string
-	// check if liked
 	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid).Scan(&likeDislike)
 
 	if err == sql.ErrNoRows {
@@ -87,7 +86,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s has disliked the post: post_id(%v)", Profile.Username, postID.Post_id), nil)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s has disliked the post: post_id(%v)", Profile.Username, postID.Post_id), nil)
 }

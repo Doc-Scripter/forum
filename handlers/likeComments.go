@@ -33,13 +33,13 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(str, &commentId)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		ErrorPage(fmt.Errorf("|like comment handler| ---> {%v}", err), m.ErrorsData.BadRequest, w, r)
 		return
 	}
 
-	// Check if the user has already liked or disliked the post
+	//======= Check if the user has already liked or disliked the post =========
 	var likeDislike string
-	// check if liked
 	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'like' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
 
 	if err == sql.ErrNoRows {

@@ -17,7 +17,6 @@ logging file and then, serve the error page with the error message and the error
 */
 func ErrorPage(Error error, ErrorData m.ErrorData, w http.ResponseWriter, r *http.Request) {
 	
-	e.LOGGER("[ERROR]", Error)
 	tmpl, err := template.ParseFiles("./web/templates/error.html")
 	
 	if err != nil {
@@ -30,6 +29,7 @@ func ErrorPage(Error error, ErrorData m.ErrorData, w http.ResponseWriter, r *htt
 		e.LOGGER("[ERROR]", fmt.Errorf("|error page server| ---> {%v}", err))
 		return
 	}
+	e.LOGGER("[ERROR]", Error)
 }
 
 // ==== The function handler serves the landing page of the web application ====

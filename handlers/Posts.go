@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	d "forum/database"
 	m "forum/models"
-	"sort"
+	u "forum/utils"
 	"fmt"
 	"net/http"
 	e "forum/Error"
@@ -86,7 +86,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		posts = append(posts, eachPost)
 	}
 
-	postsJson, err := json.Marshal(OrderPosts(posts))
+	postsJson, err := json.Marshal(u.OrderPosts(posts))
 	if err != nil {
 		ErrorPage(fmt.Errorf("|post handler| ---> {%v}", err), m.ErrorsData.BadRequest, w, r)
 		return
@@ -95,12 +95,4 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 	e.LOGGER("[SUCCESS]: Fetching posts was a success!", nil)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(postsJson)
-}
-
-
-func OrderPosts(posts []m.Post) []m.Post{
-	sort.Slice(posts, func(i, j int) bool {
-        return posts[i].CreatedAt.After(posts[j].CreatedAt)
-    })
-    return posts
 }

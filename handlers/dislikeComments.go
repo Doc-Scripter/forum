@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-// ==== This function will handle disliking a poscomment ====
+// ==== This function will handle disliking a post's comment and alter the database ====
 func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
@@ -37,9 +37,7 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if the user has already liked or disliked the post
 	var likeDislike string
-	// check if liked
 	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
 
 	if err == sql.ErrNoRows {
@@ -90,7 +88,7 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s has disliked the comment: comment_id(%v)", Profile.Username , commentId.Comment_Id), nil)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s has disliked the comment: comment_id(%v)", Profile.Username , commentId.Comment_Id), nil)
 }

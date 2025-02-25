@@ -12,8 +12,8 @@ import (
 	"net/http"
 )
 
-// ==== This function will handle liking a post ====
 
+// ==== This function will handle liking a post and adding it to the database ====
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
