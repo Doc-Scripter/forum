@@ -9,6 +9,8 @@ import (
 
 var ErrorLogger *log.Logger
 
+
+//==== Add the LOGGER folder to the root directory and creation of the logging file. Declaration of our logger ===
 func init() {
 
 	logFolder := "LOGGING"
@@ -37,7 +39,7 @@ func init() {
 	ErrorLogger = log.New(file, "LOGGER: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-// ===== This function will take an error err and display ot in the app.log file found in the LOGGER folder ====
+// ===== This function will take an error err and display it in the app.log file found in the LOGGER folder ====
 func LOGGER(log_type string, err error) {
 	if err != nil {
 		ErrorLogger.Println(log_type, ": ", err)
