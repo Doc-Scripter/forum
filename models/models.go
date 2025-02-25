@@ -177,7 +177,7 @@ func (p *Post) Seperate_Categories() Post {
 		categories          []string
 	)
 
-	row, err := d.Db.Query("SELECT category FROM posts")
+	row, err := d.Db.Query("SELECT category FROM posts WHERE post_id = $1", p.Post_id)
 	if err != nil {
 		e.LOGGER("[ERROR]", fmt.Errorf("|seperate methods category| ---> {%v}", err))
 		return *p
