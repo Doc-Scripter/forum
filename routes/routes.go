@@ -26,7 +26,7 @@ func Routers() (*http.ServeMux, error) {
 	// === endpoints available for all users ===
 	mux.HandleFunc("/posts", handler.PostsHandler)
 	mux.HandleFunc("/comments", handler.CommentHandler)
-	mux.Handle("/image/web/uploads/", handler.AuthMiddleware(http.HandlerFunc(handler.ImageHandler)))
+	mux.HandleFunc("/image/web/uploads/", handler.ImageHandler)
 	
 	// === endpoints only available for logged in users ==== 
 	mux.Handle("/create-post", handler.AuthMiddleware(http.HandlerFunc(handler.CreatePostsHandler)))
