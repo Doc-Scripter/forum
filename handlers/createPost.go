@@ -132,3 +132,27 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
+func ValidateCategory(str []string) bool {
+	categories := map[string]bool{
+		"All Categories": true,
+		"Technology":     true,
+		"Health":         true,
+		"Math":           true,
+		"Games":          true,
+		"Science":        true,
+		"Religion":       true,
+		"Education":      true,
+		"Politics":       true,
+		"Fashion":        true,
+		"Lifestyle":      true,
+		"Sports":         true,
+	}
+
+	for _, s := range str {
+		if !categories[s] {
+			return false
+		}
+	}
+	return true
+}
+
