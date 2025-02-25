@@ -5,13 +5,16 @@ import (
 	"encoding/json"
 	d "forum/database"
 	m "forum/models"
+	e "forum/Error"
 	u "forum/utils"
+	"fmt"
 	"io"
 	"net/http"
 )
 
 // ==== This function will handle liking a comment ====
 func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != http.MethodPost {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
 		return
@@ -19,7 +22,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	Profile, err := u.GetUserDetails(w, r)
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|like comment handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 
@@ -30,7 +33,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(str, &commentId)
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+		ErrorPage(fmt.Errorf("|like comment handler| ---> {%v}", err), m.ErrorsData.BadRequest, w, r)
 		return
 	}
 
@@ -51,40 +54,42 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,comment_id,user_uuid) VALUES ('like',?,?)", commentId.Comment_Id, Profile.Uuid)
 					if err != nil {
-						ErrorPage(err, m.ErrorsData.InternalError, w, r)
+						ErrorPage(fmt.Errorf("|like comment handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 						return
 					}
 				} else {
 					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
 					if err != nil {
-						ErrorPage(err, m.ErrorsData.InternalError, w, r)
+						ErrorPage(fmt.Errorf("|like comment handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 						return
 					}
 				}
 
 			} else {
-				ErrorPage(err, m.ErrorsData.InternalError, w, r)
+				ErrorPage(fmt.Errorf("|like comment handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 				return
 			}
 		}
 		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'like' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
 		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			ErrorPage(fmt.Errorf("|like comment handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 	} else if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|like comment handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	} else if likeDislike == "like" {
 
 		// If the user has already liked the post, minus the like
 		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
 		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			ErrorPage(fmt.Errorf("|like comment handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 	}
+
+	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s liked the comment: comment(%v)", Profile.Username, commentId.Comment_Id), nil)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	// "fmt"
+	"fmt"
 
 	e "forum/Error"
 	d "forum/database"
@@ -17,6 +17,7 @@ import (
 
 // ==============This function will be called when a the login submission is done=====================
 func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
+
 	if bl, _ := u.ValidateSession(r); bl {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
@@ -31,7 +32,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Unable to process login request"))
-		e.LogError(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|login handler| ---> {%v}", err))
 		// ErrorPage(err, m.ErrorsData.InternalError , w, r)
 		return
 	}
@@ -39,14 +40,12 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	email := strings.TrimSpace(r.FormValue("email"))
 	password := strings.TrimSpace(r.FormValue("password"))
 
-	// Validate input
 	if email == "" || password == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Email and password are required"))
 		return
 	}
 
-	// Retrieve user from DB
 	var dbPassword, userID string
 	err = d.Db.QueryRow("SELECT password, id FROM users WHERE email = ?", email).Scan(&dbPassword, &userID)
 	if err == sql.ErrNoRows {
@@ -56,7 +55,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("An error occurred while processing your request"))
-		e.LogError(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|login handler| ---> {%v}", err))
 		return
 	}
 
@@ -72,7 +71,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("An error occurred while logging you in"))
-		e.LogError(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|login handler| ---> {%v}", err))
 		return
 	}
 
@@ -81,7 +80,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	
 	_, err = d.Db.Exec("DELETE FROM sessions WHERE user_id = ?",userID)
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|login handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 	SetSessionCookie(w, "", time.Now().Add(-time.Hour))
@@ -93,12 +92,13 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("An error occurred while logging  you in"))
-		e.LogError(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|login handler| ---> {%v}", err))
 		return
 	}
 
 	SetSessionCookie(w, sessionToken, expiresAt)
 
+	e.LOGGER("[SUCCESS]: Logged in user successfully!", nil)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Redirecting you to home page"))
 }

@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"text/template"
+	"fmt"
 
 	e "forum/Error"
 	m "forum/models"
@@ -15,15 +16,18 @@ import (
 logging file and then, serve the error page with the error message and the error code in the ErrorData object ====
 */
 func ErrorPage(Error error, ErrorData m.ErrorData, w http.ResponseWriter, r *http.Request) {
-	e.LogError(Error)
+	
+	e.LOGGER("[ERROR]", Error)
 	tmpl, err := template.ParseFiles("./web/templates/error.html")
+	
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		e.LogError(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|error page server| ---> {%v}", err))
 		return
 	}
+	
 	if err = tmpl.Execute(w, ErrorData); err != nil {
-		e.LogError(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|error page server| ---> {%v}", err))
 		return
 	}
 }
@@ -42,17 +46,18 @@ func LandingPage(w http.ResponseWriter, r *http.Request) {
 			ErrorPage(nil, m.ErrorsData.BadRequest, w, r)
 			return
 		}
+
 		tmpl, err := template.ParseFiles("./web/templates/index.html")
-		errD := m.ErrorsData.InternalError
 		if err != nil {
-			ErrorPage(err, errD, w, r)
+			ErrorPage(fmt.Errorf("|landing page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 		if err = tmpl.Execute(w, nil); err != nil {
-			ErrorPage(err, errD, w, r)
+			ErrorPage(fmt.Errorf("|landing page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
+
 	} else {
 		ErrorPage(nil, m.ErrorsData.PageNotFound, w, r)
 		return
@@ -74,20 +79,20 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 
 	Profile, err := u.GetUserDetails(w, r)
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|home page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|home page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 
 	Profile.Category = m.Category
 
 	if err = tmpl.Execute(w, Profile); err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|home page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 }
@@ -101,11 +106,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("./web/templates/login.html")
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|login page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 	if err = tmpl.Execute(w, nil); err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|login page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 }
@@ -123,11 +128,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("./web/templates/register.html")
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|register page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 	if err = tmpl.Execute(w, nil); err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|register page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 }

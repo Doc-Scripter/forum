@@ -3,10 +3,13 @@ package handlers
 import (
 	m "forum/models"
 	"net/http"
+	"fmt"
+	e "forum/Error"
 	"os"
 )
 
 func ImageHandler(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != http.MethodGet {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
 		return
@@ -17,7 +20,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	// Open the image file
 	file, err := os.Open(imagePath)
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|image handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 	defer file.Close()
@@ -25,7 +28,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the file info
 	fileInfo, err := file.Stat()
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|image handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 
@@ -35,4 +38,5 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Write the image file to the response
 	http.ServeFile(w, r, imagePath)
+	e.LOGGER(fmt.Sprintf("[SUCCESS]: Served image: %s", imagePath), nil)
 }

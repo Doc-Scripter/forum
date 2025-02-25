@@ -5,19 +5,24 @@ import (
 	d "forum/database"
 	m "forum/models"
 	"sort"
+	"fmt"
 	"net/http"
+	e "forum/Error"
 )
 
 // ==== This function will handle post creation and insertion of the post into the database ====
 
 func PostsHandler(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != http.MethodGet {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
 		return
 	}
+	
 	rows, err := d.Db.Query("SELECT title,content,created_at,post_id,filename,filepath FROM posts")
+	
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|post handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 
 	}
@@ -32,14 +37,14 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		err := rows.Scan(&eachPost.Title, &eachPost.Content, &eachPost.CreatedAt, &eachPost.Post_id, &eachPost.Filename, &eachPost.Filepath)
 		eachPost.Seperate_Categories()
 		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			ErrorPage(fmt.Errorf("|post handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 		commentsCount := 0
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = ?", eachPost.Post_id).Scan(&commentsCount)
 		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			ErrorPage(fmt.Errorf("|post handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 		defer rows.Close()
@@ -48,7 +53,7 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		rows, err := d.Db.Query(`SELECT content FROM comments WHERE post_id = ?`, eachPost.Post_id)
 		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			ErrorPage(fmt.Errorf("|post handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
@@ -65,13 +70,13 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'like'", &eachPost.Post_id).Scan(&likeCount)
 		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			ErrorPage(fmt.Errorf("|post handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 		err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE post_id = ? AND like_dislike = 'dislike'", &eachPost.Post_id).Scan(&dislikeCount)
 		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			ErrorPage(fmt.Errorf("|post handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
@@ -83,16 +88,17 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	postsJson, err := json.Marshal(OrderPosts(posts))
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|post handler| ---> {%v}", err), m.ErrorsData.BadRequest, w, r)
 		return
 	}
+
+	e.LOGGER("[SUCCESS]: Fetching posts was a success!", nil)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(postsJson)
 }
 
 
 func OrderPosts(posts []m.Post) []m.Post{
-	//order posts in reverse order
 	sort.Slice(posts, func(i, j int) bool {
         return posts[i].CreatedAt.After(posts[j].CreatedAt)
     })
