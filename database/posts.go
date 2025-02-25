@@ -7,6 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+//==== The function will create the posts table in the database =====
 func CreatePostsTable(db *sql.DB) error {
 
 	if db == nil {

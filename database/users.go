@@ -6,6 +6,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+//==== The function will create the users table in the database =====
 func CreateUsersTable(db *sql.DB) error {
 	query := `
     CREATE TABLE IF NOT EXISTS users (

@@ -10,6 +10,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// ==== The creation of the database folder and the database file ====
 func init() {
 
 	dataFolder := "data"
@@ -43,7 +44,7 @@ func init() {
 var Db *sql.DB
 
 
-// ==== This function will starting the connection to the database =====
+// ==== This function will starting the connection to the database using the SQLite3 driver that works with CGO =====
 func StartDbConnection(database_file_path string) error {
 
 
