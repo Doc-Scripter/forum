@@ -1,1 +1,1 @@
-make test format run
+make docker

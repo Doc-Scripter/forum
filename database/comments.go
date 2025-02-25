@@ -1,9 +1,9 @@
 package database
 
 import (
-    "fmt"
-    "database/sql"
-    _ "github.com/mattn/go-sqlite3"
+	"database/sql"
+	"fmt"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func CreateCommentsTable(db *sql.DB) error {
@@ -13,7 +13,7 @@ func CreateCommentsTable(db *sql.DB) error {
         return fmt.Errorf("nil database connection")
     }
 
-    query := `
+	query := `
     CREATE TABLE IF NOT EXISTS comments (
         comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_uuid INTEGER NOT NULL,
@@ -27,9 +27,8 @@ func CreateCommentsTable(db *sql.DB) error {
 
     );`
 
-    if _, err := db.Exec(query); err != nil {
-        return err
+	if _, err := db.Exec(query); err != nil {
+		return err
 	}
-	return  nil
+	return nil
 }
-

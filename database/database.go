@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -14,7 +15,13 @@ var Db *sql.DB
 func startDbConnectionWithCustomPath(dbPath string) error {
 	var err error
 
-	Db, err = sql.Open("sqlite3", dbPath)
+	if _,err := os.Stat("data"); os.IsNotExist(err) {
+		if err = os.Mkdir("data", 0766); err != nil {
+			return err
+		}
+	}
+
+	Db, err = sql.Open("sqlite3", "data/forum.db")
 	if err != nil {
 		return err
 	}
@@ -43,6 +50,7 @@ func startDbConnectionWithCustomPath(dbPath string) error {
 		return err
 	}
 
+<<<<<<< HEAD
 	return nil
 }
 
@@ -53,6 +61,8 @@ func StartDbConnection() error {
 		return err
 	}
 	
+=======
+>>>>>>> master
 	fmt.Println("Connected to the SQLite database!")
 	return nil
 }

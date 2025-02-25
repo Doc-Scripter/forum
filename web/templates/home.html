@@ -8,12 +8,14 @@
       href="https://fonts.googleapis.com/css?family=Inknut+Antiqua&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../static/styles.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
   </head>
 
   <body class="gradient-background light-theme">
     <div class="header glass-effect">
-      <h1>FORUM</h1>
+      <a href="/home" style="text-decoration: none; color: inherit"
+        ><h1>FORUM</h1></a
+      >
       <div class="user-icon" onclick="toggleSidebar()">
         <img src="/static/images/profile.png" alt="User" class="glass-effect" />
       </div>
@@ -28,21 +30,21 @@
           My Posts
         </button>
         <button class="filter-btn glass-btn" data-filter="liked">
-          Favorites
+          Liked Posts
         </button>
         <select id="category-filter" class="glass-select">
-          <option value="all">All Categories</option>
-          <option value="tech">Technology</option>
-          <option value="health">Health</option>
-          <option value="math">Math</option>
-          <option value="games">Games</option>
-          <option value="science">Science</option>
-          <option value="religion">Religion</option>
-          <option value="education">Education</option>
-          <option value="politics">Politics</option>
-          <option value="fashion">Fashion</option>
-          <option value="lifestyle">Lifestyle</option>
-          <option value="sports">Sports</option>
+          <option value="all">{{.Category.All_Categories}}</option>
+          <option value="tech">{{.Category.Technology}}</option>
+          <option value="health">{{.Category.Health}}</option>
+          <option value="math">{{.Category.Math}}</option>
+          <option value="games">{{.Category.Games}}</option>
+          <option value="education">{{.Category.Science}}</option>
+          <option value="politics">{{.Category.Religion}}</option>
+          <option value="fashion">{{.Category.Education}}</option>
+          <option value="lifestyle">{{.Category.Politics}}</option>
+          <option value="sports">{{.Category.Fashion}}</option>
+          <option value="science">{{.Category.Lifestyle}}</option>
+          <option value="religion">{{.Category.Sports}}</option>
         </select>
       </div>
       <button id="theme-toggle" class="theme-toggle glass-btn">
@@ -84,72 +86,141 @@
           <h2 style="font-family: 'Inkut Antiqua'">Create New Post</h2>
           <button class="close-modal"></button>
         </div>
-        <form class="post-form" action="/create-post" method="POST" enctype="multipart/form-data">
+        <form
+          class="post-form"
+          action="/create-post"
+          method="POST"
+          enctype="multipart/form-data"
+        >
           <textarea
             name="title"
+            class="post-title-form"
             placeholder="Post Title"
-            required
             rows="1"
+            required
           ></textarea>
 
           <textarea
             name="content"
+            class="post-content-form"
             placeholder="Post Content"
-            required
             rows="5"
+            required
           ></textarea>
           <div class="image-upload">
             <label for="image">Upload Image</label>
-            <input type="file" name="image" id="image" accept="image/*" >
+            <input type="file" name="image" id="image" accept="image/*" />
             <div id="image-preview"></div>
-          </div> 
+          </div>
 
           <!-- <p>Select up to 3 categories:</p> -->
-          <p class="categories-required" style="color: #ff0000; margin-bottom: 10px;">* Please select at least one category</p>
+          <p
+            class="categories-required"
+            style="color: #ff0000; margin-bottom: 10px"
+          >
+            * Please select at least one category
+          </p>
+
+          <!-- <option value="all">{{.Category.All_Categories}}</option> -->
+
           <div class="checkbox-group">
             <label class="category-option"
-              ><input type="checkbox" name="category" value="tech" />
-              Technology</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Technology}}"
+              />
+              {{.Category.Technology}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="health" />
-              Health</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Health}}"
+              />
+              {{.Category.Health}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="games" />
-              Games</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Games}}"
+              />
+              {{.Category.Games}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="religion" />
-              Religion</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Religion}}"
+              />
+              {{.Category.Religion}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="math" />
-              Math</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Math}}"
+              />
+              {{.Category.Math}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="education" />
-              Education</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Education}}"
+              />
+              {{.Category.Education}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="science" />
-              Science</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Science}}"
+              />
+              {{.Category.Science}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="politics" />
-              Politics</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Politics}}"
+              />
+              {{.Category.Politics}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="fashion" />
-              Fashion</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Fashion}}"
+              />
+              {{.Category.Fashion}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="lifestyle" />
-              Lifestyle</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Lifestyle}}"
+              />
+              {{.Category.Lifestyle}}</label
             >
+
             <label class="category-option"
-              ><input type="checkbox" name="category" value="sports" />
-              Sports</label
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Sports}}"
+              />
+              {{.Category.Sports}}</label
             >
           </div>
 
@@ -159,28 +230,7 @@
         </form>
       </div>
     </div>
-    <!-- <script>
-      document.addEventListener("DOMContentLoaded", function () {
-  const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]');
-
-  checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      let checkedCount = document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked').length;
-
-      if (checkedCount >= 3) {
-        // Disable unchecked checkboxes
-        checkboxes.forEach(cb => {
-          if (!cb.checked) cb.disabled = true;
-        });
-      } else {
-        // Re-enable all checkboxes when selections are less than 3
-        checkboxes.forEach(cb => cb.disabled = false);
-      }
-    });
-  });
-});
-
-    </script> -->
+    <div id="notification" class="notification"></div>
     <script>
       // Prevent form submission when "Enter" is pressed inside the textareas
       document

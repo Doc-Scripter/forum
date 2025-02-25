@@ -1,8 +1,8 @@
 package database
 
 import (
-    "fmt"
 	"database/sql"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -28,7 +28,7 @@ func CreatePostsTable(db *sql.DB) error {
     );`
 
 	if _, err := db.Exec(query); err != nil {
-        return err
-    }
+		return err
+	}
 	return nil
 }
