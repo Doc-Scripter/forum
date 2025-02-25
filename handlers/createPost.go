@@ -2,15 +2,16 @@ package handlers
 
 import (
 	"fmt"
-	d "forum/database"
-	m "forum/models"
-	u "forum/utils"
 	"html"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	d "forum/database"
+	m "forum/models"
+	u "forum/utils"
 )
 
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,15 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	category := u.CombineCategory(r.Form["category"])
+	var category string
+
+	if !ValidateCategory(r.Form["category"]) {
+		w.WriteHeader(http.StatusBadRequest)
+		ErrorPage(err, m.ErrorsData.BadRequest, w, r)
+		return
+	} else {
+		category = u.CombineCategory(r.Form["category"])
+	}
 	content := strings.TrimSpace(html.EscapeString(r.FormValue("content")))
 	title := strings.TrimSpace(html.EscapeString(r.FormValue("title")))
 
@@ -120,4 +129,28 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
+}
+
+func ValidateCategory(str []string) bool {
+	categories := map[string]bool{
+		"All Categories": true,
+		"Technology":     true,
+		"Health":         true,
+		"Math":           true,
+		"Games":          true,
+		"Science":        true,
+		"Religion":       true,
+		"Education":      true,
+		"Politics":       true,
+		"Fashion":        true,
+		"Lifestyle":      true,
+		"Sports":         true,
+	}
+
+	for _, s := range str {
+		if !categories[s] {
+			return false
+		}
+	}
+	return true
 }

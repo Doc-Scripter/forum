@@ -13,18 +13,33 @@
 
   <body class="gradient-background light-theme">
     <div class="header glass-effect">
-      <h1>FORUM</h1>
+      <a href="/home" style="text-decoration: none; color: inherit"
+        ><h1>FORUM</h1></a
+      >
       <div class="header-controls">
         <div class="user-icon">
-          <a href="/login"><img style="background-color: rgb(60, 128, 229);" src="/static/images/login.png" alt="Login" class="glass-effect" /></a>
-          <a href="/register"><img src="/static/images/profile.png" alt="User" class="glass-effect" /></a>
+          <a href="/login"
+            ><img
+              style="background-color: rgb(60, 128, 229)"
+              src="/static/images/login.png"
+              alt="Login"
+              class="glass-effect"
+          /></a>
+          <a href="/register"
+            ><img
+              src="/static/images/profile.png"
+              alt="User"
+              class="glass-effect"
+          /></a>
         </div>
       </div>
     </div>
 
     <div class="filters glass-effect">
       <div class="filter-options">
-        <button class="filter-btn active glass-btn" data-filter="allPosts">All Posts</button>
+        <button class="filter-btn active glass-btn" data-filter="allPosts">
+          All Posts
+        </button>
         <select id="category-filter" class="glass-select">
           <option value="all">All Categories</option>
           <option value="tech">Technology</option>

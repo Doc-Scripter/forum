@@ -1,8 +1,8 @@
 *.vscode
 *env
 *.log
-*.db
 *.sqlite
 *.prettierrc
 app.log
+*.db
 *uploads

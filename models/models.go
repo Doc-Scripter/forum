@@ -15,6 +15,7 @@ type ProfileData struct {
 	Email    string
 	Uuid     string
 	Initials string
+	Category Categories
 }
 
 type ErrorData struct {
@@ -77,6 +78,37 @@ type Post struct {
 	Owner         string
 	OwnerInitials string
 }
+
+type Categories struct {
+	All_Categories string
+	Technology string
+	Health string
+	Math string
+	Games string
+	Science string
+	Religion string
+	Education string
+	Politics string
+	Fashion string
+	Lifestyle string
+	Sports string
+}
+
+var Category = Categories{
+	All_Categories : "All Categories",
+	Technology :"Technology",
+	Health :"Health",
+	Math :"Math",
+	Games :"Games",
+	Science :"Science",
+	Religion :"Religion",
+	Education :"Education",
+	Politics :"Politics",
+	Fashion :"Fashion",
+	Lifestyle :"Lifestyle",
+	Sports : "Sports",
+}
+	
 
 type Users struct {
 	Username string
@@ -168,3 +200,5 @@ func (user *Users) HashPassword() error {
 	user.Password = string(hashed)
 	return nil
 }
+
+

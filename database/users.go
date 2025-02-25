@@ -10,7 +10,7 @@ func CreateUsersTable(db *sql.DB) error {
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         uuid TEXT UNIQUE NOT NULL,
-        username TEXT NOT NULL,
+        username TEXT UNIQUE NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     );`

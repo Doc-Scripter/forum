@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -13,7 +14,13 @@ var Db *sql.DB
 func StartDbConnection() error {
 	var err error
 
-	Db, err = sql.Open("sqlite3", "forum.db")
+	if _,err := os.Stat("data"); os.IsNotExist(err) {
+		if err = os.Mkdir("data", 0766); err != nil {
+			return err
+		}
+	}
+
+	Db, err = sql.Open("sqlite3", "data/forum.db")
 	if err != nil {
 		return err
 	}

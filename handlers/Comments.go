@@ -6,6 +6,7 @@ import (
 	m "forum/models"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 )
 
@@ -119,7 +120,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			comments = append(comments, eachComment)
 		}
 
-		commentsJson, err := json.Marshal(comments)
+		commentsJson, err := json.Marshal(OrderComments(comments))
 		if err != nil {
 			ErrorPage(err, m.ErrorsData.InternalError, w, r)
 			return
@@ -127,4 +128,12 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(commentsJson)
 	}
+}
+
+
+func OrderComments(comments []m.Comment) []m.Comment{
+	sort.Slice(comments, func(i, j int) bool {
+        return comments[i].CreatedAt.After(comments[j].CreatedAt)
+    })
+    return comments
 }
