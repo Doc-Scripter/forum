@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	e "forum/Error"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -30,5 +31,7 @@ func CreatePostsTable(db *sql.DB) error {
 	if _, err := db.Exec(query); err != nil {
 		return err
 	}
+
+	e.LOGGER("[SUCCESS]: Created the posts table", nil)
 	return nil
 }

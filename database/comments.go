@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	e "forum/Error"
 )
 
 func CreateCommentsTable(db *sql.DB) error {
@@ -30,5 +31,6 @@ func CreateCommentsTable(db *sql.DB) error {
 	if _, err := db.Exec(query); err != nil {
 		return err
 	}
+	e.LOGGER("[SUCCESS]: Created the comments table", nil)
 	return nil
 }

@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	e "forum/Error"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -31,5 +32,6 @@ func CreateLikesDislikesTable(db *sql.DB) error {
 	if _, err := db.Exec(query); err != nil {
 		return err
 	}
+	e.LOGGER("[SUCCESS]: Created the likes and dislikes table", nil)
 	return nil
 }
