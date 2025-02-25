@@ -50,7 +50,6 @@ func startDbConnectionWithCustomPath(dbPath string) error {
 		return err
 	}
 
-<<<<<<< HEAD
 	return nil
 }
 
@@ -61,8 +60,6 @@ func StartDbConnection() error {
 		return err
 	}
 	
-=======
->>>>>>> master
 	fmt.Println("Connected to the SQLite database!")
 	return nil
 }
