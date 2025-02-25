@@ -19,6 +19,14 @@ type ProfileData struct {
 	Category Categories
 }
 
+type Initials interface {
+	GenerateInitials() string
+}
+
+type Category_Process interface {
+	Seperate_Categories() string
+}
+
 type ErrorData struct {
 	Msg  string
 	Code int
@@ -33,6 +41,7 @@ type Errors struct {
 	MethodNotAllowed ErrorData
 }
 
+// === An instance of an Error Object ====
 var ErrorsData = Errors{
 	InternalError: ErrorData{
 		Msg:  "An unexpected error occurred. The error seems to be on our end. Hang tight",
@@ -128,12 +137,8 @@ type Comment struct {
 	Content    string    `json:"content"`
 }
 
-// Initials interface defines the method for generating initials
-type Initials interface {
-	GenerateInitials() string
-}
 
-// Make ProfileData implement the Initials interface
+// ==== A method to generate the initials of a users name and adds them to the User  object ====
 func (p *ProfileData) GenerateInitials() string {
 	parts := strings.Split(p.Username, " ")
 
@@ -141,16 +146,13 @@ func (p *ProfileData) GenerateInitials() string {
 		return "?"
 	}
 
-	// Get first initial
 	firstInitial := string(parts[0][0])
 
-	// Get second initial if available
 	var secondInitial string
 	if len(parts) > 1 && len(parts[1]) > 0 {
 		secondInitial = string(parts[1][0])
 	}
 
-	// Return combined initials
 	if secondInitial != "" {
 		return strings.ToUpper(firstInitial + secondInitial)
 	}
@@ -165,11 +167,9 @@ type Image struct {
 	Path      string    `json:"path"`
 	CreatedAt time.Time `json:"created_at"`
 }
-type Category_Process interface {
-	Seperate_Categories() string
-}
 
-// ===========The function will pack the categories as a slice of strings from the database==========
+
+// ===== The function will pack the categories as a slice of strings from the database ====
 func (p *Post) Seperate_Categories() Post {
 	
 	var (
@@ -194,7 +194,7 @@ func (p *Post) Seperate_Categories() Post {
 	return *p
 }
 
-// ==============HashPassword hashes the user's password before storing it=========
+// =====  hashes the user's password before storing it ====
 func (user *Users) HashPassword() error {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
