@@ -3,5 +3,4 @@
 *.log
 *.sqlite
 *.prettierrc
-app.log
 *.db
