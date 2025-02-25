@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 //========= If successful, show success message and redirect ===============
-                showNotification('Registration successful! Redirecting to login...', 'success');
+                showNotification('Registration successful! Redirecting to home...', 'success');
                 setTimeout(() => {
                     window.location.href = '/login';
                 }, 2000);
