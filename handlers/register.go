@@ -66,6 +66,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = m.User.HashPassword(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|register user handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -74,6 +75,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// UUID := uuid.New().String()
 	u, err := uuid.NewV4()
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|register user handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -85,6 +87,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	query := `INSERT INTO users (uuid, username, email, password) VALUES (?, ?, ?, ?)`
 	_, err = d.Db.Exec(query, UUID, m.User.Username, m.User.Email, m.User.Password)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|register user handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -92,10 +95,11 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var userID string
 	err = d.Db.QueryRow("SELECT id FROM users WHERE email = ?", m.User.Email).Scan(&userID)
 	if err == sql.ErrNoRows {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|register user handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	} else if err != nil {
-
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|register user handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -103,6 +107,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	//grant a session on registration
 	_, err = d.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", userID, UUID, expiresAt)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|register user handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}

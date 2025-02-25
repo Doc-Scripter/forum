@@ -19,6 +19,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, err := os.Open(imagePath)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|image handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -26,6 +27,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	fileInfo, err := file.Stat()
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|image handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}

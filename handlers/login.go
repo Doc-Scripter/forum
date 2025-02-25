@@ -80,6 +80,7 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 	
 	_, err = d.Db.Exec("DELETE FROM sessions WHERE user_id = ?",userID)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|login handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}

@@ -49,11 +49,13 @@ func LandingPage(w http.ResponseWriter, r *http.Request) {
 
 		tmpl, err := template.ParseFiles("./web/templates/index.html")
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			ErrorPage(fmt.Errorf("|landing page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 		if err = tmpl.Execute(w, nil); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			ErrorPage(fmt.Errorf("|landing page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -79,12 +81,14 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 
 	Profile, err := u.GetUserDetails(w, r)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|home page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 
 	tmpl, err := template.ParseFiles("./web/templates/home.html")
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|home page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -92,6 +96,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	Profile.Category = m.Category
 
 	if err = tmpl.Execute(w, Profile); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|home page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -106,10 +111,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("./web/templates/login.html")
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|login page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 	if err = tmpl.Execute(w, nil); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|login page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -128,10 +135,12 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("./web/templates/register.html")
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|register page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 	if err = tmpl.Execute(w, nil); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|register page server| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
