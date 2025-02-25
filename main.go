@@ -6,27 +6,23 @@ import (
 	"net/http"
 	"os"
 
+	e "forum/Error"
 	d "forum/database"
 	r "forum/routes"
 )
 
 func init() {
-	// check the number of arguments
 	if len(os.Args) != 1 {
 		log.Fatal("\nUsage: go run main.go")
-	}
-
-	// start the database connection
-	err := d.StartDbConnection()
-	if err != nil {
-		log.Fatal(err)
 	}
 }
 
 func main() {
+
 	mux, err := r.Routers()
 	if err != nil {
-		log.Fatal(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|main package| ---> {%v}", err))
+		return
 	}
 
 	port := os.Getenv("PORT")
@@ -34,9 +30,20 @@ func main() {
 		port = "33333"
 	}
 
-	fmt.Printf("Starting server on: %s\n", port)
+
+	reset := "\033[0m"
+	boldWhite := "\033[1;37m"
+	red := "\033[1;31m"
+	blue := "\033[1;34m"
+	brown := "\033[0;33m"
+
+	fmt.Println(brown + "╔═══════════════════════════════════════════════════╗" + reset)
+	fmt.Println(brown + "║" + red + " 🚀 Server is starting...         " + reset + brown + "                 ║" + reset)
+	fmt.Printf(brown+"║ "+boldWhite+"Forum running on port --}  "+blue+"http://localhost:%s"+reset+brown+" ║\n", port)
+	fmt.Println(brown + "╚═══════════════════════════════════════════════════╝" + reset)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
-		log.Fatal(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|main package| ---> {%v}", err))
+		return
 	}
 
 	defer d.Db.Close()

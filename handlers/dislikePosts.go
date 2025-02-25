@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"database/sql"
 	"encoding/json"
 	d "forum/database"
+	e "forum/Error"
 	m "forum/models"
 	u "forum/utils"
 	"io"
@@ -18,7 +20,7 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	Profile, err := u.GetUserDetails(w, r)
 	if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|dislike post handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 
@@ -50,40 +52,42 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,post_id,user_uuid) VALUES ('dislike',?,?)", postID.Post_id, Profile.Uuid)
 					if err != nil {
-						ErrorPage(err, m.ErrorsData.InternalError, w, r)
+						ErrorPage(fmt.Errorf("|dislike post handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 						return
 					}
 				} else {
 					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid)
 					if err != nil {
-						ErrorPage(err, m.ErrorsData.InternalError, w, r)
+						ErrorPage(fmt.Errorf("|dislike post handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 						return
 					}
 				}
 
 			} else {
-				ErrorPage(err, m.ErrorsData.InternalError, w, r)
+				ErrorPage(fmt.Errorf("|dislike post handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 				return
 			}
 		}
 		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid)
 		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			ErrorPage(fmt.Errorf("|dislike post handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 	} else if err != nil {
-		ErrorPage(err, m.ErrorsData.InternalError, w, r)
+		ErrorPage(fmt.Errorf("|dislike post handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	} else if likeDislike == "dislike" {
 
 		// If the user has already liked the post, minus the like
 		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE post_id = ? AND user_uuid = ?", postID.Post_id, Profile.Uuid)
 		if err != nil {
-			ErrorPage(err, m.ErrorsData.InternalError, w, r)
+			ErrorPage(fmt.Errorf("|dislike post handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 	}
+
+	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s has disliked the post: post_id(%v)", Profile.Username, postID.Post_id), nil)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }

@@ -33,6 +33,7 @@ check_and_update_go_version() {
 if [ -f 'go.mod' ]; then
     go mod tidy
     check_and_update_go_version
+    xdg-open http://localhost:33333 || xdg-open --new-tab http://localhost:33333 ||  firefox localhost:33333
     go run main.go
     if [ $? -ne 0 ]; then
         echo "Application failed to run."

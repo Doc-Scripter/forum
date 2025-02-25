@@ -5,6 +5,7 @@ import (
 	d "forum/database"
 	"net/http"
 	"strings"
+	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -170,6 +171,7 @@ type Category_Process interface {
 
 // ===========The function will pack the categories as a slice of strings from the database==========
 func (p *Post) Seperate_Categories() Post {
+	
 	var (
 		combined_categories string
 		categories          []string
@@ -177,13 +179,13 @@ func (p *Post) Seperate_Categories() Post {
 
 	row, err := d.Db.Query("SELECT category FROM posts")
 	if err != nil {
-		e.LogError(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|seperate methods category| ---> {%v}", err))
 		return *p
 	}
 	for row.Next() {
 		err = row.Scan(&combined_categories)
 		if err != nil {
-			e.LogError(err)
+			e.LOGGER("[ERROR]", fmt.Errorf("|seperate methods category| ---> {%v}", err))
 			return Post{}
 		}
 		categories = strings.Split(combined_categories, ", ")
@@ -192,9 +194,11 @@ func (p *Post) Seperate_Categories() Post {
 	return *p
 }
 
+// ==============HashPassword hashes the user's password before storing it=========
 func (user *Users) HashPassword() error {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
+		e.LOGGER("[ERROR]", fmt.Errorf("|hashpassword method| ---> {%v}", err))
 		return err
 	}
 	user.Password = string(hashed)
