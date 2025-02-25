@@ -30,7 +30,17 @@ func main() {
 		port = "33333"
 	}
 
-	fmt.Printf("Starting server on: %s\n", port)
+
+	reset := "\033[0m"
+	boldWhite := "\033[1;37m"
+	red := "\033[1;31m"
+	blue := "\033[1;34m"
+	brown := "\033[0;33m"
+
+	fmt.Println(brown + "╔═══════════════════════════════════════════════════╗" + reset)
+	fmt.Println(brown + "║" + red + " 🚀 Server is starting...         " + reset + brown + "                 ║" + reset)
+	fmt.Printf(brown+"║ "+boldWhite+"Forum running on port --}  "+blue+"http://localhost:%s"+reset+brown+" ║\n", port)
+	fmt.Println(brown + "╚═══════════════════════════════════════════════════╝" + reset)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		e.LOGGER("[ERROR]", fmt.Errorf("|main package| ---> {%v}", err))
 		return
