@@ -1,16 +1,12 @@
-// DOM Elements
+//====== Declare the DOM elements that will be required =========
 const postsContainer = document.querySelector(".posts-container");
 const filterBtns = document.querySelectorAll(".filter-btn");
 const categoryFilter = document.getElementById("category-filter");
-const menuContent = document.querySelector(".menu-content"); //this is unused
 const createPostBtn = document.querySelector(".create-post-btn");
 const modal = document.querySelector(".modal");
 const closeModal = document.querySelector(".close-modal");
 const postForm = document.querySelector(".post-form");
-const likebutton = document.querySelectorAll(".like-btn"); //this is unused
-const dislikebutton = document.querySelectorAll(".dislike-btn"); //this is unused
 const comments = document.querySelector(".comments-section");
-// const commentActions = document.querySelector(".comment-actions");
 
 const commentform = document.querySelectorAll(".comment-form");
 
@@ -19,13 +15,7 @@ let currentCategory = "all";
 let posts = [];
 let route = "/posts";
 
-commentform.forEach((form) => {
-  form.addEventListener("submit", (e) => {
-    // e.preventDefault();
-    commentform.reset();
-  });
-});
-
+// ===== function to process a post request =========
 postsContainer.addEventListener("click", (e) => {
   if (e.target.classList.contains("like-btn")) {
     const postId = e.target.dataset.postId;
@@ -42,11 +32,11 @@ postsContainer.addEventListener("click", (e) => {
             throw new Error(text || "Failed to like post");
           });
         }
-        // Remove active class from dislike button
+        //====== Remove active class from dislike button =================
         const dislikeBtn = e.target.parentElement.querySelector(".dislike-btn");
         dislikeBtn.classList.remove("active");
 
-        // Toggle active class on like button based on current state
+        //====== Toggle active class on like button based on current state =========
         if (isCurrentlyLiked) {
           e.target.classList.remove("active");
         } else {
@@ -75,11 +65,11 @@ postsContainer.addEventListener("click", (e) => {
             throw new Error(text || "Failed to dislike post");
           });
         }
-        // Remove active class from like button
+        //====== Remove active class from like button =================
         const likeBtn = e.target.parentElement.querySelector(".like-btn");
         likeBtn.classList.remove("active");
 
-        // Toggle active class on dislike button based on current state
+        //====== Toggle active class on dislike button based on current state =================
         if (isCurrentlyDisliked) {
           e.target.classList.remove("active");
         } else {
@@ -97,14 +87,14 @@ postsContainer.addEventListener("click", (e) => {
 postForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  // Get form values
+  //====== Get form values =================
   const title = postForm.querySelector('[name="title"]').value.trim();
   const content = postForm.querySelector('[name="content"]').value.trim();
   const categories = Array.from(
     postForm.querySelectorAll('[name="category"]:checked')
   ).map((cb) => cb.value);
 
-  // Validation checks
+  //====== Validation checks =================
   if (!title) {
     showNotification("Post title is required", "error");
     return;
@@ -120,7 +110,7 @@ postForm.addEventListener("submit", (e) => {
     return;
   }
 
-  // If validation passes, proceed with form submission
+  //====== If validation passes, proceed with form submission ===========
   const formData = new FormData(postForm);
 
   fetch("/create-post", {
@@ -131,10 +121,6 @@ postForm.addEventListener("submit", (e) => {
       if (!response.ok) {
         showNotification("Failed to create post", "error");
         return;
-      // console.error("Error creating post:", error);
-        // return response.text().then((text) => {
-        //   throw new Error("Bad Request" || "Failed to create post");
-        // });
       }
       showNotification("Post submitted successfully!", "success");
       modal.classList.remove("active");
@@ -147,11 +133,10 @@ postForm.addEventListener("submit", (e) => {
     });
 });
 
-// ==== This is the fnuction that will be fetching posts ====
+//========== This is the function that will be fetching posts ==== =================
 function fetchComments(element, commentId) {
   fetch("/comments", {
     method: "POST",
-    // content: "application/json",
     headers: {
       "Content-Type": "application/json",
     },
@@ -186,27 +171,6 @@ function createCategoryElements(categories) {
 
   return html;
 }
-
-//====== Function to fetch posts from the backend =====
-// function fetchPosts(route) {
-//   console.log(route);
-//   fetch(route)
-//     .then((response) => {
-//       if (!response.ok) {
-//         return response.text().then(text => {
-//           throw new Error(text || 'Failed to fetch posts');
-//         });
-//       }
-//       return response.json();
-//     })
-//     .then((data) => {
-//       displayPosts(data, currentCategory);
-//     })
-//     .catch((error) => {
-//       alert(error.message);
-//       console.error("Error fetching posts:", error);
-//     });
-// }
 
 //====== Function to fetch posts from the backend =====
 function fetchPosts(route) {
@@ -334,6 +298,9 @@ function displayPosts(posts, category) {
   });
 }
 
+/* Escapes special characters in a string to prevent XSS attacks when rendering HTML.//+
+ * @param {string} str - The input string to be escaped.//+
+ * @returns {string} The escaped string with special characters replaced by their HTML entity equivalents. */
 function escapeHTML(str) {
   return str.replace(/[&<>"'/]/g, function (char) {
     switch (char) {
@@ -411,7 +378,7 @@ function attachCommentActionListeners(container) {
 
 document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 
-// Create Post Modal
+// ======== Create Post Modal =========
 createPostBtn.addEventListener("click", () => {
   modal.classList.add("active");
 });
@@ -423,7 +390,8 @@ modal.addEventListener("click", (e) => {
     modal.classList.remove("active");
   }
 });
-// Event listeners for filters
+
+//========== Event listeners for filters =========
 filterBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
     filterBtns.forEach((b) => b.classList.remove("active"));
@@ -453,27 +421,24 @@ categoryFilter.addEventListener("change", (e) => {
 //===================Theme Toggle Functionality====================
 document.addEventListener("DOMContentLoaded", () => {
   const themeToggle = document.getElementById("theme-toggle");
-  // Check for saved theme preference, default to light if none
   const savedTheme = localStorage.getItem("theme") || "light-theme";
   document.body.classList.toggle("light-theme", savedTheme === "light-theme");
-  // Ensure light theme is applied by default
   if (!localStorage.getItem("theme")) {
     document.body.classList.add("light-theme");
     localStorage.setItem("theme", "light-theme");
   }
-  // Update icon visibility based on current theme
   updateThemeIcon();
   themeToggle.addEventListener("click", () => {
     document.body.classList.toggle("light-theme");
     updateThemeIcon();
-    // Save theme preference
     const currentTheme = document.body.classList.contains("light-theme")
       ? "light-theme"
       : "dark-theme";
     localStorage.setItem("theme", currentTheme);
   });
 });
-// Function to update theme icon
+
+//======= Function to update theme icon =========
 function updateThemeIcon() {
   const sunIcon = document.querySelector(".sun");
   const moonIcon = document.querySelector(".moon");
@@ -482,17 +447,15 @@ function updateThemeIcon() {
   moonIcon.style.display = isLightTheme ? "block" : "none";
 }
 
-//====== For the checkboxes===================
+//====== For the checkboxes ==============
 const checkboxGroup = document.querySelector(".checkbox-group");
 const myDivs = document.querySelectorAll(".category-option");
 
-// Default style
 myDivs.forEach((div) => {
   div.style.backgroundColor = "#ccc";
   div.style.color = "#000";
 });
 
-// Check style
 checkboxGroup.addEventListener("change", function () {
   const checkedCount = [...checkboxGroup.querySelectorAll("input:checked")]
     .length;
@@ -513,24 +476,22 @@ checkboxGroup.addEventListener("change", function () {
   });
 });
 
-// Add this function at the top with other utility functions
+//===== function at the top with other utility functions ========
 function showNotification(message, type = "success") {
   const notification = document.getElementById("notification");
   notification.textContent = message;
   notification.className = `notification ${type}`;
 
-  // Show notification
   setTimeout(() => {
     notification.classList.add("show");
   }, 100);
 
-  // Hide notification after 3 seconds
   setTimeout(() => {
     notification.classList.remove("show");
   }, 3000);
 }
 
-// Add validation for comment forms
+//========== Add validation for comment forms ========
 document.querySelectorAll(".comment-form").forEach((form) => {
   form.addEventListener("submit", (e) => {
     const commentInput = form.querySelector(".comment-input");
@@ -541,11 +502,11 @@ document.querySelectorAll(".comment-form").forEach((form) => {
       return;
     }
 
-    // Update the actual input value with trimmed content
     commentInput.value = commentInput.value.trim();
   });
 });
 
+//====== function to validate comment =====
 function validateComment(event) {
   const form = event.target;
   const commentInput = form.querySelector(".comment-input");
@@ -553,12 +514,11 @@ function validateComment(event) {
   if (commentInput.value.trim() === "") {
     event.preventDefault();
     alert("Comment cannot be empty or contain only whitespace");
-    commentInput.value = ""; // Clear the input
-    commentInput.focus(); // Return focus to the input
+    commentInput.value = "";
+    commentInput.focus();
     return false;
   }
 
-  // Update the input value with trimmed content before submission
   commentInput.value = commentInput.value.trim();
   return true;
 }
