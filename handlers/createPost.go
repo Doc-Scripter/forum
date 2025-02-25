@@ -124,19 +124,25 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ValidateCategory(str []string) bool {
-	categories := []string{"All Categories", "Technology", "Health", "Math", "Games", "Science", "Religion", "Education", "Politics", "Fashion", "Lifestyle", "Sports"}
+	categories := map[string]bool{
+		"All Categories": true,
+		"Technology":     true,
+		"Health":         true,
+		"Math":           true,
+		"Games":          true,
+		"Science":        true,
+		"Religion":       true,
+		"Education":      true,
+		"Politics":       true,
+		"Fashion":        true,
+		"Lifestyle":      true,
+		"Sports":         true,
+	}
 
-	for i, s := range str {
-		for _, v := range categories {
-
-
-			if s == v && i==len(str)-1{
-				fmt.Println(str)
-
-				fmt.Println(v)
-				return true
-			}
+	for _, s := range str {
+		if !categories[s] {
+			return false
 		}
 	}
-	return false
+	return true
 }

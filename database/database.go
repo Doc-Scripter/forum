@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"path/filepath"
 	e "forum/Error"
-	"os"
-
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -50,6 +48,7 @@ func StartDbConnection(database_file_path string) error {
 	var err error
 
 	Db, err = sql.Open("sqlite3", database_file_path)
+
 	if err != nil {
 		e.LOGGER("[DATABASE ERROR]", err)
 	}
