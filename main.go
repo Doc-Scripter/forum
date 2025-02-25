@@ -6,27 +6,23 @@ import (
 	"net/http"
 	"os"
 
+	e "forum/Error"
 	d "forum/database"
 	r "forum/routes"
 )
 
 func init() {
-	// check the number of arguments
 	if len(os.Args) != 1 {
 		log.Fatal("\nUsage: go run main.go")
-	}
-
-	// start the database connection
-	err := d.StartDbConnection()
-	if err != nil {
-		log.Fatal(err)
 	}
 }
 
 func main() {
+
 	mux, err := r.Routers()
 	if err != nil {
-		log.Fatal(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|main package| ---> {%v}", err))
+		return
 	}
 
 	port := os.Getenv("PORT")
@@ -36,7 +32,8 @@ func main() {
 
 	fmt.Printf("Starting server on: %s\n", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
-		log.Fatal(err)
+		e.LOGGER("[ERROR]", fmt.Errorf("|main package| ---> {%v}", err))
+		return
 	}
 
 	defer d.Db.Close()
