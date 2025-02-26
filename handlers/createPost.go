@@ -15,10 +15,12 @@ import (
 	u "forum/utils"
 )
 
+// ===== The handler will, through method POST, add a post to the database based on  a specific user ID and add the post to the database =====
 func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	Profile, err := u.GetUserDetails(w, r)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -29,8 +31,8 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := r.ParseMultipartForm(u.MaxUploadSize); err != nil {
-		fmt.Println("ParseMultipartForm error:", err)
 		if err := r.ParseForm(); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -38,7 +40,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var category string
 
-	if !ValidateCategory(r.Form["category"]) {
+	if !u.ValidateCategory(r.Form["category"]) {
 		w.WriteHeader(http.StatusBadRequest)
 		ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.BadRequest, w, r)
 		return
@@ -62,6 +64,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 			img.Filename = ""
 			img.Path = ""
 		} else {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -70,25 +73,28 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		if handler.Size > u.MaxUploadSize {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 		if !u.ValidateFileType(file) {
-			ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
+			w.WriteHeader(http.StatusBadRequest)
+			ErrorPage(fmt.Errorf("|create post handler - validate file type|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 		fileName, err := u.GenerateFileName()
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 		fileName = fileName + filepath.Ext(handler.Filename)
 
-		fmt.Println("filename: ", fileName)
 		if err := os.MkdirAll(u.UploadsDir, 0o755); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -96,12 +102,14 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 		filePath := filepath.Join(u.UploadsDir, fileName)
 		dst, err := os.Create(filePath)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 		defer dst.Close()
 
 		if _, err := io.Copy(dst, file); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -114,6 +122,7 @@ func CreatePostsHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = d.Db.Exec("INSERT INTO posts (category, content, title, user_uuid ,filename,filepath) VALUES ($1, $2, $3, $4, $5, $6)", category, content, title, Profile.Uuid, img.Filename, img.Path)
 	if err != nil {
 		os.Remove(img.Path)
+		w.WriteHeader(http.StatusBadRequest)
 		ErrorPage(fmt.Errorf("|create post handler|--> {%v}", err), m.ErrorsData.BadRequest, w, r)
 		return
 
@@ -146,3 +155,4 @@ func ValidateCategory(str []string) bool {
 	}
 	return true
 }
+

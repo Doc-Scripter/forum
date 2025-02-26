@@ -1,3 +1,4 @@
+//=====  create post container event listener which enables  scrolling ==========
 document.addEventListener("DOMContentLoaded", function () {
     const createPostBtn = document.querySelector(".create-post-btn");
     const footer = document.querySelector("footer");

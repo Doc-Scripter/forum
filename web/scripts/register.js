@@ -1,10 +1,10 @@
-// Function to close notification
+//========= Function to close notification ===============
 function closeNotification() {
     const notification = document.getElementById('notification');
     notification.classList.remove('show');
 }
 
-// Function to show notification
+//========= Function to show notification ===============
 function showNotification(message, type = 'error') {
     const notification = document.getElementById('notification');
     const messageSpan = document.getElementById('notification-message');
@@ -17,41 +17,42 @@ function showNotification(message, type = 'error') {
     messageSpan.textContent = message;
     notification.className = `notification ${type}`;
     
-    // Show the notification
+    //========= Show the notification ===============
     notification.classList.add('show');
 
-    // Hide the notification after 3 seconds
+    //========= Hide the notification after 3 seconds ===============
     setTimeout(() => {
         notification.classList.remove('show');
     }, 3000);
 }
 
+
 function validatePassword(password) {
-    // Check minimum length
+    //========= Check minimum length ===============
     if (password.length < 6) {
         showNotification('Password must be at least 6 characters long');
         return false;
     }
 
-    // Check for uppercase letter
+    //========= Check for uppercase letter ===============
     if (!/[A-Z]/.test(password)) {
         showNotification('Password must contain at least one uppercase letter');
         return false;
     }
 
-    // Check for lowercase letter
+    //========= Check for lowercase letter ===============
     if (!/[a-z]/.test(password)) {
         showNotification('Password must contain at least one lowercase letter');
         return false;
     }
 
-    // Check for number
+    //========= Check for number ===============
     if (!/[0-9]/.test(password)) {
         showNotification('Password must contain at least one number');
         return false;
     }
 
-    // Check for special character
+    //========= Check for special character ===============
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
         showNotification('Password must contain at least one special character');
         return false;
@@ -60,7 +61,7 @@ function validatePassword(password) {
     return true;
 }
 
-// Client-side validation
+//========= Client-side validation ===============
 function validateForm() {
     const username = document.querySelector('input[name="username"]').value;
     const email = document.querySelector('input[name="email"]').value;
@@ -82,7 +83,7 @@ function validateForm() {
         return false;
     }
 
-    // Check password requirements
+    //========= Check password requirements ===============
     if (!validatePassword(password)) {
         return false;
     }
@@ -95,7 +96,7 @@ function validateForm() {
     return true;
 }
 
-// Form submission handler
+//========= Form submission handler ===============
 document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('registerForm');
     
@@ -123,21 +124,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(errorMessage || 'Registration failed');
                 }
 
-                // If successful, show success message and redirect
-                showNotification('Registration successful! Redirecting to login...', 'success');
+                //========= If successful, show success message and redirect ===============
+                showNotification('Registration successful! Redirecting to home...', 'success');
                 setTimeout(() => {
                     window.location.href = '/login';
                 }, 2000);
             } catch (error) {
                 showNotification(error.message);
-                // Clear password fields on error
+                //========= Clear password fields on error ===============
                 document.querySelector('input[name="password"]').value = '';
                 document.querySelector('input[name="confirm_password"]').value = '';
             }
         });
     }
 
-    // Check for error parameter in URL
+    //========= Check for error parameter in URL ===============
     const urlParams = new URLSearchParams(window.location.search);
     const errorMsg = urlParams.get('error');
     if (errorMsg) {

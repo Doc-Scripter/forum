@@ -1,4 +1,4 @@
-// DOM Elements
+//====== Declare the DOM elements that will be required =========
 const postsContainer = document.querySelector(".posts-container");
 const filterBtns = document.querySelectorAll(".filter-btn");
 const categoryFilter = document.getElementById("category-filter");
@@ -10,7 +10,7 @@ let currentCategory = "all";
 let posts = [];
 let route = "/posts";
 
-// State
+// ===== function to fetch the posts from the backend endpoint ======
 function fetchPosts(route) {
   console.log("I got here");
   fetch(route)
@@ -45,6 +45,7 @@ function createCategoryElements(categories) {
   return html;
 }
 
+//===== function to display the posts  and their respective comments =====
 function displayPosts(posts, category) {
   let filteredPosts = [];
   if (category === "all") {
@@ -113,7 +114,6 @@ function displayPosts(posts, category) {
       .join("");
   }
   
- // Select all comment forms
   const commentForms = document.querySelectorAll('form');
   
 commentForms.forEach((form) => {
@@ -132,13 +132,10 @@ commentForms.forEach((form) => {
     const postId = btn.dataset.postId;
     const commentsSection = document.getElementById(`comments-${postId}`);
     
-    // Toggle the active class
     if (commentsSection.classList.contains("active")) {
-      // If comments are showing, hide them
       commentsSection.classList.remove("active");
       commentsSection.style.display = "none";
     } else {
-      // If comments are hidden, show them and fetch
       commentsSection.classList.add("active");
       commentsSection.style.display = "block";
       
@@ -182,7 +179,7 @@ function displayComments(comments, element) {
 }
 
 
-//==========================comment actions====================
+//============ comment actions ===============
 function attachCommentActionListeners(container) {
   container.querySelectorAll(".comment-actions").forEach((btn) => {
     btn.addEventListener("click", (e) => {
@@ -211,6 +208,7 @@ function attachCommentActionListeners(container) {
   });
 }
 
+//====== function to fetch the comments from the backend endpoint ======
 function fetchComments(element, commentId) {
   fetch("/comments", {
     method: "POST",
@@ -249,7 +247,7 @@ function displayComments(comments, element) {
 
 document.addEventListener("DOMContentLoaded", fetchPosts("/posts"));
 
-// Event listeners for filters
+//======= Event listeners for filter buttons ======
 filterBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
     filterBtns.forEach((b) => b.classList.remove("active"));
@@ -272,16 +270,17 @@ filterBtns.forEach((btn) => {
   });
 });
 
+//===== Event listener to filter the displayed posts ======
 categoryFilter.addEventListener("change", (e) => {
   currentCategory = e.target.value;
   fetchPosts(route);
 });
 
-// Theme Toggle Functionality
+//======= Theme Toggle Functionality =======
 document.addEventListener("DOMContentLoaded", () => {
   const themeToggle = document.getElementById("theme-toggle");
 
-  // Check for saved theme preference, default to light if none
+  // ======= Check for saved theme preference, default to light if none  ========
   const savedTheme = localStorage.getItem("theme") || "light-theme";
   document.body.classList.toggle("light-theme", savedTheme === "light-theme");
 
@@ -291,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("theme", "light-theme");
   }
 
-  // Update icon visibility based on current theme
+  //======= Update icon visibility based on current theme =======
   updateThemeIcon();
 
   themeToggle.addEventListener("click", () => {
@@ -306,14 +305,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Function to update theme icon
+//=========== Function to update theme icon =========
 function updateThemeIcon() {
+
   const sunIcon = document.querySelector(".sun");
   const moonIcon = document.querySelector(".moon");
   const isLightTheme = document.body.classList.contains("light-theme");
 
-  // Show moon in light theme (to switch to dark)
-  // Show sun in dark theme (to switch to light)
   sunIcon.style.display = isLightTheme ? "none" : "block";
   moonIcon.style.display = isLightTheme ? "block" : "none";
 }

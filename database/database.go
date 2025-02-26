@@ -8,6 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// ==== The creation of the database folder and the database file ====
 func init() {
 
 	dataFolder := "data"
@@ -16,32 +17,42 @@ func init() {
 	databaseFolderPath := filepath.Join(dataFolder)
 	databaseFilePath := filepath.Join(databaseFolderPath, databaseFile)
 
-	if err := os.MkdirAll(databaseFolderPath, os.ModePerm); err != nil {
-		fmt.Println("[DATABASE]: Error creating database folder:", err)
-		os.Exit(1)
+	if _, err := os.Stat(databaseFolderPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(databaseFolderPath, os.ModePerm); err != nil {
+			fmt.Println("[DATABASE]: Error creating database folder:", err)
+			os.Exit(1)
+		}
+		fmt.Println("[DATABASE]: Database folder created successfully.")
 	}
-	
-	db_file, err := os.Create(databaseFilePath)
-	if err != nil {
-		fmt.Println("[DATABASE]: Error creating database file:", err)
-		os.Exit(1)
-	}
-	db_file.Close()
 
-	err = StartDbConnection(databaseFilePath)
+	if _, err := os.Stat(databaseFilePath); os.IsNotExist(err) {
+		dbFile, err := os.Create(databaseFilePath)
+
+		if err != nil {
+			fmt.Println("[DATABASE]: Error creating database file:", err)
+			os.Exit(1)
+		}
+
+		dbFile.Close()
+		fmt.Println("[DATABASE]: Database file created successfully.")
+	} else {
+		fmt.Println("[DATABASE]: Database file already exists. Skipping creation.")
+	}
+
+	err := StartDbConnection(databaseFilePath)
 	if err != nil {
 		e.LOGGER("[ERROR]", err)
 		os.Exit(1)
 	}
-	e.LOGGER("[SUCCESS]: Created the logging file and the database file!", nil)
-}
 
+	e.LOGGER("[SUCCESS]: Database setup completed successfully!", nil)
+}
 
 
 var Db *sql.DB
 
 
-// ==== This function will starting the connection to the database =====
+// ==== This function will starting the connection to the database using the SQLite3 driver that works with CGO =====
 func StartDbConnection(database_file_path string) error {
 
 

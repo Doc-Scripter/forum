@@ -7,6 +7,7 @@ import (
 	e "forum/Error"
 )
 
+//==== The function will create the comments table in the database =====
 func CreateCommentsTable(db *sql.DB) error {
 
 	if db == nil {

@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"sort"
+	u "forum/utils"
 	"strings"
 )
 
-// ==== This function will handle comments when they are toggled to be displayed ====
+// ==== This function will fetch comments from the database sorted by time, when they are toggled from the frontend  through method POST ====
 func CommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
@@ -27,6 +27,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		err := json.Unmarshal(str, &postID)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|comment handler|--> {%v}", err), m.ErrorsData.BadRequest, w, r)
 			return
 		}
@@ -51,6 +52,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 
 			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND comment_id = ?", eachComment.Comment_id).Scan(&likeCount)
 			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
 				ErrorPage(fmt.Errorf("|comment handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 				return
 			}
@@ -67,6 +69,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		commentsJson, err := json.Marshal(comments)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|comment handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -94,6 +97,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 
 		rows, err := d.Db.Query(`SELECT comment_id,created_at,content FROM comments WHERE post_id=?`, postID)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|comment handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -108,11 +112,13 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			var likeCount, dislikeCount int
 			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND comment_id = ?", eachComment.Comment_id).Scan(&likeCount)
 			if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 				ErrorPage(fmt.Errorf("|comment handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 				return
 			}
 			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ?", eachComment.Comment_id).Scan(&dislikeCount)
 			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
 				ErrorPage(fmt.Errorf("|comment handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 				return
 			}
@@ -122,8 +128,9 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			comments = append(comments, eachComment)
 		}
 
-		commentsJson, err := json.Marshal(OrderComments(comments))
+		commentsJson, err := json.Marshal(u.OrderComments(comments))
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			ErrorPage(fmt.Errorf("|comment handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
@@ -132,10 +139,3 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
-func OrderComments(comments []m.Comment) []m.Comment{
-	sort.Slice(comments, func(i, j int) bool {
-        return comments[i].CreatedAt.After(comments[j].CreatedAt)
-    })
-    return comments
-}

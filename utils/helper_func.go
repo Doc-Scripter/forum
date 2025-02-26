@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sort"
 	"time"
 
 	e "forum/Error"
@@ -104,4 +105,36 @@ func CombineCategory(category []string) string {
 
 	e.LOGGER("[SUCCESS]: Combined the categories as a string to be stored into the database", nil)
 	return strings.Join(category, ", ")
+}
+
+
+//===== The function will be called to validate the values of the categories from the frontend ======
+func ValidateCategory(str []string) bool {
+	categories := []string{"All Categories", "Technology", "Health", "Math", "Games", "Science", "Religion", "Education", "Politics", "Fashion", "Lifestyle", "Sports"}
+
+	for i, s := range str {
+		for _, v := range categories {
+
+
+			if s == v && i==len(str)-1{
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// ==== The function will sort the array of comments or posts by time before they are martialled into a json object =====
+func OrderComments(comments []m.Comment) []m.Comment{
+	sort.Slice(comments, func(i, j int) bool {
+        return comments[i].CreatedAt.After(comments[j].CreatedAt)
+    })
+    return comments
+}
+
+func OrderPosts(posts []m.Post) []m.Post{
+	sort.Slice(posts, func(i, j int) bool {
+        return posts[i].CreatedAt.After(posts[j].CreatedAt)
+    })
+    return posts
 }

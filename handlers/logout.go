@@ -19,6 +19,7 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.URL.Path != "/logout" {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|logout handler| ---> user tried to access the logout page in a wrong url"), m.ErrorsData.PageNotFound, w, r)
         return
 	}
@@ -32,6 +33,7 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 
 	_, err = d.Db.Exec("DELETE FROM sessions WHERE session_token = ?", cookie.Value)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|logout handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}

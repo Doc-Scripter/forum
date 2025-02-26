@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-// ==== This function will handle disliking a poscomment ====
+// ==== This function will handle disliking a post's comment and alter the database ====
 func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
@@ -22,6 +22,7 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	Profile, err := u.GetUserDetails(w, r)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|dislike comment handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
@@ -33,13 +34,12 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(str, &commentId)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		ErrorPage(fmt.Errorf("|dislike comment handler| --> {%v}", err), m.ErrorsData.BadRequest, w, r)
 		return
 	}
 
-	// Check if the user has already liked or disliked the post
 	var likeDislike string
-	// check if liked
 	err = d.Db.QueryRow("SELECT like_dislike FROM likes_dislikes WHERE like_dislike = 'dislike' AND comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid).Scan(&likeDislike)
 
 	if err == sql.ErrNoRows {
@@ -53,31 +53,34 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 					_, err = d.Db.Exec("INSERT INTO  likes_dislikes (like_dislike,comment_id,user_uuid) VALUES ('dislike',?,?)", commentId.Comment_Id, Profile.Uuid)
 					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
 						ErrorPage(fmt.Errorf("|dislike comment handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 						return
 					}
 				} else {
 					_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
 					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
 						ErrorPage(fmt.Errorf("|dislike comment handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 						return
 					}
 				}
 
 			} else {
-
+				w.WriteHeader(http.StatusInternalServerError)
 				ErrorPage(fmt.Errorf("|dislike comment handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 				return
 			}
 		}
 		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = 'dislike' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			ErrorPage(fmt.Errorf("|dislike comment handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 
 	} else if err != nil {
-
+		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|dislike comment handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	} else if likeDislike == "dislike" {
@@ -85,12 +88,13 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		// If the user has already liked the post, minus the like
 		_, err = d.Db.Exec("UPDATE likes_dislikes SET like_dislike = '' WHERE comment_id = ? AND user_uuid = ?", commentId.Comment_Id, Profile.Uuid)
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			ErrorPage(fmt.Errorf("|dislike comment handler| --> {%v}", err), m.ErrorsData.InternalError, w, r)
 			return
 		}
 	}
 
-	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s has disliked the comment: comment_id(%v)", Profile.Username , commentId.Comment_Id), nil)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s has disliked the comment: comment_id(%v)", Profile.Username , commentId.Comment_Id), nil)
 }
