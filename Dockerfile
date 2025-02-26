@@ -7,11 +7,13 @@ RUN apk add --no-cache gcc musl-dev sqlite-dev
 # Set the working directory
 WORKDIR /app
 
-# Tidy up Go modules
-RUN go mod tidy
 
 # Copy the rest of the source code
 COPY . .
+
+# Tidy up Go modules
+RUN go mod tidy
+
 
 # Build the Go application
 RUN CGO_ENABLED=1 GOOS=linux go build -o forum .
