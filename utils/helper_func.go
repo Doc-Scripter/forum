@@ -109,19 +109,28 @@ func CombineCategory(category []string) string {
 
 // ===== The function will be called to validate the values of the categories from the frontend ======
 func ValidateCategory(str []string) bool {
-	categories := []string{"All Categories", "Technology", "Health", "Math", "Nature", "Science", "Religion", "Education", "Politics", "Fashion", "Lifestyle", "Sports", "Arts"}
+	categories := map[string]bool{
+		"All Categories": true,
+		"Technology":     true,
+		"Health":         true,
+		"Math":           true,
+		"Nature":          true,
+		"Science":        true,
+		"Religion":       true,
+		"Education":      true,
+		"Politics":       true,
+		"Fashion":        true,
+		"Lifestyle":      true,
+		"Sports":         true,
+		"Arts":         true,
+	}
 
 	for _, s := range str {
-		for i, v := range categories {
-
-			if s == v {
-				return true
-			} else {
-				i++
-			}
+		if !categories[s] {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 // ==== The function will sort the array of comments or posts by time before they are martialled into a json object =====

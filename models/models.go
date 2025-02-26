@@ -189,7 +189,6 @@ func (p *Post) Seperate_Categories() Post {
 			return Post{}
 		}
 		categories = strings.Split(combined_categories, ", ")
-		fmt.Println(categories)
 		p.Categories = categories
 	}
 
