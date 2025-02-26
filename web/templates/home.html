@@ -37,7 +37,7 @@
           <option value="tech">{{.Category.Technology}}</option>
           <option value="health">{{.Category.Health}}</option>
           <option value="math">{{.Category.Math}}</option>
-          <option value="games">{{.Category.Games}}</option>
+          <option value="nature">{{.Category.Nature}}</option>
           <option value="education">{{.Category.Science}}</option>
           <option value="politics">{{.Category.Religion}}</option>
           <option value="fashion">{{.Category.Education}}</option>
@@ -45,6 +45,7 @@
           <option value="sports">{{.Category.Fashion}}</option>
           <option value="science">{{.Category.Lifestyle}}</option>
           <option value="religion">{{.Category.Sports}}</option>
+          <option value="arts">{{.Category.Arts}}</option>
         </select>
       </div>
       <button id="theme-toggle" class="theme-toggle glass-btn">
@@ -146,9 +147,9 @@
               ><input
                 type="checkbox"
                 name="category"
-                value="{{.Category.Games}}"
+                value="{{.Category.Nature}}"
               />
-              {{.Category.Games}}</label
+              {{.Category.Nature}}</label
             >
 
             <label class="category-option"
@@ -221,6 +222,15 @@
                 value="{{.Category.Sports}}"
               />
               {{.Category.Sports}}</label
+            >
+
+            <label class="category-option"
+              ><input
+                type="checkbox"
+                name="category"
+                value="{{.Category.Arts}}"
+              />
+              {{.Category.Arts}}</label
             >
           </div>
 
