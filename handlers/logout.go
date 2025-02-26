@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	e "forum/Error"
 	d "forum/database"
 	m "forum/models"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -21,7 +21,7 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/logout" {
 		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|logout handler| ---> user tried to access the logout page in a wrong url"), m.ErrorsData.PageNotFound, w, r)
-        return
+		return
 	}
 
 	cookie, err := r.Cookie("session_token")

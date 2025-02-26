@@ -3,11 +3,11 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	d "forum/database"
 	"fmt"
+	e "forum/Error"
+	d "forum/database"
 	m "forum/models"
 	u "forum/utils"
-	e "forum/Error"
 	"io"
 	"net/http"
 )
@@ -96,5 +96,5 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s has disliked the comment: comment_id(%v)", Profile.Username , commentId.Comment_Id), nil)
+	e.LOGGER(fmt.Sprintf("[SUCCESS]: User %s has disliked the comment: comment_id(%v)", Profile.Username, commentId.Comment_Id), nil)
 }

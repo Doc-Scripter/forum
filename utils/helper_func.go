@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 	"sort"
+	"strings"
 	"time"
 
 	e "forum/Error"
@@ -107,17 +107,16 @@ func CombineCategory(category []string) string {
 	return strings.Join(category, ", ")
 }
 
-
-//===== The function will be called to validate the values of the categories from the frontend ======
+// ===== The function will be called to validate the values of the categories from the frontend ======
 func ValidateCategory(str []string) bool {
 	categories := []string{"All Categories", "Technology", "Health", "Math", "Nature", "Science", "Religion", "Education", "Politics", "Fashion", "Lifestyle", "Sports", "Arts"}
 
 	for _, s := range str {
 		for i, v := range categories {
 
-			if s == v{
+			if s == v {
 				return true
-			}else {
+			} else {
 				i++
 			}
 		}
@@ -126,16 +125,16 @@ func ValidateCategory(str []string) bool {
 }
 
 // ==== The function will sort the array of comments or posts by time before they are martialled into a json object =====
-func OrderComments(comments []m.Comment) []m.Comment{
+func OrderComments(comments []m.Comment) []m.Comment {
 	sort.Slice(comments, func(i, j int) bool {
-        return comments[i].CreatedAt.After(comments[j].CreatedAt)
-    })
-    return comments
+		return comments[i].CreatedAt.After(comments[j].CreatedAt)
+	})
+	return comments
 }
 
-func OrderPosts(posts []m.Post) []m.Post{
+func OrderPosts(posts []m.Post) []m.Post {
 	sort.Slice(posts, func(i, j int) bool {
-        return posts[i].CreatedAt.After(posts[j].CreatedAt)
-    })
-    return posts
+		return posts[i].CreatedAt.After(posts[j].CreatedAt)
+	})
+	return posts
 }

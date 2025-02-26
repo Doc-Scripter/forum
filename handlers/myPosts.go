@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
+	e "forum/Error"
 	d "forum/database"
 	m "forum/models"
-	e "forum/Error"
 	u "forum/utils"
 	"net/http"
 )

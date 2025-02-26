@@ -58,7 +58,6 @@ function displayPosts(posts, category) {
   if (filteredPosts === null || !posts || filteredPosts.length === 0) {
     postsContainer.innerHTML = `<article class="post">
     <div class="post-header">
-    <span class="post-date">NO Date</span>
     </div>
     <h2 class="post-title">No posts available</h2>
     <p class="post-content">No posts to display</p>

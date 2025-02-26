@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	m "forum/models"
-	"net/http"
 	"fmt"
 	e "forum/Error"
+	m "forum/models"
+	"net/http"
 	"os"
 )
 
-//===== The handler will process the binary files that will be posted and be fetched from the database =====
+// ===== The handler will process the binary files that will be posted and be fetched from the database =====
 func ImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodGet {

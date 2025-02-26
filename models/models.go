@@ -1,11 +1,11 @@
 package models
 
 import (
+	"fmt"
 	e "forum/Error"
 	d "forum/database"
 	"net/http"
 	"strings"
-	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -91,36 +91,35 @@ type Post struct {
 
 type Categories struct {
 	All_Categories string
-	Technology string
-	Health string
-	Math string
-	Nature string
-	Science string
-	Religion string
-	Education string
-	Politics string
-	Fashion string
-	Lifestyle string
-	Sports string
-	Arts string
+	Technology     string
+	Health         string
+	Math           string
+	Nature         string
+	Science        string
+	Religion       string
+	Education      string
+	Politics       string
+	Fashion        string
+	Lifestyle      string
+	Sports         string
+	Arts           string
 }
 
 var Category = Categories{
-	All_Categories : "All Categories",
-	Technology :"Technology",
-	Health :"Health",
-	Math :"Math",
-	Nature :"Nature",
-	Science :"Science",
-	Religion :"Religion",
-	Education :"Education",
-	Politics :"Politics",
-	Fashion :"Fashion",
-	Lifestyle :"Lifestyle",
-	Sports : "Sports",
-	Arts : "Arts",
+	All_Categories: "All Categories",
+	Technology:     "Technology",
+	Health:         "Health",
+	Math:           "Math",
+	Nature:         "Nature",
+	Science:        "Science",
+	Religion:       "Religion",
+	Education:      "Education",
+	Politics:       "Politics",
+	Fashion:        "Fashion",
+	Lifestyle:      "Lifestyle",
+	Sports:         "Sports",
+	Arts:           "Arts",
 }
-	
 
 type Users struct {
 	Username string
@@ -138,7 +137,6 @@ type Comment struct {
 	Dislikes   int       `json:"dislikes"`
 	Content    string    `json:"content"`
 }
-
 
 // ==== A method to generate the initials of a users name and adds them to the User  object ====
 func (p *ProfileData) GenerateInitials() string {
@@ -170,10 +168,9 @@ type Image struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-
 // ===== The function will pack the categories as a slice of strings from the database ====
 func (p *Post) Seperate_Categories() Post {
-	
+
 	var (
 		combined_categories string
 		categories          []string
@@ -209,5 +206,3 @@ func (user *Users) HashPassword() error {
 	user.Password = string(hashed)
 	return nil
 }
-
-

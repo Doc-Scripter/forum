@@ -8,8 +8,8 @@ import (
 	m "forum/models"
 	u "forum/utils"
 
-	d "forum/database"
 	e "forum/Error"
+	d "forum/database"
 )
 
 // ==== This function will receive a comment addition request to a post through method of POST. It then proceeds to the addition of the comment to the database ====

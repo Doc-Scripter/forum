@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	e "forum/Error"
 	d "forum/database"
 	m "forum/models"
-	e "forum/Error"
 	u "forum/utils"
 )
 
@@ -155,4 +155,3 @@ func ValidateCategory(str []string) bool {
 	}
 	return true
 }
-

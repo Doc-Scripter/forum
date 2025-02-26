@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"text/template"
-	"fmt"
 
 	e "forum/Error"
 	m "forum/models"
@@ -16,15 +16,15 @@ import (
 logging file and then, serve the error page with the error message and the error code in the ErrorData object ====
 */
 func ErrorPage(Error error, ErrorData m.ErrorData, w http.ResponseWriter, r *http.Request) {
-	
+
 	tmpl, err := template.ParseFiles("./web/templates/error.html")
-	
+
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		e.LOGGER("[ERROR]", fmt.Errorf("|error page server| ---> {%v}", err))
 		return
 	}
-	
+
 	if err = tmpl.Execute(w, ErrorData); err != nil {
 		e.LOGGER("[ERROR]", fmt.Errorf("|error page server| ---> {%v}", err))
 		return

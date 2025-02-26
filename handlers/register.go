@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"

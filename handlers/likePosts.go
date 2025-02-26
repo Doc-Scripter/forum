@@ -3,15 +3,14 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	d "forum/database"
-	m "forum/models"
 	"fmt"
 	e "forum/Error"
+	d "forum/database"
+	m "forum/models"
 	u "forum/utils"
 	"io"
 	"net/http"
 )
-
 
 // ==== This function will handle liking a post and adding it to the database ====
 func LikePostHandler(w http.ResponseWriter, r *http.Request) {

@@ -3,11 +3,11 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	e "forum/Error"
 	d "forum/database"
 	m "forum/models"
-	e "forum/Error"
 	u "forum/utils"
-	"fmt"
 	"io"
 	"net/http"
 )

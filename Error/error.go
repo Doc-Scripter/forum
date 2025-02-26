@@ -1,16 +1,15 @@
 package Error
 
 import (
-	"log"
 	"fmt"
-	"path/filepath"
+	"log"
 	"os"
+	"path/filepath"
 )
 
 var ErrorLogger *log.Logger
 
-
-//==== Add the LOGGER folder to the root directory and creation of the logging file. Declaration of our logger ===
+// ==== Add the LOGGER folder to the root directory and creation of the logging file. Declaration of our logger ===
 func init() {
 
 	logFolder := "LOGGING"
@@ -43,7 +42,7 @@ func init() {
 func LOGGER(log_type string, err error) {
 	if err != nil {
 		ErrorLogger.Println(log_type, ": ", err)
-	}else {
+	} else {
 		ErrorLogger.Println(log_type)
 	}
 }

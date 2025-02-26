@@ -8,7 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-//==== The function will create the likes and the dislikes table in the database =====
+// ==== The function will create the likes and the dislikes table in the database =====
 func CreateLikesDislikesTable(db *sql.DB) error {
 
 	if db == nil {

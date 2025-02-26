@@ -7,9 +7,6 @@ RUN apk add --no-cache gcc musl-dev sqlite-dev
 # Set the working directory
 WORKDIR /app
 
-# Copy go.mod and go.sum first to leverage Docker cache
-COPY go.mod go.sum ./
-
 # Tidy up Go modules
 RUN go mod tidy
 
@@ -28,26 +25,18 @@ RUN apk add --no-cache \
     sqlite \
     sqlite-libs
 
-# Create a non-root user
-RUN adduser -D appuser
 
 # Set the working directory
 WORKDIR /app
 
 # Create directories and set permissions
-RUN mkdir -p /app/data && \
-    chown -R appuser:appuser /app
+RUN mkdir -p /app/data
 
 # Copy the built application from the builder stage
 COPY --from=builder /app/forum /app/
+
 COPY --from=builder /app/web /app/web
 
-# Set permissions
-RUN chown -R appuser:appuser /app && \
-    chmod +x /app/forum
-
-# Switch to non-root user
-USER appuser
 
 # Expose the application port
 EXPOSE 33333

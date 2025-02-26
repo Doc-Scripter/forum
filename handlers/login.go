@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
-	"fmt"
 
 	e "forum/Error"
 	d "forum/database"
@@ -77,15 +77,14 @@ func AuthenticateUserCredentialsLogin(w http.ResponseWriter, r *http.Request) {
 
 	sessionToken := u.String()
 	expiresAt := time.Now().Add(24 * time.Hour)
-	
-	_, err = d.Db.Exec("DELETE FROM sessions WHERE user_id = ?",userID)
+
+	_, err = d.Db.Exec("DELETE FROM sessions WHERE user_id = ?", userID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|login handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)
 		return
 	}
 	SetSessionCookie(w, "", time.Now().Add(-time.Hour))
-
 
 	//==============Store the created session=================
 	_, err = d.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)",

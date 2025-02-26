@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
+	e "forum/Error"
 	d "forum/database"
 	m "forum/models"
 	u "forum/utils"
-	"fmt"
 	"net/http"
-	e "forum/Error"
 )
 
 // ==== This function will handle post creation and insertion of the post into the database ====
@@ -18,9 +18,9 @@ func PostsHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorPage(nil, m.ErrorsData.MethodNotAllowed, w, r)
 		return
 	}
-	
+
 	rows, err := d.Db.Query("SELECT title,content,created_at,post_id,filename,filepath FROM posts")
-	
+
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		ErrorPage(fmt.Errorf("|post handler| ---> {%v}", err), m.ErrorsData.InternalError, w, r)

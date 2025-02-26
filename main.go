@@ -30,7 +30,6 @@ func main() {
 		port = "33333"
 	}
 
-
 	reset := "\033[0m"
 	boldWhite := "\033[1;37m"
 	red := "\033[1;31m"

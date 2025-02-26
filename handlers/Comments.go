@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	d "forum/database"
 	m "forum/models"
-	"fmt"
+	u "forum/utils"
 	"io"
 	"net/http"
-	u "forum/utils"
 	"strings"
 )
 
@@ -112,7 +112,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 			var likeCount, dislikeCount int
 			err = d.Db.QueryRow("SELECT COUNT(*) FROM likes_dislikes WHERE  like_dislike = 'like' AND comment_id = ?", eachComment.Comment_id).Scan(&likeCount)
 			if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+				w.WriteHeader(http.StatusBadRequest)
 				ErrorPage(fmt.Errorf("|comment handler|--> {%v}", err), m.ErrorsData.InternalError, w, r)
 				return
 			}
@@ -138,4 +138,3 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write(commentsJson)
 	}
 }
-

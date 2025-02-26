@@ -3,11 +3,11 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
 	e "forum/Error"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-//==== The function will create the comments table in the database =====
+// ==== The function will create the comments table in the database =====
 func CreateCommentsTable(db *sql.DB) error {
 
 	if db == nil {
