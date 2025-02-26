@@ -198,7 +198,6 @@ function displayPosts(posts, category) {
   if (filteredPosts === null || !posts || filteredPosts.length === 0) {
     postsContainer.innerHTML = `<article class="post">
     <div class="post-header">
-    <span class="post-date">NO Date</span>
     </div>
     <h2 class="post-title">No posts available</h2>
     <p class="post-content">No posts to display</p>
@@ -298,9 +297,9 @@ function displayPosts(posts, category) {
   });
 }
 
-/* Escapes special characters in a string to prevent XSS attacks when rendering HTML.//+
+/* ====== Escapes special characters in a string to prevent XSS attacks when rendering HTML.//+
  * @param {string} str - The input string to be escaped.//+
- * @returns {string} The escaped string with special characters replaced by their HTML entity equivalents. */
+ * @returns {string} The escaped string with special characters replaced by their HTML entity equivalents. ==== */
 function escapeHTML(str) {
   return str.replace(/[&<>"'/]/g, function (char) {
     switch (char) {
@@ -312,8 +311,8 @@ function escapeHTML(str) {
         return "&gt;";
       case '"':
         return "&quot;";
-      case "'":
-        return "&#039;";
+      // case "'":
+      //   return "&#039;";
       case "/":
         return "&#47;";
       default:

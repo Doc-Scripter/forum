@@ -110,14 +110,15 @@ func CombineCategory(category []string) string {
 
 //===== The function will be called to validate the values of the categories from the frontend ======
 func ValidateCategory(str []string) bool {
-	categories := []string{"All Categories", "Technology", "Health", "Math", "Games", "Science", "Religion", "Education", "Politics", "Fashion", "Lifestyle", "Sports"}
+	categories := []string{"All Categories", "Technology", "Health", "Math", "Nature", "Science", "Religion", "Education", "Politics", "Fashion", "Lifestyle", "Sports", "Arts"}
 
-	for i, s := range str {
-		for _, v := range categories {
+	for _, s := range str {
+		for i, v := range categories {
 
-
-			if s == v && i==len(str)-1{
+			if s == v{
 				return true
+			}else {
+				i++
 			}
 		}
 	}

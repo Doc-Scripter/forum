@@ -94,7 +94,7 @@ type Categories struct {
 	Technology string
 	Health string
 	Math string
-	Games string
+	Nature string
 	Science string
 	Religion string
 	Education string
@@ -102,6 +102,7 @@ type Categories struct {
 	Fashion string
 	Lifestyle string
 	Sports string
+	Arts string
 }
 
 var Category = Categories{
@@ -109,7 +110,7 @@ var Category = Categories{
 	Technology :"Technology",
 	Health :"Health",
 	Math :"Math",
-	Games :"Games",
+	Nature :"Nature",
 	Science :"Science",
 	Religion :"Religion",
 	Education :"Education",
@@ -117,6 +118,7 @@ var Category = Categories{
 	Fashion :"Fashion",
 	Lifestyle :"Lifestyle",
 	Sports : "Sports",
+	Arts : "Arts",
 }
 	
 
@@ -182,6 +184,7 @@ func (p *Post) Seperate_Categories() Post {
 		e.LOGGER("[ERROR]", fmt.Errorf("|seperate methods category| ---> {%v}", err))
 		return *p
 	}
+
 	for row.Next() {
 		err = row.Scan(&combined_categories)
 		if err != nil {
@@ -189,8 +192,10 @@ func (p *Post) Seperate_Categories() Post {
 			return Post{}
 		}
 		categories = strings.Split(combined_categories, ", ")
+		fmt.Println(categories)
 		p.Categories = categories
 	}
+
 	return *p
 }
 
