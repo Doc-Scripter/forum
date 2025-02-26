@@ -48,17 +48,24 @@ git clone https://learn.zone01kisumu.ke/git/shaokoth/forum
 cd forum
 ```
 
-2. Build the Docker image: 
+2. Build and run the docker image
+- In the terminal
 ```bash
-docker build -t forum
+./script.sh
+```
+Open your web browser and navigate to 
+```bash
+http://localhost:8080
 ```
 
-3. Run the Docker Container
+# Alternatively 
+1. Run the program directly through the terminal
+
 ```bash
-docker run -p 33333:33333 web-forum
+go run .
 ```
 
-4. Access the Forum
+2. Access the Forum
 Open your web browser and navigate to 
 ```bash
 http://localhost:33333
@@ -143,6 +150,10 @@ Unit tests are written using the Go testing framework and can be run using the g
 ```bash
 go test ./...
 ```
+## or
+```bash
+make test 
+``` 
 
 ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.

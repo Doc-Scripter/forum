@@ -114,7 +114,7 @@ func ValidateCategory(str []string) bool {
 		"Technology":     true,
 		"Health":         true,
 		"Math":           true,
-		"Nature":          true,
+		"Nature":         true,
 		"Science":        true,
 		"Religion":       true,
 		"Education":      true,
@@ -122,7 +122,7 @@ func ValidateCategory(str []string) bool {
 		"Fashion":        true,
 		"Lifestyle":      true,
 		"Sports":         true,
-		"Arts":         true,
+		"Arts":           true,
 	}
 
 	for _, s := range str {
